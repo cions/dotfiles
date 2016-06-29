@@ -1,0 +1,12 @@
+include c.snip
+
+snippet namespace
+options head
+	namespace ${1:#:name} {
+		${0:TARGET}
+	} /* namespace $1 */
+
+snippet puts
+abbr std::cout << expr << std::endl;
+options head
+	std::cout << ${0:TARGET} << std::endl;

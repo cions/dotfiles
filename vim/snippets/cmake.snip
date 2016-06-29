@@ -1,0 +1,50 @@
+snippet new_prject
+options head
+	project(${1:#:name})
+
+	set(${2:PROJECT}_VERSION_MAJOR 0)
+	set(${2}_VERSION_MINOR 0)
+	set(${2}_VERSION_TEENY 1)
+	set(PACKAGE_VERSION "${$2_VERSION_MAJOR}.${$2_VERSION_MINOR}.${$2_VERSION_TEENY}")
+
+	cmake_minimum_required(VERSION ${3:3.5})
+
+	${0}
+
+snippet if
+options head
+	if(${1:#:condition})
+		${2}
+	endif()${0}
+
+snippet ifelse
+options head
+	if(${1:#:condition})
+		${2}
+	else()
+		${3}
+	endif()${0}
+
+snippet foreach
+options head
+	foreach(${1:#:item} ${2:#:items})
+		${3}
+	endforeach()${0}
+
+snippet while
+options head
+	while(${1:#:condition})
+		${2}
+	endwhile()${0}
+
+snippet macro
+options head
+	macro(${1:#:name} ${2:#:args})
+		${3}
+	endmacro()${0}
+
+snippet function
+options head
+	function(${1:#:name} ${2:#:args})
+		${3}
+	endfunction()${0}

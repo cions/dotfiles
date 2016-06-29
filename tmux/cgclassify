@@ -1,0 +1,17 @@
+#!/bin/bash
+
+[[ -f /proc/self/cgroup ]] || exit
+
+IFS="," read -ra tmux <<< "${TMUX}"
+TMUXPID="${tmux[1]}"
+
+cgpaths=()
+while IFS=":" read -r id subsys hier; do
+    cgpath="/sys/fs/cgroup/${subsys#name=}"
+    [[ -d "${cgpath}" && "${hier}" == /shell/* ]] || continue
+    cgpaths+=("$cgpath")
+done <"/proc/${TMUXPID}/cgroup"
+
+for cgpath in "${cgpaths[@]}"; do
+    echo "${TMUXPID}" | tee "${cgpath}/cgroup.procs" >/dev/null
+done

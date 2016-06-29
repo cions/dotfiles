@@ -1,0 +1,17 @@
+[[plugins]]
+repo = 'vim-jp/syntax-vim-ex'
+on_ft = 'vim'
+
+[[plugins]]
+repo = 'cespare/vim-toml'
+on_ft = 'toml'
+
+[ftplugin]
+c = '''
+setl cino=:0,l1
+let b:undo_ftplugin .= 'setl cino<'
+'''
+cpp = '''
+setl cino=:0,l1,g0
+let b:undo_ftplugin .= 'setl cino<'
+'''

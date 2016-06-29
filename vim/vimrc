@@ -1,0 +1,267 @@
+" vim: set foldmethod=marker:
+
+let g:vimfiles = expand('<sfile>:p:h')
+if has('win32')
+  let g:tempdir = $TEMP
+  let g:cachedir = $TEMP . '/vim'
+else
+  let g:cachedir = expand('~/.cache/vim')
+  let g:tempdir = '/tmp'
+endif
+
+" disable builtin plugins {{{1
+let g:loaded_2html_plugin = 1
+let g:loaded_LogiPat = 1
+let g:loaded_bugsummary = 1
+let g:loaded_gentoo_common = 1
+let g:loaded_getscriptPlugin = 1
+let g:loaded_gzip = 1
+let g:loaded_matchparen = 1
+let g:loaded_netrwPlugin = 1
+let g:loaded_newebuild = 1
+let g:loaded_newinitd = 1
+let g:loaded_newmetadata = 1
+let g:loaded_rrhelper = 1
+let g:loaded_spellfile_plugin = 1
+let g:loaded_tarPlugin = 1
+let g:loaded_vimballPlugin = 1
+let g:loaded_zipPlugin = 1
+
+" dein.vim {{{1
+function! s:source_rcfile(name) abort
+  let path = g:vimfiles . '/rc/' . a:name
+  if filereadable(path)
+    execute "source" fnameescape(path)
+  endif
+endfunction
+command! -nargs=1 -bar SourceRcfile call s:source_rcfile(<q-args>)
+
+let s:deindir = g:vimfiles . '/dein'
+let s:deinrepo = s:deindir . '/repos/github.com/Shougo/dein.vim'
+let s:tomlfiles = glob(g:vimfiles . '/rc/*.toml', 0, 1)
+
+if has('vim_starting')
+  if !isdirectory(s:deinrepo)
+    call system('git clone https://github.com/Shougo/dein.vim ' .
+          \ shellescape(s:deinrepo))
+  endif
+  let &runtimepath = s:deinrepo . ',' . &runtimepath
+endif
+
+if dein#load_state(s:deindir)
+  call dein#begin(s:deindir, [$MYVIMRC] + s:tomlfiles)
+  for tomlfile in s:tomlfiles
+    call dein#load_toml(tomlfile)
+  endfor
+  call dein#end()
+  call dein#save_state()
+endif
+
+if dein#check_install()
+  call dein#install()
+endif
+
+if has('vim_starting')
+  call dein#call_hook('source')
+  call dein#call_hook('post_source')
+endif
+" }}}1
+
+let s:V = vital#vital#of()
+let s:Prelude = s:V.import('Prelude')
+
+syntax enable
+filetype plugin indent on
+set mouse=a
+set hidden
+set notitle
+set shellslash
+set modeline
+set completeopt=menu
+set wildmode=longest:full,full
+set noundofile
+set viminfo=
+let &backupdir = g:tempdir
+let &directory = g:tempdir
+
+set matchpairs&vim matchpairs+=<:>
+set backspace=indent,eol,start
+set nrformats-=octal
+set virtualedit=block
+set autoindent
+set smartindent
+set noexpandtab
+set tabstop=8
+set shiftwidth=8
+set softtabstop=8
+set ignorecase
+set smartcase
+
+set list
+set listchars=tab:>-,trail:-
+set conceallevel=2
+set concealcursor=i
+set hlsearch
+set shortmess+=I
+set laststatus=2
+set showtabline=2
+set noshowcmd
+set noshowmode
+set statusline=%F\ %y[%{&fenc?&fenc:&enc}:%{&ff}]%m%r%w%=(%l,%c)
+set background=dark
+
+language messages en_US.UTF-8
+colorscheme solarized
+if has('gui_running')
+  set background=light
+  set guioptions=aefiMg
+  if has('gui_gtk2')
+    set guifont=Inconsolata\ 12
+  elseif has('gui_win32')
+    set iminsert=0
+    set imsearch=0
+    set guifont=Inconsolata_Regular:h12:cSHIFTJIS
+    set renderoptions=type:directx,gamma:1.0,contrast:0.5,level:1,geom:1,renmode:4,taamode:1
+  endif
+endif
+
+if &term ==# 'win32'
+  set termencoding=cp932
+else
+  set termencoding=utf-8
+endif
+set encoding=utf-8
+set fileencodings=ucs-bom,utf-8,euc-jisx0213,cp932
+set fileformats=unix,dos
+set ambiwidth=single
+
+" keybindings {{{1
+nnoremap ZZ <Nop>
+nnoremap ZQ <Nop>
+nnoremap Y y$
+nnoremap j gj
+nnoremap k gk
+nnoremap 0 g0
+nnoremap ^ g^
+nnoremap k gk
+nnoremap gj j
+nnoremap gk k
+nnoremap g0 0
+nnoremap g^ ^
+nnoremap gk k
+xnoremap gJ J
+
+nnoremap <silent> gh :<C-u>nohlsearch<CR>
+nnoremap <silent> gn :<C-u>set number!<CR>
+nnoremap <silent> gN :<C-u>set relativenumber!<CR>
+nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
+
+nmap ys <Plug>(operator-surround-append)
+nmap yss <Plug>(operator-surround-append)<Plug>(textobj-line-a)
+nmap cs <Plug>(operator-surround-replace)
+nmap ds <Plug>(operator-surround-delete)
+xmap S <Plug>(operator-surround-append)
+map _ <Plug>(operator-replace)
+map gl <Plug>(operator-reverse-lines)
+map gw <Plug>(operator-reverse-text)
+map gx <Plug>(openbrowser-smart-search)
+map gc <Plug>(caw:prefix)
+nmap <Space>d <Plug>(textmanip-duplicate-down)
+xmap <Space>d <Plug>(textmanip-duplicate-down)<Esc>
+nmap <Space>D <Plug>(textmanip-duplicate-up)
+xmap <Space>D <Plug>(textmanip-duplicate-up)<Esc>
+xmap <Space>h <Plug>(textmanip-duplicate-left)
+xmap <Space>l <Plug>(textmanip-duplicate-right)
+xmap H <Plug>(textmanip-move-left)
+xmap J <Plug>(textmanip-move-down)
+xmap K <Plug>(textmanip-move-up)
+xmap L <Plug>(textmanip-move-right)
+nmap <Space>r <Plug>(quickrun)
+nmap <Space>i <Plug>(repl-run)
+xnoremap <silent> <Space>c :RengBangUsePrev<CR>
+xnoremap <silent> <Space>C :RengBangConfirm<CR>
+
+nnoremap <silent> <Leader>u :<C-u>Unite source<CR>
+nnoremap <silent> <Leader>f :<C-u>Unite
+      \ -buffer-name=files file/async file/new directory/new<CR>
+nnoremap <silent> <Leader>gf :<C-u>Unite
+      \ -buffer-name=files file_rec/async<CR>
+nnoremap <silent> <Leader>gg :<C-u>Unite
+      \ -buffer-name=files file_rec/git<CR>
+nnoremap <silent> <Leader>d :<C-u>Unite dein<CR>
+nnoremap <silent> <Leader>g :<C-u>Unite ghq<CR>
+nnoremap <silent> <Leader>b :<C-u>Unite buffer:-<CR>
+nnoremap <silent> <Leader>B :<C-u>Unite buffer:!<CR>
+nnoremap <silent> <Leader>m :<C-u>Unite menu:menu<CR>
+nnoremap <silent> <Leader>r :<C-u>Unite register<CR>
+nnoremap <silent> <Leader>p :<C-u>Unite -default-action=append history/yank<CR>
+nnoremap <silent> <Leader>P :<C-u>Unite history/yank<CR>
+nnoremap <silent> <Leader>F :<C-u>Unite filetype filetype/new<CR>
+nnoremap <silent> <Leader>o :<C-u>Unite outline<CR>
+nnoremap <silent> <Leader>q :<C-u>Unite quickfix<CR>
+nnoremap <silent> <Leader>M :<C-u>Unite output:message<CR>
+nnoremap <silent> <Leader>h :<C-u>Unite help<CR>
+nnoremap <silent> <Leader>K :<C-u>Unite mapping<CR>
+nnoremap <silent> <Leader>l :<C-u>Unite
+      \ -buffer-name=search%`bufnr('%')` line:forward:wrap<CR>
+
+nnoremap <silent> <Leader>ee :<C-u>VimFiler<CR>
+nnoremap <silent> <Leader>es :<C-u>VimFiler -split<CR>
+nnoremap <silent> <Leader>ec :<C-u>VimFilerCurrentDir<CR>
+nnoremap <silent> <Leader>eb :<C-u>VimFilerBufferDir<CR>
+nnoremap <silent> <Leader>ep :<C-u>VimFilerBufferDir -project<CR>
+nnoremap <silent> <Leader>EE :<C-u>VimFilerExplorer<CR>
+nnoremap <silent> <Leader>s :<C-u>VimShellPop<CR>
+
+inoremap <expr> <C-u> pumvisible() ?
+      \ unite#sources#neocomplete#start_complete() : "\<C-u>"
+inoremap <expr> <C-l> neocomplete#complete_common_string()
+inoremap <expr> <Tab>
+      \ neocomplete#complete_common_string() !=# '' ?
+      \   neocomplete#complete_common_string() :
+      \ pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <C-g> neocomplete#undo_completion()
+inoremap <expr> <BS> neocomplete#smart_close_popup() . "\<BS>"
+inoremap <expr> <C-h> neocomplete#smart_close_popup() . "\<C-h>"
+inoremap <expr> <CR> pumvisible() ? "\<C-y>\<CR>" : "\<CR>"
+imap <C-k> <Plug>(neosnippet_expand_or_jump)
+smap <C-k> <Plug>(neosnippet_expand_or_jump)
+xmap <C-k> <Plug>(neosnippet_expand_target)
+
+" commands {{{1
+function! s:dein_clean(run_gc) abort
+  for directory in dein#check_clean()
+    call delete(directory, 'rf')
+    call delete(fnamemodify(directory, ':h'), 'd')
+  endfor
+  if a:run_gc
+    call dein#each('git gc --aggressive --prune=now')
+  endif
+endfunction
+command! -bang -bar DeinClean call s:dein_clean(<bang>0)
+
+" autocmd {{{1
+function! s:lcd_project_directory() abort
+  if !&buflisted || !empty(&buftype)
+    return
+  endif
+  let path = s:Prelude.path2project_directory(expand('%:p'), 1)
+  call s:Prelude.smart_execute_command('lcd', path)
+endfunction
+
+augroup vimrc
+  autocmd!
+
+  autocmd BufNewFile,BufRead,BufFilePost * call s:lcd_project_directory()
+  autocmd BufWritePost,BufFilePost * nested filetype detect
+  autocmd BufWritePost $MYVIMRC nested source $MYVIMRC | let &l:ft = &l:ft
+  autocmd BufWritePost plugins.toml nested source $MYVIMRC | let &l:ft = &l:ft
+  autocmd BufWritePost ftplugins.toml nested source $MYVIMRC | let &l:ft = &l:ft
+
+  autocmd InsertEnter * PreciousSwitch
+  autocmd InsertLeave * PreciousReset
+  autocmd InsertLeave * NeoSnippetClearMarkers
+
+  autocmd BufNewFile,BufRead * nested if getline(1) =~# '\M-*- C++ -*-'
+        \ | setfiletype cpp | endif
+augroup END

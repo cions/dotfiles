@@ -1,0 +1,5 @@
+/tmux/plugins/
+/vim/dein/
+/zsh/zplug/
+/zsh/**/*.zwc
+/zsh/.zcompdump

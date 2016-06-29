@@ -1,0 +1,250 @@
+[[plugins]]
+repo = 'Shougo/dein.vim'
+
+[[plugins]]
+repo = 'Shougo/vimproc.vim'
+build = 'make'
+
+[[plugins]]
+repo = 'vim-jp/vital.vim'
+
+[[plugins]]
+repo = 'altercation/vim-colors-solarized'
+hook_source = '''
+let g:solarized_termcolors = 256
+let g:solarized_termtrans = 1
+let g:solarized_contrast = 'high'
+let g:solarized_visibility = 'normal'
+let g:solarized_menu = 0
+let g:solarized_italic = 0
+let g:solarized_underline = 0
+'''
+
+[[plugins]]
+repo = 'itchyny/lightline.vim'
+hook_source = 'SourceRcfile lightline.vim'
+
+[[plugins]]
+repo = 'edkolev/tmuxline.vim'
+hook_source = 'SourceRcfile tmuxline.vim'
+
+[[plugins]]
+repo = 'Shougo/unite.vim'
+hook_source = '''
+let g:unite_data_directory = g:cachedir . '/unite.vim'
+let g:unite_force_overwrite_statusline = 0
+'''
+hook_post_source = 'SourceRcfile unite.vim'
+
+[[plugins]]
+repo = 'Shougo/neoyank.vim'
+hook_source = '''
+let g:neoyank#file = ""
+'''
+
+[[plugins]]
+repo = 'Shougo/unite-help'
+
+[[plugins]]
+repo = 'Shougo/unite-outline'
+
+[[plugins]]
+repo = 'sorah/unite-ghq'
+
+[[plugins]]
+repo = 'lambdalisue/vim-gista-unite'
+
+[[plugins]]
+repo = 'osyo-manga/unite-quickfix'
+
+[[plugins]]
+repo = 'osyo-manga/unite-filetype'
+
+[[plugins]]
+repo = 'Shougo/vimfiler.vim'
+hook_source = '''
+let g:vimfiler_data_directory = g:cachedir . '/vimfiler'
+let g:vimfiler_as_default_explorer = 1
+let g:vimfiler_force_overwrite_statusline = 0
+let g:vimfiler_define_wrapper_commands = 1
+let g:vimfiler_time_format = '%FT%R'
+
+let g:vimfiler_tree_leaf_icon = ' '
+let g:vimfiler_tree_opened_icon = '▾'
+let g:vimfiler_tree_closed_icon = '▸'
+let g:vimfiler_file_icon = '-'
+let g:vimfiler_marked_file_icon = '*'
+'''
+hook_post_source = '''
+call vimfiler#custom#profile('default', 'context', { 'safe': 0 })
+'''
+
+[[plugins]]
+repo = 'Shougo/vimshell.vim'
+hook_source = '''
+let g:vimshell_data_directory = g:cachedir . '/vimshell'
+let g:vimshell_prompt = '% '
+let g:vimshell_secondary_prompt = '> '
+let g:vimshell_force_overwrite_statusline = 0
+'''
+
+[[plugins]]
+repo = 'Shougo/neocomplete.vim'
+hook_source = '''
+let g:neocomplete#data_directory = g:cachedir . '/neocomplete'
+let g:neocomplete#enable_at_startup = 1
+let g:neocomplete#enable_smart_case = 1
+let g:neocomplete#enable_camel_case = 1
+let g:neocomplete#lock_iminsert = 1
+let g:neocomplete#skip_auto_completion_time = '0.5'
+'''
+hook_post_source = 'SourceRcfile neocomplete.vim'
+
+[[plugins]]
+repo = 'Shougo/neosnippet.vim'
+hook_source = '''
+let g:neosnippet#snippets_directory = g:vimfiles . '/snippets'
+let g:neosnippet#data_directory = g:cachedir . '/neosnippet'
+let g:neosnippet#disable_runtime_snippets = { '_': 1 }
+'''
+
+[[plugins]]
+repo = 'Shougo/neoinclude.vim'
+
+[[plugins]]
+repo = 'Shougo/neco-syntax'
+
+[[plugins]]
+repo = 'Shougo/neco-vim'
+
+[[plugins]]
+repo = 'Shougo/neopairs.vim'
+
+[[plugins]]
+repo = 'tpope/vim-repeat'
+
+[[plugins]]
+repo = 'cohama/lexima.vim'
+
+[[plugins]]
+repo = 'kana/vim-textobj-user'
+
+[[plugins]]
+repo = 'kana/vim-textobj-entire'
+
+[[plugins]]
+repo = 'kana/vim-textobj-fold'
+
+[[plugins]]
+repo = 'kana/vim-textobj-indent'
+
+[[plugins]]
+repo = 'kana/vim-textobj-line'
+
+[[plugins]]
+repo = 'sgur/vim-textobj-parameter'
+
+[[plugins]]
+repo = 'kana/vim-operator-user'
+
+[[plugins]]
+repo = 'kana/vim-operator-replace'
+
+[[plugins]]
+repo = 'tyru/operator-reverse.vim'
+
+[[plugins]]
+repo = 'rhysd/vim-operator-surround'
+
+[[plugins]]
+repo = 'tyru/caw.vim'
+
+[[plugins]]
+repo = 'h1mesuke/vim-alignta'
+
+[[plugins]]
+repo = 'tyru/open-browser.vim'
+normalized_name = 'openbrowser'
+
+[[plugins]]
+repo = 'tyru/open-browser-github.vim'
+normalized_name = 'openbrowser-github'
+
+[[plugins]]
+repo = 'deris/vim-rengbang'
+
+[[plugins]]
+repo = 't9md/vim-textmanip'
+
+[[plugins]]
+repo = 'editorconfig/editorconfig-vim'
+
+[[plugins]]
+repo = 'tpope/vim-sleuth'
+
+[[plugins]]
+repo = 'osyo-manga/vim-precious'
+hook_source = '''
+let g:precious_enable_switch_CursorMoved = { '*': 0 }
+let g:precious_enable_switch_CursorMoved_i = { '*': 0 }
+'''
+
+[[plugins]]
+repo = 'Shougo/context_filetype.vim'
+hook_source = '''
+let g:context_filetype#filetypes = get(g:, 'context_filetype#filetypes', {})
+let g:context_filetype#filetypes.toml = [
+  \   {
+  \     'filetype': 'vim',
+  \     'start': 'hook_\%(add\|source\|post_source\)\s*=\s*\("\{3}\|''\{3}\)',
+  \     'end': '\1'
+  \   }
+  \ ]
+'''
+
+[[plugins]]
+repo = 'Shougo/vinarise.vim'
+
+[[plugins]]
+repo = 'thinca/vim-quickrun'
+hook_source = 'SourceRcfile quickrun.vim'
+
+[[plugins]]
+repo = 'osyo-manga/shabadou.vim'
+
+[[plugins]]
+repo = 'ujihisa/repl.vim'
+
+[[plugins]]
+repo = 'osyo-manga/vim-watchdogs'
+hook_source = 'SourceRcfile watchdogs.vim'
+
+[[plugins]]
+repo = 'dannyob/quickfixstatus'
+
+[[plugins]]
+repo = 'jceb/vim-hier'
+
+[[plugins]]
+repo = 'thinca/vim-prettyprint'
+
+[[plugins]]
+repo = 'lambdalisue/vim-gita'
+
+[[plugins]]
+repo = 'lambdalisue/vim-gista'
+
+[[plugins]]
+repo = 'lambdalisue/vim-diffa'
+
+[[plugins]]
+repo = 'rhysd/committia.vim'
+
+[[plugins]]
+repo = 'rhysd/conflict-marker.vim'
+
+[[plugins]]
+repo = 'thinca/vim-ref'
+
+[[plugins]]
+repo = 'mojako/ref-sources.vim'

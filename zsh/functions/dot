@@ -1,0 +1,38 @@
+# vim: set ft=zsh:
+
+emulate -L zsh
+
+dot-track() {
+    local name src dst
+    for name; do
+        src=${HOME}/${name%%/*}
+        dst=${DOTDIR}/${${name%%/*}#.}
+        mv -T -- ${src} ${dst} && ln -sf -- ${dst} ${src}
+    done
+}
+
+dot-deref() {
+    local name target tmp
+    for name; do
+        target=${HOME}/${name%%/*}
+        if [[ -f ${target} ]]; then
+            cp --remove-destination -- $(readlink -f ${target}) ${target}
+        elif [[ -d ${target} ]]; then
+            tmp=$(mktemp -d -- ${target}.XXXXXXXX)
+            rsync -a -- ${target}/ ${tmp} && \
+            rm -f -- ${target} && \
+            mv -- ${tmp} ${target}
+        fi
+    done
+}
+
+dot() {
+    local subcmd=$1; shift
+    case ${subcmd} in
+        track) dot-track "$@";;
+        deref) dot-deref "$@";;
+        *) git -C ${DOTDIR} ${subcmd} "$@";;
+    esac
+}
+
+dot "$@"

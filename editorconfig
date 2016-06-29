@@ -1,0 +1,75 @@
+# vim: set ft=dosini:
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{c,h,cc,cxx,cpp}]
+indent_style = space
+indent_size = 4
+
+[*.go]
+indent_style = space
+indent_size = 4
+
+[*.d]
+indent_style = space
+indent_size = 4
+
+[*.rust]
+indent_style = space
+indent_size = 4
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.jl]
+indent_style = space
+indent_size = 4
+
+[*.rb]
+indent_style = space
+indent_size = 4
+
+[*.{sh,zsh}]
+indent_style = space
+indent_size = 4
+
+[*.{js,jsx}]
+indent_style = space
+indent_size = 2
+
+[*.hs]
+indent_style = space
+indent_size = 2
+
+[*.lua]
+indent_style = space
+indent_size = 2
+
+[*.ml]
+indent_style = space
+indent_size = 2
+
+[*.erl]
+indent_style = space
+indent_size = 2
+
+[*.{scala,sc}]
+indent_style = space
+indent_size = 2
+
+[*.{scm,cl,clj}]
+indent_style = space
+indent_size = 2
+
+[*.vim]
+indent_style = space
+indent_size = 2
+
+[*.{json,yaml,yml}]
+indent_style = space
+indent_size = 2

@@ -1,0 +1,9 @@
+# vim: set ft=zsh:
+
+emulate -L zsh
+
+local file
+
+for file in ${ZDOTDIR}/**/*.zwc(DNe:[[ ${REPLY:r} -nt ${REPLY} ]]::r); do
+    zcompile ${file}
+done

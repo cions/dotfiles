@@ -1,0 +1,87 @@
+# vim: set ft=gitconfig:
+[core]
+	excludesfile = ~/.gitignore
+	editor = vim
+[branch]
+	autosetupmerge = always
+[diff]
+	algorithm = histogram
+	compactionHeuristic = true
+[merge]
+	defaultToUpstream = true
+	tool = vimdiff
+[rebase]
+	autosquash = true
+[status]
+	relativePaths = false
+[alias]
+	b = branch
+	co = checkout
+	cob = checkout -b
+	s = status
+	ss = status -s
+	d = diff
+	dc = diff --cached
+	ds = diff --stat
+	dn = diff --name-only
+	a = add
+	aa = add --all
+	au = add --update
+	ae = add --edit
+	ap = add --patch
+	untrack = rm --cached --
+	c = commit
+	cm = commit -m
+	ca = !git add --all && git commit
+	cam = !git add --all && git commit -m
+	cu = !git add --update && git commit
+	cum = !git add --update && git commit -m
+	amend = commit --amend
+	wip = stash save --include-untracked
+	l = log --pretty=simple --no-merges
+	la = log --pretty=simple --no-merges --all
+	lg = log --pretty=simple --graph
+	lga = log --pretty=simple --graph --all
+	ll = log --pretty=detail --graph
+	lla = log --pretty=detail --graph --all
+	ls = log --pretty=detail --graph --stat
+	lsa = log --pretty=detail --graph --stat --all
+	ld = log --pretty=detail --graph --patch
+	lda = log --pretty=detail --graph --patch --all
+	ls-unmerged = diff --diff-filter=U --name-only
+	resolve = !git ls-unmerged -z | xargs -0r sh -c '</dev/tty $EDITOR -- "$@" && git add -- "$@"' -
+	ours = !sh -c 'git checkout --ours -- "$@" && git add -- "$@"' -
+	theirs = !sh -c 'git checkout --theirs -- "$@" && git add -- "$@"' -
+[format]
+	pretty = detail
+[pretty]
+	simple = %C(yellow)%h%C(reset) %s %C(green)(%cr)%C(reset) %C(bold blue)[%an]%C(reset)%C(auto)%d%C(reset)
+	detail = %C(yellow)commit %H%C(auto)%d%C(reset)%nauthor %an <%ae>%ndate   %ci %C(green)(%cr)%C(reset)%n%n%w(72,4,8)%B%w(0)
+[color]
+	ui = auto
+[color "diff"]
+	context = white
+	meta = bold white
+	frag = bold cyan
+	func = cyan
+	old = red
+	new = green
+	commit = bold yellow
+	whitespace = red reverse
+[color "grep"]
+	context = normal
+	filename = green
+	function = yellow
+	linenumber = cyan
+	match = bold red
+	selected = bold normal
+	separator = cyan
+[pager]
+	diff = diff-highlight | less
+	log = diff-highlight | less
+	show = diff-highlight | less
+[user]
+	name = cions
+	email = gh.cions@gmail.com
+[ghq]
+	root = ~/src

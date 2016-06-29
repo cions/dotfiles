@@ -1,0 +1,33 @@
+snippet	header
+options head
+	#ifndef ${1:`toupper(expand('%:t:gs/\W\+/_/'))`}
+	#define $1
+
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+
+	${0:TARGET}
+
+	#ifdef __cplusplus
+	}
+	#endif
+
+	#endif /* $1 */
+
+snippet ifndef
+alias   #ifndef
+options head
+	#ifndef ${1:#:SYMBOL}
+	#define $1
+	#endif${0}
+
+snippet incguard
+alias   once
+options head
+	#ifndef ${1:#:SYMBOL}
+	#define $1
+
+	${0:TARGET}
+
+	#endif /* $1 */

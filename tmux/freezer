@@ -1,0 +1,44 @@
+#!/bin/bash
+
+case "$1" in
+    -e)
+        shift
+        statefile="/sys/fs/cgroup/freezer/emerge/freezer.state"
+        ;;
+    -w)
+        shift
+        statefile="/sys/fs/cgroup/freezer/www-browser/freezer.state"
+        ;;
+    *)
+        pane_pid="$(tmux display-message -p '#{pane_pid}')"
+        [[ -f "/proc/${pane_pid}/cgroup" ]] || exit 1
+        while IFS=":" read -r id subsys hier; do
+            [[ ",${subsys}," == *,freezer,* && "${hier}" == /shell/* ]] || continue
+            statefile="/sys/fs/cgroup/${subsys}${hier}/freezer.state"
+            break
+        done <"/proc/${pane_pid}/cgroup"
+        ;;
+esac
+
+[[ -f "${statefile}" ]] || exit 1
+
+state="$(<${statefile})"
+case "$1" in
+    query)
+        if [[ "${state}" == "FROZEN" ]]; then
+            echo -n "${2-FROZEN}"
+        else
+            echo -n "${3-THAWED}"
+        fi
+        ;;
+    toggle)
+        if [[ "${state}" == "FROZEN" ]]; then
+            echo "THAWED" | tee "${statefile}" >/dev/null
+        else
+            echo "FROZEN" | tee "${statefile}" >/dev/null
+        fi
+        ;;
+    *)
+        echo "usage: freezer [-e|-w] {toggle,query}" >&2
+        exit 1
+esac
