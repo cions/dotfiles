@@ -2,10 +2,10 @@
 
 umask 022
 
-[[ -r /etc/profile.env ]] && source /etc/profile.env
+[[ -f /etc/profile.env ]] && source /etc/profile.env
 
-for shfile in /etc/profile.d/*.sh(N-.r); do
-    source $shfile
+for shfile in /etc/profile.d/*.sh(N-.); do
+    source ${shfile}
 done
 
 unset ROOTPATH shfile
@@ -23,7 +23,7 @@ else
         {/usr/local,/usr,}/{sbin,bin}(N-/)
         /opt/bin(N-/)
     )
-    if (( ${EUID} == 0 )); then
-        path=( "${(@)path:#*/sbin}" )
+    if (( EUID != 0 )); then
+        path=( ${path:#*/sbin} )
     fi
 fi

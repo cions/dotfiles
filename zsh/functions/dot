@@ -6,7 +6,7 @@ dot-track() {
     local name src dst
     for name; do
         src=${HOME}/${name%%/*}
-        dst=${DOTDIR}/${${name%%/*}#.}
+        dst=${DOTFILES}/${${name%%/*}#.}
         mv -T -- ${src} ${dst} && ln -sf -- ${dst} ${src}
     done
 }
@@ -31,7 +31,7 @@ dot() {
     case ${subcmd} in
         track) dot-track "$@";;
         deref) dot-deref "$@";;
-        *) git -C ${DOTDIR} ${subcmd} "$@";;
+        *) git -C ${DOTFILES} ${subcmd} "$@";;
     esac
 }
 

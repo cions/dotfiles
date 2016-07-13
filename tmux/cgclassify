@@ -1,9 +1,9 @@
 #!/bin/bash
 
-[[ -f /proc/self/cgroup ]] || exit
-
 IFS="," read -ra tmux <<< "${TMUX}"
 TMUXPID="${tmux[1]}"
+
+[[ -f "/proc/${TMUXPID}/cgroup" ]] || exit
 
 cgpaths=()
 while IFS=":" read -r id subsys hier; do

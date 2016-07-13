@@ -1,6 +1,8 @@
 #!/bin/bash
 # vim: set foldmethod=marker:
 
+export DOTFILES="$(dirname -- "$(realpath -- "${BASH_SOURCE[0]:-$0}")")"
+
 # cgclassify {{{1
 cgclassify() {
     local cgpaths=() cgpath id subsys hier
@@ -48,7 +50,7 @@ alias cpi='cp -i'
 alias mvi='mv -i'
 alias rmi='rm -i'
 alias rr='rm -rf'
-alias dot='git -C "${HOME}/src/github.com/cions/dotfiles"'
+alias dot='git -C "${DOTFILES}"'
 command -v hub >/dev/null && alias git='hub'
 
 # key bindings {{{1
@@ -66,10 +68,10 @@ __prompt_command() {
     local exitcode=$?
 
     PS1="${_PROMPT_CLEAR}"
-    if (( ${exitcode} != 0 )); then
+    if (( exitcode != 0 )); then
         PS1+="${_PROMPT_EXITCODE} ${exitcode} "
     fi
-    if (( ${EUID} == 0 )); then
+    if (( EUID == 0 )); then
         PS1+="${_PROMPT_PRIVILEGED}"
     else
         PS1+="${_PROMPT_UNPRIVILEGED}"

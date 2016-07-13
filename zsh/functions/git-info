@@ -54,8 +54,8 @@ elif [[ -f ${gitdir}/CHERRY_PICK_HEAD ]]; then
     gitstate[target_sha1]=$(git rev-parse CHERRY_PICK_HEAD)
     if [[ -f ${gitdir}/sequencer/todo ]]; then
         tmp=${(wf)#$(git rev-list $(<${gitdir}/sequencer/head)..HEAD)}
-        gitstate[step]=$(( ${tmp} + 1 ))
-        gitstate[total]=$(( ${tmp} + ${(wf)#$(<${gitdir}/sequencer/todo)} ))
+        gitstate[step]=$(( tmp + 1 ))
+        gitstate[total]=$(( tmp + ${(wf)#$(<${gitdir}/sequencer/todo)} ))
     else
         gitstate[step]=1
         gitstate[total]=1
@@ -65,8 +65,8 @@ elif [[ -f ${gitdir}/REVERT_HEAD ]]; then
     gitstate[target_sha1]=$(git rev-parse REVERT_HEAD)
     if [[ -f ${gitdir}/sequencer/todo ]]; then
         tmp=${(wf)#$(git rev-list $(<${gitdir}/sequencer/head)..HEAD)}
-        gitstate[step]=$(( ${tmp} + 1 ))
-        gitstate[total]=$(( ${tmp} + ${(wf)#$(<${gitdir}/sequencer/todo)} ))
+        gitstate[step]=$(( tmp + 1 ))
+        gitstate[total]=$(( tmp + ${(wf)#$(<${gitdir}/sequencer/todo)} ))
     else
         gitstate[step]=1
         gitstate[total]=1
@@ -76,7 +76,7 @@ elif [[ -f ${gitdir}/BISECT_LOG ]]; then
     tmp="$(git rev-list --bisect --bisect-vars 2>/dev/null)"
     if [[ -n "${tmp}" ]]; then
         gitstate[step]="${(wf)#${(f)$(<${gitdir}/BISECT_LOG)}:#\#*}"
-        gitstate[total]=$(( ${gitstate[step]} + ${tmp[(fr)bisect_steps=*]#*=} ))
+        gitstate[total]=$(( gitstate[step] + ${tmp[(fr)bisect_steps=*]#*=} ))
     fi
 else
     gitstate[state]=""

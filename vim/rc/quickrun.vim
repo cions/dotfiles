@@ -12,31 +12,59 @@ let g:quickrun_config['c'] = { 'type': 'c/clang' }
 let g:quickrun_config['c/gcc'] = {
       \   'command': 'gcc',
       \   'exec': ['%c %o -o %s:p:r %s', '%s:p:r %a'],
-      \   'cmdopt': '-Wall -Wextra -march=native -O2 -pipe',
+      \   'cmdopt': '-Wall -Wextra -std=gnu11 -march=native -O2 -pipe',
       \   'tempfile': '%{tempfile()}.c',
       \   'hook/sweep/files': ['%S:p:r']
       \ }
 let g:quickrun_config['c/clang'] = {
       \   'command': 'clang',
       \   'exec': ['%c %o -o %s:p:r %s', '%s:p:r %a'],
-      \   'cmdopt': '-Wall -Wextra -march=native -O2 -pipe',
+      \   'cmdopt': '-Wall -Wextra -std=gnu11 -march=native -O2 -pipe',
       \   'tempfile': '%{tempfile()}.c',
       \   'hook/sweep/files': ['%S:p:r']
+      \ }
+let g:quickrun_config['c/llvm-ir'] = {
+      \   'command': 'clang',
+      \   'exec': '%c %o -emit-llvm -S -o - %s',
+      \   'cmdopt': '-Wall -Wextra -std=gnu11 -march=native -O2 -pipe',
+      \   'tempfile': '%{tempfile()}.c',
+      \   'outputter/buffer/filetype': 'llvm'
+      \ }
+let g:quickrun_config['c/asm'] = {
+      \   'command': 'clang',
+      \   'exec': '%c %o -S -o - %s',
+      \   'cmdopt': '-Wall -Wextra -std=gnu11 -march=native -O2 -pipe',
+      \   'tempfile': '%{tempfile()}.c',
+      \   'outputter/buffer/filetype': 'asm'
       \ }
 let g:quickrun_config['cpp'] = { 'type': 'cpp/clang++' }
 let g:quickrun_config['cpp/g++'] = {
       \   'command': 'g++',
       \   'exec': ['%c %o -o %s:p:r %s', '%s:p:r %a'],
-      \   'cmdopt': '-Wall -Wextra -march=native -O2 -pipe',
+      \   'cmdopt': '-Wall -Wextra -std=gnu++14 -march=native -O2 -pipe',
       \   'tempfile': '%{tempfile()}.cpp',
       \   'hook/sweep/files': ['%S:p:r']
       \ }
 let g:quickrun_config['cpp/clang++'] = {
-      \   'command': 'clang',
+      \   'command': 'clang++',
       \   'exec': ['%c %o -o %s:p:r %s', '%s:p:r %a'],
-      \   'cmdopt': '-Wall -Wextra -stdlib=libc++ -march=native -O2 -pipe',
+      \   'cmdopt': '-Wall -Wextra -std=gnu++14 -stdlib=libc++ -march=native -O2 -pipe',
       \   'tempfile': '%{tempfile()}.cpp',
       \   'hook/sweep/files': ['%S:p:r']
+      \ }
+let g:quickrun_config['cpp/llvm-ir'] = {
+      \   'command': 'clang++',
+      \   'exec': '%c %o -emit-llvm -S -o - %s',
+      \   'cmdopt': '-Wall -Wextra -std=gnu++14 -stdlib=libc++ -march=native -O2 -pipe',
+      \   'tempfile': '%{tempfile()}.cpp',
+      \   'outputter/buffer/filetype': 'llvm'
+      \ }
+let g:quickrun_config['cpp/asm'] = {
+      \   'command': 'clang++',
+      \   'exec': '%c %o -S -o - %s',
+      \   'cmdopt': '-Wall -Wextra -std=gnu++14 -stdlib=libc++ -march=native -O2 -pipe',
+      \   'tempfile': '%{tempfile()}.cpp',
+      \   'outputter/buffer/filetype': 'asm'
       \ }
 let g:quickrun_config['markdown'] = {
       \   'type': 'markdown/pandoc',

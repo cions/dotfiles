@@ -1,12 +1,9 @@
 #!/bin/zsh
 # vim: foldmethod=marker
 
-export DOTDIR=${${(%):-%x}:h:A:h}
+fpath=( ${ZDOTDIR}/functions(N-/) ${fpath} )
 
-ZTMPDIR="$(mktemp -d ${TEMP:-/tmp}/zsh-XXXXXX)"
-trap "rm -rf ${ZTMPDIR}" EXIT
-
-fpath=( ${ZDOTDIR}/functions(N-/) $fpath )
+export DOTFILES=${${(%):-%x}:h:A:h}
 
 # cgclassify {{{1
 () {
@@ -26,12 +23,13 @@ ZPLUG_HOME=${ZDOTDIR}/zplug
 ZPLUG_THREADS=8
 
 if [[ ! -f ${ZPLUG_HOME}/init.zsh ]]; then
-    git clone https://github.com/zplug/zplug ${ZPLUG_HOME}
+    git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
 fi
 
 source ${ZPLUG_HOME}/init.zsh
 
 zplug "zplug/zplug"
+zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-syntax-highlighting", nice:10
@@ -75,7 +73,7 @@ setopt glob_complete
 setopt hist_expand
 
 zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ${ZTMPDIR}
+zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' menu select=2
 zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
 
@@ -133,10 +131,10 @@ alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
 
 # commands {{{1
-autoload -Uz zmv
-autoload -Uz zargs
 autoload -Uz dot
+autoload -Uz zargs
 autoload -Uz zcompileall
+autoload -Uz zmv
 
 # expn {{{1
 setopt extended_glob
@@ -146,17 +144,42 @@ setopt auto_cd
 setopt auto_pushd
 setopt pushd_ignore_dups
 
-base_path=( ${path} )
+_bpath=( ${path} )
+_apath=()
+_dpath=()
 
-function chpwd-npm-bin() {
-    path=( (../)#node_modules/.bin(N-/:A) ${base_path} )
+function pathadd() {
+    _apath=( ${^argv}(N-/:A) ${_apath} )
+    chpwd-path
+}
+
+function pathdel() {
+    if (( $# > 0 )); then
+        _apath=( ${_apath:|argv} )
+    elif (( ${#_apath} == 0 )); then
+        print -u2 pathdel: no additional path
+        return 1
+    else
+        local p=$(print -rl -- ${_apath} | fzy)
+        _apath=( ${_apath:#${arg}} )
+    fi
+}
+
+compdef _pathdel pathdel
+function _pathdel() {
+    compadd -- ${_apath}
+}
+
+function chpwd-path() {
+    _dpath=( (../)#node_modules/.bin(N-/[1]:A) )
+    path=( ${_apath} ${_dpath} ${_bpath} )
 }
 
 function chpwd-ls() {
-    (( ${ZSH_SUBSHELL:+0} == 0 )) && lA
+    (( ZSH_SUBSHELL == 0 )) && lA
 }
 
-add-zsh-hook chpwd chpwd-npm-bin
+add-zsh-hook chpwd chpwd-path
 add-zsh-hook chpwd chpwd-ls
 
 # history {{{1
@@ -168,9 +191,11 @@ autoload -Uz git-info
 function rprompt() {
     local _status=()
 
-    git-info || { kill -s USR1 $$; exit 1 }
+    cd "$1"
 
-    if (( ${gitstate[head_detached]} )); then
+    git-info || exit 1
+
+    if (( gitstate[head_detached] )); then
         echo -n "%F{yellow}[${gitstate[head_name]}]%f"
     else
         echo -n "%F{green}[${gitstate[head_name]}]%f"
@@ -178,7 +203,7 @@ function rprompt() {
 
     if [[ -n ${gitstate[state]} ]]; then
         echo -n "%F{red}{${gitstate[state]}"
-        if (( ${gitstate[total]:-0} > 1 )); then
+        if (( gitstate[total] > 1 )); then
             echo -n "(${gitstate[step]}/${gitstate[total]})"
         fi
         if (( ${+gitstate[target_name]} )); then
@@ -187,36 +212,38 @@ function rprompt() {
         echo -n "}%f"
     fi
 
-    (( ${gitstate[ahead]} )) && _status+=("%F{yellow}↑${gitstate[ahead]}%f")
-    (( ${gitstate[behind]} )) && _status+=("%F{yellow}↓${gitstate[behind]}%f")
-    (( ${gitstate[unmerged]} )) && _status+=("%F{red}!${gitstate[unmerged]}%f")
-    (( ${gitstate[staged]} )) && _status+=("%F{yellow}*${gitstate[staged]}%f")
-    (( ${gitstate[unstaged]} )) && _status+=("%F{yellow}+${gitstate[unstaged]}%f")
-    (( ${gitstate[untracked]} )) && _status+=("%F{yellow}.${gitstate[untracked]}%f")
-    (( ${gitstate[stash]} )) && _status+=("%F{yellow}@${gitstate[stash]}%f")
+    (( gitstate[ahead] )) && _status+=("%F{yellow}↑${gitstate[ahead]}%f")
+    (( gitstate[behind] )) && _status+=("%F{yellow}↓${gitstate[behind]}%f")
+    (( gitstate[unmerged] )) && _status+=("%F{red}!${gitstate[unmerged]}%f")
+    (( gitstate[staged] )) && _status+=("%F{yellow}*${gitstate[staged]}%f")
+    (( gitstate[unstaged] )) && _status+=("%F{yellow}+${gitstate[unstaged]}%f")
+    (( gitstate[untracked] )) && _status+=("%F{yellow}.${gitstate[untracked]}%f")
+    (( gitstate[stash] )) && _status+=("%F{yellow}@${gitstate[stash]}%f")
     (( ${#_status} > 0 )) && echo -n "%F{yellow}(%f${(j. .)_status}%F{yellow})%f"
-
-    kill -s USR1 $$
 }
 
-function async-prompt() {
+function async_rprompt() {
     RPROMPT=""
-    if [[ -n ${ASYNC_PROMPT_PID} ]]; then
-        kill -s HUP ${ASYNC_PROMPT_PID} >/dev/null 2>&1
+    if [[ ${PWD} == ${HOME} ]]; then
+        async_job rprompt_worker rprompt ${DOTDIR}
+    else
+        async_job rprompt_worker rprompt ${PWD}
     fi
-    rprompt > ${ZTMPDIR}/rprompt &!
-    ASYNC_PROMPT_PID=$!
 }
 
-function TRAPUSR1() {
-    ASYNC_PROMPT_PID=
-    RPROMPT="$(<${ZTMPDIR}/rprompt)"
-    [[ -n "$RPROMPT" ]] && zle && zle reset-prompt
+function rprompt_callback() {
+    (( $2 != 0 )) && return
+    RPROMPT="$3"
+    [[ -n "${RPROMPT}" ]] && zle && zle reset-prompt
 }
 
-add-zsh-hook precmd async-prompt
+async_start_worker rprompt_worker -u -n
+async_register_callback rprompt_worker rprompt_callback
+
+add-zsh-hook precmd async_rprompt
 
 PROMPT="%F{green}%n%f %F{blue}%1~ %(!.#.$)%f "
+RPROMPT=""
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8

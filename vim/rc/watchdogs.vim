@@ -1,7 +1,7 @@
 let g:quickrun_config = get(g:, 'quickrun_config', {})
 let g:quickrun_config['c/watchdogs_checker'] = {
       \   'type': 'watchdogs_checker/clang',
-      \   'cmdopt': '-Wall -Wextra'
+      \   'cmdopt': '-Wall -Wextra -std=gnu11'
       \ }
 let g:quickrun_config['watchdogs_checker/gcc'] = {
       \   'command': 'gcc',
@@ -13,7 +13,7 @@ let g:quickrun_config['watchdogs_checker/clang'] = {
       \ }
 let g:quickrun_config['cpp/watchdogs_checker'] = {
       \   'type': 'watchdogs_checker/clang++',
-      \   'cmdopt': '-Wall -Wextra'
+      \   'cmdopt': '-Wall -Wextra -std=gnu++14'
       \ }
 let g:quickrun_config['watchdogs_checker/g++'] = {
       \   'command': 'g++',
