@@ -1,13 +1,8 @@
 " vim: set foldmethod=marker:
 
-let g:vimfiles = expand('<sfile>:p:h')
-if has('win32')
-  let g:tempdir = $TEMP
-  let g:cachedir = $TEMP . '/vim'
-else
-  let g:cachedir = expand('~/.cache/vim')
-  let g:tempdir = '/tmp'
-endif
+let g:dotvim = expand('<sfile>:p:h')
+let g:cachedir = expand('~/.cache/vim')
+let g:tempdir = exists('$TEMP') ? $TEMP : '/tmp'
 
 " disable builtin plugins {{{1
 let g:loaded_2html_plugin = 1
@@ -29,16 +24,16 @@ let g:loaded_zipPlugin = 1
 
 " dein.vim {{{1
 function! s:source_rcfile(name) abort
-  let path = g:vimfiles . '/rc/' . a:name
+  let path = g:dotvim . '/rc/' . a:name
   if filereadable(path)
     execute "source" fnameescape(path)
   endif
 endfunction
 command! -nargs=1 -bar SourceRcfile call s:source_rcfile(<q-args>)
 
-let s:deindir = g:vimfiles . '/dein'
+let s:deindir = g:dotvim . '/dein'
 let s:deinrepo = s:deindir . '/repos/github.com/Shougo/dein.vim'
-let s:tomlfiles = glob(g:vimfiles . '/rc/*.toml', 0, 1)
+let s:tomlfiles = glob(g:dotvim . '/rc/*.toml', 0, 1)
 
 if has('vim_starting')
   if !isdirectory(s:deinrepo)
@@ -120,13 +115,14 @@ if has('gui_running')
   elseif has('gui_win32')
     set iminsert=0
     set imsearch=0
-    set guifont=Inconsolata_Regular:h12:cSHIFTJIS
+    set guifont=Migu_1M:h12:cSHIFTJIS:qDRAFT
     set renderoptions=type:directx,gamma:1.0,contrast:0.5,level:1,geom:1,renmode:4,taamode:1
   endif
 endif
 
 if &term ==# 'win32'
   set termencoding=cp932
+  set t_Co=8
 else
   set termencoding=utf-8
 endif
@@ -245,7 +241,7 @@ function! s:lcd_project_directory() abort
   if !&buflisted || !empty(&buftype)
     return
   endif
-  let path = s:Prelude.path2project_directory(expand('%:p'), 1)
+  let path = s:Prelude.path2project_directory(expand('%:p'))
   call s:Prelude.smart_execute_command('lcd', path)
 endfunction
 

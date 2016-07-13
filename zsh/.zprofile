@@ -10,11 +10,20 @@ done
 
 unset ROOTPATH shfile
 
-if (( ${EUID} == 0 )); then
-    gopath=( /usr/local/go )
-    path=( {/usr/local/go,/usr/local,/usr,,/opt}/{sbin,bin}(N-/) )
+if (( ${+MSYSTEM} )); then
+    export GOROOT="/mingw64/lib/go"
+    gopath=( /mingw64/go ${HOME} )
+    path=( ${HOME}/bin(N-/) /mingw64/go/bin(N-/) ${path} )
 else
     gopath=( /usr/local/go ${HOME} )
-    path=( {/usr/local/go,/usr/local,/usr,,/opt}/bin(N-/) )
+    path=(
+        ${HOME}/bin(N-/)
+        ${HOME}/.local/bin(N-/)
+        ${^gopath}/bin(N-/)
+        {/usr/local,/usr,}/{sbin,bin}(N-/)
+        /opt/bin(N-/)
+    )
+    if (( ${EUID} == 0 )); then
+        path=( "${(@)path:#*/sbin}" )
+    fi
 fi
-path=( ${HOME}/{.local/,}bin(N-/) ${path} )

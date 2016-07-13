@@ -1,12 +1,12 @@
 #!/bin/zsh
 # vim: foldmethod=marker
 
-export DOTDIR=${${(%):-%x}:A:h:h}
+export DOTDIR=${${(%):-%x}:h:A:h}
 
 ZTMPDIR="$(mktemp -d ${TEMP:-/tmp}/zsh-XXXXXX)"
 trap "rm -rf ${ZTMPDIR}" EXIT
 
-fpath=(${ZDOTDIR}/functions(N-/) $fpath)
+fpath=( ${ZDOTDIR}/functions(N-/) $fpath )
 
 # cgclassify {{{1
 () {
@@ -25,16 +25,13 @@ fpath=(${ZDOTDIR}/functions(N-/) $fpath)
 ZPLUG_HOME=${ZDOTDIR}/zplug
 ZPLUG_THREADS=8
 
-if [[ -f ${ZPLUG_HOME}/zplug ]]; then
-    source ${ZPLUG_HOME}/zplug
-else
-    curl --create-dirs -sfLo ${ZPLUG_HOME}/zplug https://git.io/zplug
-    source ${ZPLUG_HOME}/zplug
-    zplug update --self
+if [[ ! -f ${ZPLUG_HOME}/init.zsh ]]; then
+    git clone https://github.com/zplug/zplug ${ZPLUG_HOME}
 fi
 
+source ${ZPLUG_HOME}/init.zsh
+
 zplug "zplug/zplug"
-zplug "zsh-users/zaw"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-syntax-highlighting", nice:10
@@ -83,9 +80,6 @@ zstyle ':completion:*' menu select=2
 zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
 
 zstyle ':completion:*:functions:*' ignored-patterns '_*'
-
-zstyle ':completion:*:sudo:*' command-path \
-    {/usr/local/go,/usr/local,/usr,,/opt}/{sbin,bin}(N-/)
 
 # zle {{{1
 bindkey -e
@@ -159,7 +153,7 @@ function chpwd-npm-bin() {
 }
 
 function chpwd-ls() {
-    lA
+    (( ${ZSH_SUBSHELL:+0} == 0 )) && lA
 }
 
 add-zsh-hook chpwd chpwd-npm-bin
