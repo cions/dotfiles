@@ -225,7 +225,7 @@ function rprompt() {
 function async_rprompt() {
     RPROMPT=""
     if [[ ${PWD} == ${HOME} ]]; then
-        async_job rprompt_worker rprompt ${DOTDIR}
+        async_job rprompt_worker rprompt ${DOTFILES}
     else
         async_job rprompt_worker rprompt ${PWD}
     fi

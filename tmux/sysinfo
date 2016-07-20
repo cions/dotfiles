@@ -5,16 +5,17 @@ loadavg() {
 }
 
 memusage() {
-    local total free used
+    local -i total free used
     local name value unit
 
+    shopt -s extglob
     while read -r name value unit; do
         case "${name}" in
-            "$1:") total="${value}";;
-            "$2:") free="${value}";;
+            $1) (( total = value ));;
+            $2) (( free += value ));;
         esac
     done </proc/meminfo
-    used=$(( total - free ))
+    (( used = total - free ))
 
     printf "%4s/%s (%s%%)\n" \
         "$(echo "${used}" | numfmt --from-unit=Ki --to=iec)" \
@@ -29,9 +30,9 @@ case "$1" in
         (( width >= 120 )) && loadavg
         ;;
     memusage)
-        (( width >= 80 )) && memusage MemTotal MemAvailable
+        (( width >= 80 )) && memusage MemTotal: '@(MemFree|Buffers|Cached):'
         ;;
     swapusage)
-        (( width >= 100 )) && memusage SwapTotal SwapFree
+        (( width >= 100 )) && memusage SwapTotal: SwapFree:
         ;;
 esac
