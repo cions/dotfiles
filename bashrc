@@ -10,12 +10,12 @@ cgclassify() {
     while IFS=":" read -r id subsys hier; do
         cgpath="/sys/fs/cgroup/${subsys#name=}/shell/bash-$$"
         [[ -d "${cgpath%/*}" && "${hier}" != /shell/* ]] || continue
-        cgpaths+=("${cgpath}")
+        cgpaths+=( "${cgpath}" )
     done </proc/self/cgroup
     for cgpath in "${cgpaths[@]}"; do
         mkdir "${cgpath}"
-        echo "$$" | tee "${cgpath}/cgroup.procs" >/dev/null
-        echo 1 | tee "${cgpath}/notify_on_release" >/dev/null
+        echo "$$" > "${cgpath}/cgroup.procs"
+        echo 1 > "${cgpath}/notify_on_release"
     done
 }
 cgclassify
@@ -58,26 +58,28 @@ bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
 # prompt {{{1
-_PROMPT_EXITCODE="\[$(tput setaf 236)$(tput setab 203)\]"
-_PROMPT_UNPRIVILEGED="\[$(tput setaf 238)$(tput setab 117)\]"
-_PROMPT_PRIVILEGED="\[$(tput setaf 236)$(tput setab 216)\]"
-_PROMPT_CWD="\[$(tput setaf 252)$(tput setab 240)\]"
-_PROMPT_CLEAR="\[$(tput sgr0)\]"
-
 __prompt_command() {
     local exitcode=$?
+    local jobnum=$(jobs -p | wc -l)
+    local segments=()
 
-    PS1="${_PROMPT_CLEAR}"
     if (( exitcode != 0 )); then
-        PS1+="${_PROMPT_EXITCODE} ${exitcode} "
+        segments+=( "red:${exitcode}" )
     fi
+    if (( jobnum != 0 )); then
+        segments+=( "orange:${jobnum}" )
+    fi
+    segments+=( "magenta:bash" )
     if (( EUID == 0 )); then
-        PS1+="${_PROMPT_PRIVILEGED}"
+        segments+=( "magenta:\u" )
     else
-        PS1+="${_PROMPT_UNPRIVILEGED}"
+        segments+=( "green:\u" )
     fi
-    PS1+=" \u${SSH_CONNECTION+@\H} "
-    PS1+="${_PROMPT_CWD} \W ${_PROMPT_CLEAR} "
+    if [[ -n ${SSH_CONNECTION+set} ]]; then
+        segments+=( "yellow:\H" )
+    fi
+    segments+=( "gray3:\W" )
+    PS1="$(powerprompt -f bash -L "${segments[@]}") "
 }
 PROMPT_COMMAND=__prompt_command
 

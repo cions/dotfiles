@@ -1,44 +1,52 @@
-#!/bin/bash
+#!/bin/zsh
 
-case "$1" in
+function usage() {
+    print -u2 "usage: freezer {-p|-e|-w} {toggle,query}"
+    exit 1
+}
+
+case $1 in
+    -p)
+        pane_pid="$(tmux display-message -p '#{pane_pid}')"
+        [[ -f /proc/${pane_pid}/cgroup ]] || exit 1
+        for cgroup in "${(@f)$(</proc/${pane_pid}/cgroup)}"; do
+            [[ ",${cgroup[(ws.:.)2]}," == *,freezer,* ]] || continue
+            [[ ${cgroup[(ws.:.)3]} == /shell/* ]] || continue
+            statefile=/sys/fs/cgroup/${subsys}${hier}/freezer.state
+            break
+        done
+        ;;
     -e)
-        shift
-        statefile="/sys/fs/cgroup/freezer/emerge/freezer.state"
+        statefile=/sys/fs/cgroup/freezer/emerge/freezer.state
         ;;
     -w)
-        shift
-        statefile="/sys/fs/cgroup/freezer/www-browser/freezer.state"
+        statefile=/sys/fs/cgroup/freezer/www-browser/freezer.state
         ;;
     *)
-        pane_pid="$(tmux display-message -p '#{pane_pid}')"
-        [[ -f "/proc/${pane_pid}/cgroup" ]] || exit 1
-        while IFS=":" read -r id subsys hier; do
-            [[ ",${subsys}," == *,freezer,* && "${hier}" == /shell/* ]] || continue
-            statefile="/sys/fs/cgroup/${subsys}${hier}/freezer.state"
-            break
-        done <"/proc/${pane_pid}/cgroup"
+        usage
         ;;
 esac
+shift
 
-[[ -f "${statefile}" ]] || exit 1
+[[ -f ${statefile} ]] || exit 1
 
 state="$(<${statefile})"
-case "$1" in
-    query)
-        if [[ "${state}" == "FROZEN" ]]; then
-            echo -n "${2-FROZEN}"
+case $1 in
+    toggle)
+        if [[ ${state} == FROZEN ]]; then
+            print THAWED > ${statefile}
         else
-            echo -n "${3-THAWED}"
+            print FROZEN > ${statefile}
         fi
         ;;
-    toggle)
-        if [[ "${state}" == "FROZEN" ]]; then
-            echo "THAWED" | tee "${statefile}" >/dev/null
+    query)
+        if [[ ${state} == FROZEN ]]; then
+            print -nr ${2-FROZEN}
         else
-            echo "FROZEN" | tee "${statefile}" >/dev/null
+            print -nr ${3-THAWED}
         fi
         ;;
     *)
-        echo "usage: freezer [-e|-w] {toggle,query}" >&2
-        exit 1
+        usage
+        ;;
 esac

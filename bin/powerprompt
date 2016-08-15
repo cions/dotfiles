@@ -1,0 +1,131 @@
+#!/bin/zsh
+
+function usage() {
+    print -u2 "usage: powerprompt [-f format] [-n] {-L|-R} color:text ..."
+    exit 1
+}
+
+function tput() {
+    local color=$2
+    print -nrP ${(e)1}
+}
+
+typeset -A colorscheme
+colorscheme=(
+    red     235:210
+    magenta 235:213
+    blue    235:111
+    cyan    235:117
+    green   235:156
+    yellow  235:227
+    orange  235:216
+    black   252:235
+    gray1   252:238
+    gray2   252:242
+    gray3   255:245
+    gray4   238:248
+    white   235:252
+)
+
+format="raw"
+direction="left"
+nospace=""
+
+while (( $# > 0 )); do
+    case $1 in
+        -f) format=$2; shift ;;
+        -n) nospace="t" ;;
+        -L) direction="left" ;;
+        -R) direction="right" ;;
+        -*) usage ;;
+        *)  break ;;
+    esac
+    shift
+done
+
+case ${format} in
+    raw)
+        setaf='%F{${color}}'
+        setab='%K{${color}}'
+        reset='%f%k%u%b'
+        ;;
+    zsh)
+        setaf='%%F{${color}}'
+        setab='%%K{${color}}'
+        reset='%%f%%k%%u%%b'
+        ;;
+    tmux)
+        setaf='#[fg=colour${color}]'
+        setab='#[bg=colour${color}]'
+        reset='#[fg=default,bg=default,none]'
+        ;;
+    bash)
+        setaf='\[%F{${color}}\]'
+        setab='\[%K{${color}}\]'
+        reset='\[%f%k%u%b\]'
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+color=()
+prev=()
+if [[ ${direction} == "left" ]]; then
+    tput ${reset}
+    for segment; do
+        color=( ${(s.:.)colorscheme[${segment%%:*}]} )
+        text=${segment#*:}
+        [[ -z ${nospace} && -z ${text} ]] && continue
+        if (( ${#prev} == 0 )); then
+            tput ${setaf} ${color[1]}
+            tput ${setab} ${color[2]}
+        elif [[ ${color[2]} != ${prev[2]} ]]; then
+            tput ${setaf} ${prev[2]}
+            tput ${setab} ${color[2]}
+            print -nr $'\uE0B0'
+            tput ${setaf} ${color[1]}
+        else
+            tput ${setaf} ${color[1]}
+            print -nr $'\uE0B1'
+        fi
+        if [[ -z ${nospace} ]]; then
+            print -nr " ${text} "
+        else
+            print -nr "${text}"
+        fi
+        prev=( ${color} )
+    done
+    tput ${reset}
+    tput ${setaf} ${prev[2]}
+    print -nr $'\uE0B0'
+    tput ${reset}
+else
+    tput ${reset}
+    for segment; do
+        color=( ${(s.:.)colorscheme[${segment%%:*}]} )
+        text=${segment#*:}
+        [[ -z ${nospace} && -z ${text} ]] && continue
+        if (( ${#prev} == 0 )); then
+            tput ${setaf} ${color[2]}
+            print -nr $'\uE0B2'
+            tput ${setaf} ${color[1]}
+            tput ${setab} ${color[2]}
+        elif [[ ${color[2]} != ${prev[2]} ]]; then
+            tput ${setaf} ${color[2]}
+            print -nr $'\uE0B2'
+            tput ${setaf} ${color[1]}
+            tput ${setab} ${color[2]}
+        else
+            tput ${setaf} ${color[1]}
+            print -nr $'\uE0B3'
+        fi
+        if [[ -z ${nospace} ]]; then
+            print -nr " ${text} "
+        else
+            print -nr "${text}"
+        fi
+        prev=( ${color} )
+    done
+    tput ${reset}
+fi

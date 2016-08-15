@@ -113,9 +113,9 @@ if has('gui_running')
   set iminsert=0
   set imsearch=0
   if has('gui_gtk2')
-    set guifont=Inconsolata\ 12
+    set guifont=Monospace\ 12
   elseif has('gui_win32')
-    set guifont=Migu_1M:h12:cSHIFTJIS:qDRAFT
+    set guifont=MiG_Mono:h12:cSHIFTJIS:qDRAFT
     set renderoptions=type:directx,gamma:1.0,contrast:0.5,level:1,geom:1,renmode:4,taamode:1
   endif
 endif
@@ -165,10 +165,10 @@ nmap <Space>D <Plug>(textmanip-duplicate-up)
 xmap <Space>D <Plug>(textmanip-duplicate-up)<Esc>
 xmap <Space>h <Plug>(textmanip-duplicate-left)
 xmap <Space>l <Plug>(textmanip-duplicate-right)
-xmap <C-h> <Plug>(textmanip-move-left)
-xmap <C-j> <Plug>(textmanip-move-down)
-xmap <C-k> <Plug>(textmanip-move-up)
-xmap <C-l> <Plug>(textmanip-move-right)
+xmap H <Plug>(textmanip-move-left)
+xmap J <Plug>(textmanip-move-down)
+xmap K <Plug>(textmanip-move-up)
+xmap L <Plug>(textmanip-move-right)
 nmap <Space>r <Plug>(quickrun)
 nmap <Space>i <Plug>(repl-run)
 nnoremap <Space>w :<C-u>WatchdogsRun<CR>
@@ -183,7 +183,6 @@ nnoremap <silent> <Leader>gf :<C-u>Unite
 nnoremap <silent> <Leader>gg :<C-u>Unite
       \ -buffer-name=files file_rec/git<CR>
 nnoremap <silent> <Leader>d :<C-u>Unite dein<CR>
-nnoremap <silent> <Leader>g :<C-u>Unite ghq<CR>
 nnoremap <silent> <Leader>b :<C-u>Unite buffer:-<CR>
 nnoremap <silent> <Leader>B :<C-u>Unite buffer:!<CR>
 nnoremap <silent> <Leader>m :<C-u>Unite menu:menu<CR>
@@ -207,20 +206,20 @@ nnoremap <silent> <Leader>ep :<C-u>VimFilerBufferDir -project<CR>
 nnoremap <silent> <Leader>EE :<C-u>VimFilerExplorer<CR>
 nnoremap <silent> <Leader>s :<C-u>VimShellPop<CR>
 
-inoremap <expr> <C-u> pumvisible() ?
-      \ unite#sources#neocomplete#start_complete() : "\<C-u>"
+inoremap <expr> <C-u> pumvisible()
+      \ ? unite#sources#neocomplete#start_complete() : "\<C-u>"
 inoremap <expr> <C-l> neocomplete#complete_common_string()
 inoremap <expr> <Tab>
-      \ neocomplete#complete_common_string() !=# '' ?
-      \   neocomplete#complete_common_string() :
-      \ pumvisible() ? "\<C-n>" : "\<Tab>"
+      \ neocomplete#complete_common_string() !=# ''
+      \   ? neocomplete#complete_common_string()
+      \   : pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <C-g> neocomplete#undo_completion()
 inoremap <expr> <BS> neocomplete#smart_close_popup() . "\<BS>"
 inoremap <expr> <C-h> neocomplete#smart_close_popup() . "\<C-h>"
 inoremap <expr> <CR> pumvisible() ? "\<C-y>\<CR>" : "\<CR>"
-imap <C-d> <Plug>(neosnippet_expand_or_jump)
-smap <C-d> <Plug>(neosnippet_expand_or_jump)
-xmap <C-d> <Plug>(neosnippet_expand_target)
+imap <C-k> <Plug>(neosnippet_expand_or_jump)
+smap <C-k> <Plug>(neosnippet_expand_or_jump)
+xmap <C-k> <Plug>(neosnippet_expand_target)
 
 " commands {{{1
 function! s:dein_clean(run_gc) abort

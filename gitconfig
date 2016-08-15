@@ -49,7 +49,7 @@
 	ld = log --pretty=detail --graph --patch
 	lda = log --pretty=detail --graph --patch --all
 	ls-unmerged = diff --diff-filter=U --name-only
-	resolve = !git ls-unmerged -z | xargs -0r sh -c '</dev/tty $EDITOR -- "$@" && git add -- "$@"' -
+	resolve = !git ls-unmerged -z | xargs -0r sh -c '</dev/tty "${EDITOR:-vim}" -- "$@" && git add -- "$@"' -
 	ours = !sh -c 'git checkout --ours -- "$@" && git add -- "$@"' -
 	theirs = !sh -c 'git checkout --theirs -- "$@" && git add -- "$@"' -
 [format]

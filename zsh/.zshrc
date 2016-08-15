@@ -13,14 +13,14 @@ export DOTFILES=${${(%):-%x}:h:A:h}
         cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}/shell/zsh-$$
         [[ -d ${cgpath:h} && ${cgroup[(ws.:.)3]} != /shell/* ]] || continue
         mkdir ${cgpath}
-        echo $$ | tee ${cgpath}/cgroup.procs >/dev/null
-        echo 1 | tee ${cgpath}/notify_on_release >/dev/null
+        print $$ > ${cgpath}/cgroup.procs
+        print 1 > ${cgpath}/notify_on_release
     done
 }
 
 # zplug {{{1
 ZPLUG_HOME=${ZDOTDIR}/zplug
-ZPLUG_THREADS=8
+ZPLUG_THREADS=$(nproc)
 
 if [[ ! -f ${ZPLUG_HOME}/init.zsh ]]; then
     git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
@@ -37,9 +37,9 @@ zplug "motemen/ghq", use:"zsh/", if:"(( ${+commands[ghq]} ))"
 zplug "glidenote/hub-zsh-completion", if:"(( ${+commands[hub]} ))"
 
 if ! zplug check --verbose; then
-    echo -n "Install? [y/N]: "
+    print -n "Install? [y/N]: "
     if read -q; then
-        echo
+        print
         zplug install
     fi
 fi
@@ -56,16 +56,13 @@ if (( ${+commands[dircolors]} )); then
     fi
 fi
 
-# autoload {{{1
+# autoloads {{{1
 autoload -Uz add-zsh-hook
-autoload -Uz colors
 
 # options {{{1
 setopt rm_star_silent
 
 # completion {{{1
-autoload -Uz compinit && compinit -u
-
 setopt no_beep
 setopt complete_aliases
 setopt complete_in_word
@@ -82,7 +79,7 @@ zstyle ':completion:*:functions:*' ignored-patterns '_*'
 # zle {{{1
 bindkey -e
 
-cd-ghq-repository() {
+function cd-ghq-repository() {
     local repository
     repository="$(ghq list -p | fzy)"
     [[ -z "${repository}" ]] && return
@@ -144,9 +141,11 @@ setopt auto_cd
 setopt auto_pushd
 setopt pushd_ignore_dups
 
-_bpath=( ${path} )
-_apath=()
-_dpath=()
+if (( ! ${+_bpath} )); then
+    _bpath=( ${path} )
+    _apath=()
+    _dpath=()
+fi
 
 function pathadd() {
     _apath=( ${^argv}(N-/:A) ${_apath} )
@@ -154,15 +153,8 @@ function pathadd() {
 }
 
 function pathdel() {
-    if (( $# > 0 )); then
-        _apath=( ${_apath:|argv} )
-    elif (( ${#_apath} == 0 )); then
-        print -u2 pathdel: no additional path
-        return 1
-    else
-        local p=$(print -rl -- ${_apath} | fzy)
-        _apath=( ${_apath:#${arg}} )
-    fi
+    _apath=( ${_apath:|argv} )
+    chpwd-path
 }
 
 compdef _pathdel pathdel
@@ -188,47 +180,81 @@ setopt hist_ignore_all_dups
 # prompt {{{1
 autoload -Uz git-info
 
-function rprompt() {
-    local _status=()
+function prompt() {
+    local _pipestatus=( ${pipestatus} )
+    local jobnum=${(%):-%j}
+    local segments=()
 
-    cd "$1"
-
-    git-info || exit 1
-
-    if (( gitstate[head_detached] )); then
-        echo -n "%F{yellow}[${gitstate[head_name]}]%f"
+    if (( ${#_pipestatus:#0} > 0 )); then
+        segments+=( red:${^_pipestatus} )
+    fi
+    if (( jobnum != 0 )); then
+        segments+=( "orange:${jobnum}" )
+    fi
+    if (( EUID == 0 )); then
+        segments+=( "magenta:%n" )
     else
-        echo -n "%F{green}[${gitstate[head_name]}]%f"
+        segments+=( "green:%n" )
     fi
-
-    if [[ -n ${gitstate[state]} ]]; then
-        echo -n "%F{red}{${gitstate[state]}"
-        if (( gitstate[total] > 1 )); then
-            echo -n "(${gitstate[step]}/${gitstate[total]})"
-        fi
-        if (( ${+gitstate[target_name]} )); then
-            echo -n " ${gitstate[target_name]}"
-        fi
-        echo -n "}%f"
+    if [[ -n ${SSH_CONNECTION+set} ]]; then
+        segments+=( "yellow:%M" )
     fi
-
-    (( gitstate[ahead] )) && _status+=("%F{yellow}↑${gitstate[ahead]}%f")
-    (( gitstate[behind] )) && _status+=("%F{yellow}↓${gitstate[behind]}%f")
-    (( gitstate[unmerged] )) && _status+=("%F{red}!${gitstate[unmerged]}%f")
-    (( gitstate[staged] )) && _status+=("%F{yellow}*${gitstate[staged]}%f")
-    (( gitstate[unstaged] )) && _status+=("%F{yellow}+${gitstate[unstaged]}%f")
-    (( gitstate[untracked] )) && _status+=("%F{yellow}.${gitstate[untracked]}%f")
-    (( gitstate[stash] )) && _status+=("%F{yellow}@${gitstate[stash]}%f")
-    (( ${#_status} > 0 )) && echo -n "%F{yellow}(%f${(j. .)_status}%F{yellow})%f"
+    segments+=( "gray3:%1~" )
+    PROMPT="$(powerprompt -f zsh -L "${segments[@]}") "
 }
 
 function async_rprompt() {
-    RPROMPT=""
-    if [[ ${PWD} == ${HOME} ]]; then
-        async_job rprompt_worker rprompt ${DOTFILES}
+    local segments=()
+
+    cd "$1"
+
+    git-info || return 1
+
+    if (( gitstate[head_detached] )); then
+        segments+=( "yellow:${gitstate[head_name]}" )
     else
-        async_job rprompt_worker rprompt ${PWD}
+        segments+=( "green:${gitstate[head_name]}" )
     fi
+
+    if [[ -n ${gitstate[state]} ]]; then
+        local steps=""
+        if (( gitstate[total] > 1 )); then
+            steps=" (${gitstate[step]}/${gitstate[total]})"
+        fi
+        segments+=( "orange:${gitstate[state]}${steps}" )
+        if [[ -n ${gitstate[target_name]} ]]; then
+            segments+=( "orange:${gitstate[target_name]}" )
+        fi
+    fi
+
+    local _status=()
+    (( gitstate[ahead] )) && _status+=( "${gitstate[ahead]}" )
+    (( gitstate[behind] )) && _status+=( "${gitstate[behind]}" )
+    (( gitstate[unmerged] )) && _status+=( "${gitstate[unmerged]}" )
+    (( gitstate[staged] )) && _status+=( "${gitstate[staged]}" )
+    (( gitstate[wt_modified] )) && _status+=( "${gitstate[unstaged]}" )
+    (( gitstate[wt_deleted] )) && _status+=( "${gitstate[unstaged]}" )
+    (( gitstate[untracked] )) && _status+=( "${gitstate[untracked]}" )
+    (( gitstate[stash] )) && _status+=( "${gitstate[stash]}" )
+    if (( ${#_status} > 0 )); then
+        segments+=( "yellow:${(j: :)_status}" )
+    fi
+
+    powerprompt -f zsh -R ${segments}
+    return 0
+}
+
+function rprompt() {
+    local repo
+
+    if [[ ${PWD} == ${HOME} ]]; then
+        repo=${DOTFILES}
+    else
+        repo=${PWD}
+    fi
+
+    RPROMPT=""
+    async_job rprompt_worker async_rprompt ${repo}
 }
 
 function rprompt_callback() {
@@ -240,10 +266,8 @@ function rprompt_callback() {
 async_start_worker rprompt_worker -u -n
 async_register_callback rprompt_worker rprompt_callback
 
-add-zsh-hook precmd async_rprompt
-
-PROMPT="%F{green}%n%f %F{blue}%1~ %(!.#.$)%f "
-RPROMPT=""
+add-zsh-hook precmd prompt
+add-zsh-hook precmd rprompt
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8

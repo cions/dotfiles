@@ -3,7 +3,13 @@ repo = 'Shougo/dein.vim'
 
 [[plugins]]
 repo = 'Shougo/vimproc.vim'
-build = 'make'
+hook_post_update = '''
+if executable('make')
+  call system('make')
+elseif executable('mingw32-make')
+  call system('mingw32-make')
+endif
+'''
 
 [[plugins]]
 repo = 'vim-jp/vital.vim'
@@ -25,10 +31,6 @@ repo = 'itchyny/lightline.vim'
 hook_source = 'SourceRcfile lightline.vim'
 
 [[plugins]]
-repo = 'edkolev/tmuxline.vim'
-hook_source = 'SourceRcfile tmuxline.vim'
-
-[[plugins]]
 repo = 'Shougo/unite.vim'
 hook_source = '''
 let g:unite_data_directory = g:cachedir . '/unite.vim'
@@ -47,9 +49,6 @@ repo = 'Shougo/unite-help'
 
 [[plugins]]
 repo = 'Shougo/unite-outline'
-
-[[plugins]]
-repo = 'sorah/unite-ghq'
 
 [[plugins]]
 repo = 'lambdalisue/vim-gista-unite'
@@ -165,6 +164,16 @@ repo = 'h1mesuke/vim-alignta'
 [[plugins]]
 repo = 'tyru/open-browser.vim'
 normalized_name = 'openbrowser'
+hook_source = '''
+if executable('/usr/lib64/chromium-browser/chrome')
+  let g:openbrowser_browser_commands = [
+    \   {
+    \     'name': '/usr/lib64/chromium-browser/chrome',
+    \     'args': ['{browser}', '{uri}']
+    \   }
+    \ ]
+endif
+'''
 
 [[plugins]]
 repo = 'tyru/open-browser-github.vim'

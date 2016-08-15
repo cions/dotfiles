@@ -1,0 +1,114 @@
+#!/bin/zsh
+
+width="$(tmux display -p "#{client_width}")"
+
+function loadavg() {
+    local loadavg nproc color
+
+    loadavg=( ${$(</proc/loadavg)[1,3]} )
+    nproc=$(nproc --all)
+
+    if (( loadavg[1] / nproc >= 1.0 )); then
+        color="red"
+    elif (( loadavg[1] / nproc >= 0.5 )); then
+        color="yellow"
+    else
+        color="green"
+    fi
+    if (( width >= 114 )); then
+        print -nr "${color}:${loadavg}"
+    else
+        print -nr "${color}:${loadavg[1]}"
+    fi
+}
+
+function memusage() {
+    local meminfo total used free percent color
+
+    meminfo=( "${(@f)$(</proc/meminfo)}" )
+
+    (( total = ${meminfo[(r)MemTotal:*][(w)2]:-0} ))
+    (( free = ${meminfo[(r)MemFree:*][(w)2]:-0} ))
+    (( free += ${meminfo[(r)Buffers:*][(w)2]:-0} ))
+    (( free += ${meminfo[(r)Cached:*][(w)2]:-0} ))
+    (( used = total - free ))
+    (( percent = used * 100.0 / total ))
+
+    if (( percent >= 80.0 )); then
+        color="red"
+    elif (( percent >= 60.0 )); then
+        color="yellow"
+    else
+        color="green"
+    fi
+    if (( width >= 130 )); then
+        print -nf "${color}:%4s/%4s (%.2f%%)" \
+            "$(numfmt --from-unit=Ki --to=iec ${used})" \
+            "$(numfmt --from-unit=Ki --to=iec ${total})" \
+            ${percent}
+    elif (( width >= 96 )); then
+        print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
+    fi
+}
+
+function swapusage() {
+    local meminfo total used percent color
+
+    meminfo=( "${(@f)$(</proc/meminfo)}" )
+
+    (( total = ${meminfo[(r)SwapTotal:*][(w)2]:-0} ))
+    (( used = total - ${meminfo[(r)SwapFree:*][(w)2]:-0} ))
+    (( percent = used * 100.0 / total ))
+
+    if (( total == 0 )); then
+        color="gray2"
+    elif (( percent >= 80.0 )); then
+        color="red"
+    elif (( percent >= 60.0 )); then
+        color="yellow"
+    else
+        color="green"
+    fi
+    if (( width >= 145 )); then
+        print -nf "${color}:%4s/%4s (%.2f%%)" \
+            "$(numfmt --from-unit=Ki --to=iec ${used})" \
+            "$(numfmt --from-unit=Ki --to=iec ${total})" \
+            ${percent}
+    elif (( width >= 104 )); then
+        print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
+    fi
+}
+
+segments=()
+
+case "$1" in
+    left)
+        segments+=( "cyan:#S" "cyan:#H" )
+
+        frozen=""
+        frozen+=$(~/.tmux/freezer -p query "🄿" "")
+        frozen+=$(~/.tmux/freezer -e query "🄴" "")
+        frozen+=$(~/.tmux/freezer -w query "🅆" "")
+        segments+=( "orange:${frozen}" )
+
+        powerprompt -f tmux -L ${segments}
+        ;;
+    right)
+        segments+=( "$(memusage)" )
+        segments+=( "$(swapusage)" )
+        segments+=( "$(loadavg)" )
+        if (( width >= 80 )); then
+            segments+=( "cyan:${(%):-"%D{%Y-%m-%d}"}" )
+        fi
+        if (( width >= 70 )); then
+            segments+=( "cyan:${(%):-"%D{%H:%M}"}" )
+        fi
+        powerprompt -f tmux -R ${segments}
+        ;;
+    window)
+        powerprompt -f tmux -n -L "gray1:" "gray2: #I:#W#F "
+        ;;
+    cwindow)
+        powerprompt -f tmux -n -L "gray1:" "green: #I:#W#F "
+        ;;
+esac

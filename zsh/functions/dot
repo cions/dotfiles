@@ -2,7 +2,7 @@
 
 emulate -L zsh
 
-dot-track() {
+function dot-track() {
     local name src dst
     for name; do
         src=${HOME}/${name%%/*}
@@ -11,27 +11,32 @@ dot-track() {
     done
 }
 
-dot-deref() {
-    local name target tmp
+function dot-deref() {
+    local name link target
     for name; do
-        target=${HOME}/${name%%/*}
+        link=${HOME}/${name%%/*}
+        target=$(readlink -f -- ${link})
         if [[ -f ${target} ]]; then
-            cp --remove-destination -- $(readlink -f ${target}) ${target}
+            cp --remove-destination -- ${target} ${link}
         elif [[ -d ${target} ]]; then
-            tmp=$(mktemp -d -- ${target}.XXXXXXXX)
-            rsync -a -- ${target}/ ${tmp} && \
-            rm -f -- ${target} && \
-            mv -- ${tmp} ${target}
+            rm -f -- ${link} && cp -a -- ${target} ${link}
         fi
     done
 }
 
-dot() {
-    local subcmd=$1; shift
-    case ${subcmd} in
-        track) dot-track "$@";;
-        deref) dot-deref "$@";;
-        *) git -C ${DOTFILES} ${subcmd} "$@";;
+function dot() {
+    case $1 in
+        track)
+            shift
+            dot-track "$@"
+            ;;
+        deref)
+            shift
+            dot-track "$@"
+            ;;
+        *)
+            git -C ${DOTFILES} "$@"
+            ;;
     esac
 }
 

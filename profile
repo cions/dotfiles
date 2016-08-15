@@ -8,31 +8,36 @@ for shfile in /etc/profile.d/*.sh; do
     source "${shfile}"
 done
 
-if [[ -n "${MSYSTEM:++}" ]]; then
+if [[ -n "${MSYSTEM+set}" ]]; then
     export GOROOT="/mingw64/lib/go"
     export GOPATH="/mingw64/go:${HOME}"
     IFS=":" read -ra paths <<< "${PATH}"
-    paths=( "${HOME}/bin" "/mingw64/go/bin" "${paths[@]}" )
+    paths=(
+        "${HOME}/.bin"
+        "/mingw64/go/bin"
+        "${paths[@]}"
+    )
+elif (( EUID == 0 )); then
+    export GOPATH="/usr/local/go"
+    paths=(
+        "${HOME}/.bin"
+        "/usr/local/go/bin"
+        {/usr/local,/usr,}/{sbin,bin}
+        "/opt/bin"
+    )
 else
     export GOPATH="/usr/local/go:${HOME}"
     paths=(
-        "${HOME}/bin"
-        "${HOME}/.local/bin"
+        "${HOME}/.bin"
         "/usr/local/go/bin"
-        "/usr/local/sbin"
-        "/usr/local/bin"
-        "/usr/sbin"
-        "/usr/bin"
-        "/sbin"
-        "/bin"
+        {/usr/local,/usr,}/bin
         "/opt/bin"
     )
 fi
 
 PATH=""
 for path in "${paths[@]}"; do
-    [[ ! -d "${path}" || ":${PATH}:" == *:"${path}":* ]] && continue
-    [[ "${path}" == */sbin && "${EUID}" -ne 0 ]] && continue
+    [[ -d "${path}" && ":${PATH}:" != *:"${path}":* ]] || continue
     PATH="${PATH}${PATH:+:}${path}"
 done
 export PATH

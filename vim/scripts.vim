@@ -1,4 +1,4 @@
-" my scripts file
+" scripts.vim
 
 if did_filetype()
   finish
