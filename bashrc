@@ -3,8 +3,12 @@
 
 export DOTFILES="$(dirname -- "$(realpath -- "${BASH_SOURCE[0]:-$0}")")"
 
+function exists() {
+    command -v $1 >/dev/null 2>&1
+}
+
 # cgclassify {{{1
-cgclassify() {
+function cgclassify() {
     local cgpaths=() cgpath id subsys hier
     [[ -f /proc/self/cgroup ]] || return
     while IFS=":" read -r id subsys hier; do
@@ -17,12 +21,11 @@ cgclassify() {
         echo "$$" > "${cgpath}/cgroup.procs"
         echo 1 > "${cgpath}/notify_on_release"
     done
-}
-cgclassify
+} && cgclassify
 unset -f cgclassify
 
 # dircolors {{{1
-if command -v dircolors >/dev/null; then
+if exists dircolors; then
     if [[ -f ~/.dir_colors ]]; then
         eval "$(dircolors -b ~/.dir_colors)"
     elif [[ -f /etc/DIR_COLORS ]]; then
@@ -51,14 +54,20 @@ alias mvi='mv -i'
 alias rmi='rm -i'
 alias rr='rm -rf'
 alias dot='git -C "${DOTFILES}"'
-command -v hub >/dev/null && alias git='hub'
+exists hub && alias git='hub'
 
 # key bindings {{{1
 bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
 # prompt {{{1
-__prompt_command() {
+POWERPROMPT_OPTS=()
+
+function nopowerline() {
+    POWERPROMPT_OPTS+=( '-P' )
+}
+
+function __prompt_command() {
     local exitcode=$?
     local jobnum=$(jobs -p | wc -l)
     local segments=()
@@ -79,9 +88,14 @@ __prompt_command() {
         segments+=( "yellow:\H" )
     fi
     segments+=( "gray3:\W" )
-    PS1="$(powerprompt -f bash -L "${segments[@]}") "
+    PS1="$(powerprompt -f bash -L "${POWERPROMPT_OPTS[@]}" "${segments[@]}") "
 }
-PROMPT_COMMAND=__prompt_command
+
+if exists powerprompt; then
+    PROMPT_COMMAND=__prompt_command
+else
+    PS1="\[$(tput setaf 2)\]\u \[$(tput setaf 4)\]\W \$\[$(tput sgr0)\] "
+fi
 
 # history {{{1
 unset HISTFILE

@@ -1,40 +1,57 @@
 #!/bin/zsh
 
+zmodload zsh/terminfo
+
 function usage() {
-    print -u2 "usage: powerprompt [-f format] [-n] {-L|-R} color:text ..."
+    print -u2 "usage: powerprompt [-f format] [-nPLR] color:text ..."
     exit 1
 }
 
-function tput() {
-    local color=$2
-    print -nrP ${(e)1}
-}
-
 typeset -A colorscheme
-colorscheme=(
-    red     235:210
-    magenta 235:213
-    blue    235:111
-    cyan    235:117
-    green   235:156
-    yellow  235:227
-    orange  235:216
-    black   252:235
-    gray1   252:238
-    gray2   252:242
-    gray3   255:245
-    gray4   238:248
-    white   235:252
-)
+if (( terminfo[colors] >= 256 )); then
+    colorscheme=(
+        red     235:210
+        magenta 235:213
+        blue    235:111
+        cyan    235:117
+        green   235:156
+        yellow  235:227
+        orange  235:216
+        black   252:235
+        gray1   252:238
+        gray2   252:242
+        gray3   255:245
+        gray4   238:248
+        white   235:252
+    )
+else
+    colorscheme=(
+        red     0:1
+        magenta 0:5
+        blue    7:4
+        cyan    0:6
+        green   0:2
+        yellow  0:3
+        orange  0:1
+        black   7:0
+        gray1   7:0
+        gray2   7:0
+        gray3   0:7
+        gray4   0:7
+        white   0:7
+    )
+fi
 
 format="raw"
 direction="left"
-nospace=""
+nospace=0
+separators=($'\uE0B0' $'\uE0B1' $'\uE0B2' $'\uE0B3')
 
 while (( $# > 0 )); do
     case $1 in
         -f) format=$2; shift ;;
-        -n) nospace="t" ;;
+        -n) nospace=1 ;;
+        -P) separators=($'\u258C' $'\u2502' $'\u2590' $'\u2502') ;;
         -L) direction="left" ;;
         -R) direction="right" ;;
         -*) usage ;;
@@ -45,24 +62,24 @@ done
 
 case ${format} in
     raw)
-        setaf='%F{${color}}'
-        setab='%K{${color}}'
-        reset='%f%k%u%b'
+        function setaf() { print -nrP "%F{$1}" }
+        function setab() { print -nrP "%K{$1}" }
+        function reset() { print -nrP "%f%k%u%b" }
         ;;
     zsh)
-        setaf='%%F{${color}}'
-        setab='%%K{${color}}'
-        reset='%%f%%k%%u%%b'
+        function setaf() { print -nrP "%%F{$1}" }
+        function setab() { print -nrP "%%K{$1}" }
+        function reset() { print -nrP "%%f%%k%%u%%b" }
         ;;
     tmux)
-        setaf='#[fg=colour${color}]'
-        setab='#[bg=colour${color}]'
-        reset='#[fg=default,bg=default,none]'
+        function setaf() { print -nrP "#[fg=colour$1]" }
+        function setab() { print -nrP "#[bg=colour$1]" }
+        function reset() { print -nrP "#[fg=default,bg=default,none]" }
         ;;
     bash)
-        setaf='\[%F{${color}}\]'
-        setab='\[%K{${color}}\]'
-        reset='\[%f%k%u%b\]'
+        function setaf() { print -nrP "\[%F{$1}\]" }
+        function setab() { print -nrP "\[%K{$1}\]" }
+        function reset() { print -nrP "\[%f%k%u%b\]" }
         ;;
     *)
         usage
@@ -72,60 +89,57 @@ esac
 color=()
 prev=()
 if [[ ${direction} == "left" ]]; then
-    tput ${reset}
+    reset
     for segment; do
         color=( ${(s.:.)colorscheme[${segment%%:*}]} )
         text=${segment#*:}
-        [[ -z ${nospace} && -z ${text} ]] && continue
+        (( nospace == 0 )) && [[ -z ${text} ]] && continue
         if (( ${#prev} == 0 )); then
-            tput ${setaf} ${color[1]}
-            tput ${setab} ${color[2]}
-        elif [[ ${color[2]} != ${prev[2]} ]]; then
-            tput ${setaf} ${prev[2]}
-            tput ${setab} ${color[2]}
-            print -nr $'\uE0B0'
-            tput ${setaf} ${color[1]}
+            setaf ${color[1]}
+            setab ${color[2]}
+        elif [[ ${color[2]} == ${prev[2]} ]]; then
+            setaf ${color[1]}
+            setab ${color[2]}
+            print -nr ${separators[2]}
         else
-            tput ${setaf} ${color[1]}
-            print -nr $'\uE0B1'
+            setaf ${prev[2]}
+            setab ${color[2]}
+            print -nr ${separators[1]}
+            setaf ${color[1]}
         fi
-        if [[ -z ${nospace} ]]; then
-            print -nr " ${text} "
-        else
+        if (( nospace )); then
             print -nr "${text}"
+        else
+            print -nr " ${text} "
         fi
         prev=( ${color} )
     done
-    tput ${reset}
-    tput ${setaf} ${prev[2]}
-    print -nr $'\uE0B0'
-    tput ${reset}
+    reset
+    setaf ${prev[2]}
+    print -nr ${separators[1]}
+    reset
 else
-    tput ${reset}
+    reset
     for segment; do
         color=( ${(s.:.)colorscheme[${segment%%:*}]} )
         text=${segment#*:}
-        [[ -z ${nospace} && -z ${text} ]] && continue
-        if (( ${#prev} == 0 )); then
-            tput ${setaf} ${color[2]}
-            print -nr $'\uE0B2'
-            tput ${setaf} ${color[1]}
-            tput ${setab} ${color[2]}
-        elif [[ ${color[2]} != ${prev[2]} ]]; then
-            tput ${setaf} ${color[2]}
-            print -nr $'\uE0B2'
-            tput ${setaf} ${color[1]}
-            tput ${setab} ${color[2]}
+        (( nospace == 0 )) && [[ -z ${text} ]] && continue
+        if [[ ${color[2]} == ${prev[2]} ]]; then
+            setaf ${color[1]}
+            setab ${color[2]}
+            print -nr ${separators[4]}
         else
-            tput ${setaf} ${color[1]}
-            print -nr $'\uE0B3'
+            setaf ${color[2]}
+            print -nr ${separators[3]}
+            setaf ${color[1]}
+            setab ${color[2]}
         fi
-        if [[ -z ${nospace} ]]; then
-            print -nr " ${text} "
-        else
+        if (( nospace )); then
             print -nr "${text}"
+        else
+            print -nr " ${text} "
         fi
         prev=( ${color} )
     done
-    tput ${reset}
+    reset
 fi

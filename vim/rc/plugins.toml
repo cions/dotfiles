@@ -4,11 +4,12 @@ repo = 'Shougo/dein.vim'
 [[plugins]]
 repo = 'Shougo/vimproc.vim'
 hook_post_update = '''
-if executable('make')
-  call system('make')
-elseif executable('mingw32-make')
-  call system('mingw32-make')
+if executable('mingw32-make')
+  let cmd = 'mingw32-make'
+else
+  let cmd = 'make'
 endif
+let g:dein#plugin.build = cmd
 '''
 
 [[plugins]]

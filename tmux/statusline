@@ -26,7 +26,6 @@ function memusage() {
     local meminfo total used free percent color
 
     meminfo=( "${(@f)$(</proc/meminfo)}" )
-
     (( total = ${meminfo[(r)MemTotal:*][(w)2]:-0} ))
     (( free = ${meminfo[(r)MemFree:*][(w)2]:-0} ))
     (( free += ${meminfo[(r)Buffers:*][(w)2]:-0} ))
@@ -55,7 +54,6 @@ function swapusage() {
     local meminfo total used percent color
 
     meminfo=( "${(@f)$(</proc/meminfo)}" )
-
     (( total = ${meminfo[(r)SwapTotal:*][(w)2]:-0} ))
     (( used = total - ${meminfo[(r)SwapFree:*][(w)2]:-0} ))
     (( percent = used * 100.0 / total ))
@@ -80,17 +78,14 @@ function swapusage() {
 }
 
 segments=()
-
 case "$1" in
     left)
         segments+=( "cyan:#S" "cyan:#H" )
-
         frozen=""
         frozen+=$(~/.tmux/freezer -p query "🄿" "")
         frozen+=$(~/.tmux/freezer -e query "🄴" "")
         frozen+=$(~/.tmux/freezer -w query "🅆" "")
-        segments+=( "orange:${frozen}" )
-
+        (( ${#frozen} > 0 )) && segments+=( "orange:${frozen}" )
         powerprompt -f tmux -L ${segments}
         ;;
     right)

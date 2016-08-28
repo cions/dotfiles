@@ -62,7 +62,7 @@ if has('vim_starting')
 endif
 " }}}1
 
-let s:V = vital#vital#of()
+let s:V = vital#vital#new()
 let s:Prelude = s:V.import('Prelude')
 
 syntax enable
@@ -112,7 +112,7 @@ if has('gui_running')
   set guioptions=aefiMg
   set iminsert=0
   set imsearch=0
-  if has('gui_gtk2')
+  if has('gui_gtk3')
     set guifont=Monospace\ 12
   elseif has('gui_win32')
     set guifont=MiG_Mono:h12:cSHIFTJIS:qDRAFT

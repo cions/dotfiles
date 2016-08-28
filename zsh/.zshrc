@@ -1,9 +1,7 @@
 #!/bin/zsh
 # vim: foldmethod=marker
 
-fpath=( ${ZDOTDIR}/functions(N-/) ${fpath} )
-
-export DOTFILES=${${(%):-%x}:h:A:h}
+export DOTFILES=${${(%):-%x}:A:h:h}
 
 # cgclassify {{{1
 () {
@@ -33,6 +31,7 @@ zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-syntax-highlighting", nice:10
+zplug "cions/dotfiles", use:"zsh/functions/*", lazy:1
 zplug "motemen/ghq", use:"zsh/", if:"(( ${+commands[ghq]} ))"
 zplug "glidenote/hub-zsh-completion", if:"(( ${+commands[hub]} ))"
 
@@ -56,11 +55,15 @@ if (( ${+commands[dircolors]} )); then
     fi
 fi
 
+# options {{{1
+setopt extended_glob
+setopt rm_star_silent
+
 # autoloads {{{1
 autoload -Uz add-zsh-hook
-
-# options {{{1
-setopt rm_star_silent
+autoload -Uz zargs
+autoload -Uz zcompileall
+autoload -Uz zmv
 
 # completion {{{1
 setopt no_beep
@@ -104,6 +107,7 @@ alias rmi='rm -i'
 alias rr='rm -rf'
 alias p='print -rl --'
 alias reload='exec zsh'
+alias dot='git -C ${DOTFILES}'
 alias args='() { print -rl -- "${(@qqqq)argv}" }'
 (( ${+commands[hub]} )) && alias git='hub'
 
@@ -126,15 +130,6 @@ alias -g NO='1>/dev/null'
 alias -g NE='2>/dev/null'
 alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
-
-# commands {{{1
-autoload -Uz dot
-autoload -Uz zargs
-autoload -Uz zcompileall
-autoload -Uz zmv
-
-# expn {{{1
-setopt extended_glob
 
 # chdir {{{1
 setopt auto_cd
@@ -180,13 +175,19 @@ setopt hist_ignore_all_dups
 # prompt {{{1
 autoload -Uz git-info
 
+_powerprompt_opts=()
+
+function nopowerline() {
+    _powerprompt_opts+=( -P )
+}
+
 function prompt() {
-    local _pipestatus=( ${pipestatus} )
+    local _status=${status}
     local jobnum=${(%):-%j}
     local segments=()
 
-    if (( ${#_pipestatus:#0} > 0 )); then
-        segments+=( red:${^_pipestatus} )
+    if (( _status != 0 )); then
+        segments+=( red:${_status} )
     fi
     if (( jobnum != 0 )); then
         segments+=( "orange:${jobnum}" )
@@ -200,13 +201,15 @@ function prompt() {
         segments+=( "yellow:%M" )
     fi
     segments+=( "gray3:%1~" )
-    PROMPT="$(powerprompt -f zsh -L "${segments[@]}") "
+    PROMPT="$(powerprompt -f zsh -L ${_powerprompt_opts} ${segments}) "
 }
 
 function async_rprompt() {
+    local workdir="$1"
+    local powerprompt_opts=${argv[2,-1]}
     local segments=()
 
-    cd "$1"
+    cd "${workdir}"
 
     git-info || return 1
 
@@ -240,21 +243,15 @@ function async_rprompt() {
         segments+=( "yellow:${(j: :)_status}" )
     fi
 
-    powerprompt -f zsh -R ${segments}
+    powerprompt -f zsh -R ${powerprompt_opts} ${segments}
     return 0
 }
 
 function rprompt() {
-    local repo
-
-    if [[ ${PWD} == ${HOME} ]]; then
-        repo=${DOTFILES}
-    else
-        repo=${PWD}
-    fi
-
+    local workdir=${PWD}
+    [[ ${PWD} == ${HOME} ]] && workdir=${DOTFILES}
     RPROMPT=""
-    async_job rprompt_worker async_rprompt ${repo}
+    async_job rprompt_worker async_rprompt ${workdir} ${_powerprompt_opts}
 }
 
 function rprompt_callback() {
@@ -263,11 +260,15 @@ function rprompt_callback() {
     [[ -n "${RPROMPT}" ]] && zle && zle reset-prompt
 }
 
-async_start_worker rprompt_worker -u -n
-async_register_callback rprompt_worker rprompt_callback
-
-add-zsh-hook precmd prompt
-add-zsh-hook precmd rprompt
+if (( ${+commands[powerprompt]} )); then
+    async_start_worker rprompt_worker -u -n
+    async_register_callback rprompt_worker rprompt_callback
+    add-zsh-hook precmd prompt
+    add-zsh-hook precmd rprompt
+else
+    PROMPT="%F{green}%n%F{blue} %1 %(!.#.$) %f"
+    RPROMPT=""
+fi
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8
