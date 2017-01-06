@@ -51,7 +51,7 @@ while (( $# > 0 )); do
     case $1 in
         -f) format=$2; shift ;;
         -n) nospace=1 ;;
-        -P) separators=($'\u258C' $'\u2502' $'\u2590' $'\u2502') ;;
+        -P) separators=("" "" "" "") ;;
         -L) direction="left" ;;
         -R) direction="right" ;;
         -*) usage ;;
@@ -64,22 +64,22 @@ case ${format} in
     raw)
         function setaf() { print -nrP "%F{$1}" }
         function setab() { print -nrP "%K{$1}" }
-        function reset() { print -nrP "%f%k%u%b" }
+        function reset() { print -nrP "%f%k" }
         ;;
     zsh)
         function setaf() { print -nrP "%%F{$1}" }
         function setab() { print -nrP "%%K{$1}" }
-        function reset() { print -nrP "%%f%%k%%u%%b" }
+        function reset() { print -nrP "%%f%%k" }
         ;;
     tmux)
         function setaf() { print -nrP "#[fg=colour$1]" }
         function setab() { print -nrP "#[bg=colour$1]" }
-        function reset() { print -nrP "#[fg=default,bg=default,none]" }
+        function reset() { print -nrP "#[default]" }
         ;;
     bash)
         function setaf() { print -nrP "\[%F{$1}\]" }
         function setab() { print -nrP "\[%K{$1}\]" }
-        function reset() { print -nrP "\[%f%k%u%b\]" }
+        function reset() { print -nrP "\[%f%k\]" }
         ;;
     *)
         usage

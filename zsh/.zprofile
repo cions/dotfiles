@@ -35,3 +35,10 @@ else
         /opt/bin(N-/)
     )
 fi
+
+if (( ${+commands[gpg-connect-agent]} )); then
+    gpg-connect-agent updatestartuptty /bye &>/dev/null
+    unset SSH_AGENT_PID
+    export SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh
+    export GPG_TTY=${TTY}
+fi

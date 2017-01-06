@@ -1,27 +1,5 @@
 #!/bin/zsh
 
-width="$(tmux display -p "#{client_width}")"
-
-function loadavg() {
-    local loadavg nproc color
-
-    loadavg=( ${$(</proc/loadavg)[1,3]} )
-    nproc=$(nproc --all)
-
-    if (( loadavg[1] / nproc >= 1.0 )); then
-        color="red"
-    elif (( loadavg[1] / nproc >= 0.5 )); then
-        color="yellow"
-    else
-        color="green"
-    fi
-    if (( width >= 114 )); then
-        print -nr "${color}:${loadavg}"
-    else
-        print -nr "${color}:${loadavg[1]}"
-    fi
-}
-
 function memusage() {
     local meminfo total used free percent color
 
@@ -40,12 +18,12 @@ function memusage() {
     else
         color="green"
     fi
-    if (( width >= 130 )); then
+    if [[ $1 != "-s" ]]; then
         print -nf "${color}:%4s/%4s (%.2f%%)" \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
             ${percent}
-    elif (( width >= 96 )); then
+    else
         print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
     fi
 }
@@ -67,31 +45,64 @@ function swapusage() {
     else
         color="green"
     fi
-    if (( width >= 145 )); then
+    if [[ $1 != "-s" ]]; then
         print -nf "${color}:%4s/%4s (%.2f%%)" \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
             ${percent}
-    elif (( width >= 104 )); then
+    else
         print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
     fi
 }
 
+function loadavg() {
+    local loadavg nproc color
+
+    loadavg=( ${$(</proc/loadavg)[1,3]} )
+    nproc=$(nproc --all)
+
+    if (( loadavg[1] / nproc >= 1.0 )); then
+        color="red"
+    elif (( loadavg[1] / nproc >= 0.5 )); then
+        color="yellow"
+    else
+        color="green"
+    fi
+    if [[ $1 != "-s" ]]; then
+        print -nr "${color}:${loadavg}"
+    else
+        print -nr "${color}:${loadavg[1]}"
+    fi
+}
+
+width="$(tmux display -p "#{client_width}")"
 segments=()
 case "$1" in
     left)
         segments+=( "cyan:#S" "cyan:#H" )
         frozen=""
-        frozen+=$(~/.tmux/freezer -p query "🄿" "")
-        frozen+=$(~/.tmux/freezer -e query "🄴" "")
-        frozen+=$(~/.tmux/freezer -w query "🅆" "")
+        frozen+=$(~/.tmux/freezer query pane "🄿" "")
+        frozen+=$(~/.tmux/freezer query emerge "🄴" "")
+        frozen+=$(~/.tmux/freezer query www-browser "🅆" "")
         (( ${#frozen} > 0 )) && segments+=( "orange:${frozen}" )
         powerprompt -f tmux -L ${segments}
         ;;
     right)
-        segments+=( "$(memusage)" )
-        segments+=( "$(swapusage)" )
-        segments+=( "$(loadavg)" )
+        if (( width >= 130 )); then
+            segments+=( "$(memusage)" )
+        elif (( width >= 96 )); then
+            segments+=( "$(memusage -s)" )
+        fi
+        if (( width >= 145 )); then
+            segments+=( "$(swapusage)" )
+        elif (( width >= 104 )); then
+            segments+=( "$(swapusage -s)" )
+        fi
+        if (( width >= 114 )); then
+            segments+=( "$(loadavg)" )
+        else
+            segments+=( "$(loadavg -s)" )
+        fi
         if (( width >= 80 )); then
             segments+=( "cyan:${(%):-"%D{%Y-%m-%d}"}" )
         fi

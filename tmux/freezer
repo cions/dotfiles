@@ -1,37 +1,44 @@
 #!/bin/zsh
 
 function usage() {
-    print -u2 "usage: freezer {-p|-e|-w} {toggle,query}"
+    print -u2 "usage: freezer {toggle,query} {pane,emerge,www-browser}"
     exit 1
 }
 
-case $1 in
-    -p)
-        pane_pid="$(tmux display-message -p '#{pane_pid}')"
+cmd=$1
+target=$2
+
+case ${target} in
+    pane)
+        pane_pid="$(tmux display -p "#{pane_pid}")"
+        if [[ "$(tmux display -p "#{pane_start_command}")" == "sudo -i" ]]; then
+            pane_pid="$(pgrep -P ${pane_pid})"
+        fi
         [[ -f /proc/${pane_pid}/cgroup ]] || exit 1
         for cgroup in "${(@f)$(</proc/${pane_pid}/cgroup)}"; do
-            [[ ",${cgroup[(ws.:.)2]}," == *,freezer,* ]] || continue
-            [[ ${cgroup[(ws.:.)3]} == /shell/* ]] || continue
+            subsys=${cgroup[(ws.:.)2]}
+            hier=${cgroup[(ws.:.)3]}
+            [[ ",${subsys}," == *,freezer,* ]] || continue
+            [[ ${hier} == /shell/* ]] || continue
             statefile=/sys/fs/cgroup/${subsys}${hier}/freezer.state
             break
         done
         ;;
-    -e)
+    emerge)
         statefile=/sys/fs/cgroup/freezer/emerge/freezer.state
         ;;
-    -w)
+    www-browser)
         statefile=/sys/fs/cgroup/freezer/www-browser/freezer.state
         ;;
     *)
         usage
         ;;
 esac
-shift
 
 [[ -f ${statefile} ]] || exit 1
 
 state="$(<${statefile})"
-case $1 in
+case ${cmd} in
     toggle)
         if [[ ${state} == FROZEN ]]; then
             print THAWED > ${statefile}
@@ -41,9 +48,9 @@ case $1 in
         ;;
     query)
         if [[ ${state} == FROZEN ]]; then
-            print -nr ${2-FROZEN}
+            print -nr ${3-FROZEN}
         else
-            print -nr ${3-THAWED}
+            print -nr ${4-THAWED}
         fi
         ;;
     *)

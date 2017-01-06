@@ -1,0 +1,25 @@
+#!/bin/zsh
+
+function generate-if() {
+    if (( $# > 2 )); then
+        local cond="$1"; shift
+        local thencmd="$1"; shift
+        local elsecmd="$(generate-if "$@")"
+        print -r -- "if -Ft= ${(qqq)cond} ${(qqq)thencmd} ${(qqq)elsecmd}"
+    else
+        print -r -- $1
+    fi
+}
+
+generate-if \
+    "#{mouse_any_flag}" "send-keys -M" \
+    "#{pane_in_mode}" "send-keys -M; send-keys -M; send-keys -M" \
+    "#{alternate_on}" "send-keys Up Up Up" \
+    "copy-mode -e; send-keys -M; send-keys -M; send-keys -M" | read -r cmdline
+tmux bind-key -n WheelUpPane select-pane -t= "\;" ${(Q)${(z)cmdline}}
+
+generate-if \
+    "#{mouse_any_flag}" "send-keys -M" \
+    "#{pane_in_mode}" "send-keys -M; send-keys -M; send-keys -M" \
+    "send-keys Down Down Down" | read -r cmdline
+tmux bind-key -n WheelDownPane select-pane -t= "\;" ${(Q)${(z)cmdline}}

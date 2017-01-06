@@ -9,17 +9,20 @@ function exists() {
 
 # cgclassify {{{1
 function cgclassify() {
-    local cgpaths=() cgpath id subsys hier
+    local cgroups=() cgroup cgpath id subsys hier
     [[ -f /proc/self/cgroup ]] || return
-    while IFS=":" read -r id subsys hier; do
+    readarray -t cgroups < /proc/self/cgroup
+    for cgroup in "${cgroups[@]}"; do
+        IFS=":" read -r id subsys hier <<< "${cgroup}"
         cgpath="/sys/fs/cgroup/${subsys#name=}/shell/bash-$$"
         [[ -d "${cgpath%/*}" && "${hier}" != /shell/* ]] || continue
-        cgpaths+=( "${cgpath}" )
-    done </proc/self/cgroup
-    for cgpath in "${cgpaths[@]}"; do
-        mkdir "${cgpath}"
+        mkdir -- "${cgpath}" 2>/dev/null || continue
         echo "$$" > "${cgpath}/cgroup.procs"
         echo 1 > "${cgpath}/notify_on_release"
+        [[ -f "${cgpath}/freezer.state" ]] \
+            && chgrp wheel "${cgpath}/freezer.state" \
+            && chmod g+w "${cgpath}/freezer.state"
+        [[ -f "${cgpath}/pids.max" ]] && echo 1024 > "${cgpath}/pids.max"
     done
 } && cgclassify
 unset -f cgclassify
@@ -46,9 +49,7 @@ alias ls='ls -F --color=auto --quoting-style=literal'
 alias la='ls -aF --color=auto --quoting-style=literal'
 alias lA='ls -AF --color=auto --quoting-style=literal'
 alias ll='ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
+alias grep='grep -E --color=auto'
 alias cpi='cp -i'
 alias mvi='mv -i'
 alias rmi='rm -i'
@@ -61,10 +62,11 @@ bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
 # prompt {{{1
-POWERPROMPT_OPTS=()
+PLAIN_PS1="\[\e[0m\e[32m\]\u \[\e[34m\]\W \$\[\e[39m\] "
 
 function nopowerline() {
-    POWERPROMPT_OPTS+=( '-P' )
+    unset PROMPT_COMMAND
+    PS1="${PLAIN_PS1}"
 }
 
 function __prompt_command() {
@@ -88,13 +90,13 @@ function __prompt_command() {
         segments+=( "yellow:\H" )
     fi
     segments+=( "gray3:\W" )
-    PS1="$(powerprompt -f bash -L "${POWERPROMPT_OPTS[@]}" "${segments[@]}") "
+    PS1="\[\e[0m\]$(powerprompt -f bash -L "${segments[@]}") "
 }
 
 if exists powerprompt; then
     PROMPT_COMMAND=__prompt_command
 else
-    PS1="\[$(tput setaf 2)\]\u \[$(tput setaf 4)\]\W \$\[$(tput sgr0)\] "
+    PS1="${PLAIN_PS1}"
 fi
 
 # history {{{1
@@ -106,7 +108,7 @@ HISTIGNORE="&"
 export LANG="ja_JP.UTF-8"
 export LC_TIME="en_US.UTF-8"
 export LC_MESSAGES="en_US.UTF-8"
-export LANGUAGE="en"
+export LANGUAGE="en_US"
 
 export LESS="--no-init --quit-if-one-screen --RAW-CONTROL-CHARS"
 export LESSHISTFILE="/dev/null"

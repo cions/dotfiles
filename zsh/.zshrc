@@ -10,9 +10,13 @@ export DOTFILES=${${(%):-%x}:A:h:h}
     for cgroup in "${(@f)$(</proc/self/cgroup)}"; do
         cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}/shell/zsh-$$
         [[ -d ${cgpath:h} && ${cgroup[(ws.:.)3]} != /shell/* ]] || continue
-        mkdir ${cgpath}
+        mkdir -- ${cgpath} 2>/dev/null || continue
         print $$ > ${cgpath}/cgroup.procs
         print 1 > ${cgpath}/notify_on_release
+        [[ -f ${cgpath}/freezer.state ]] \
+            && chgrp wheel ${cgpath}/freezer.state \
+            && chmod g+w ${cgpath}/freezer.state
+        [[ -f ${cgpath}/pids.max ]] && echo 1024 > ${cgpath}/pids.max
     done
 }
 
@@ -30,9 +34,8 @@ zplug "zplug/zplug"
 zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-history-substring-search"
-zplug "zsh-users/zsh-syntax-highlighting", nice:10
+zplug "zsh-users/zsh-syntax-highlighting", defer:2
 zplug "cions/dotfiles", use:"zsh/functions/*", lazy:1
-zplug "motemen/ghq", use:"zsh/", if:"(( ${+commands[ghq]} ))"
 zplug "glidenote/hub-zsh-completion", if:"(( ${+commands[hub]} ))"
 
 if ! zplug check --verbose; then
@@ -61,6 +64,7 @@ setopt rm_star_silent
 
 # autoloads {{{1
 autoload -Uz add-zsh-hook
+autoload -Uz git-info
 autoload -Uz zargs
 autoload -Uz zcompileall
 autoload -Uz zmv
@@ -82,50 +86,42 @@ zstyle ':completion:*:functions:*' ignored-patterns '_*'
 # zle {{{1
 bindkey -e
 
-function cd-ghq-repository() {
-    local repository
-    repository="$(ghq list -p | fzy)"
-    [[ -z "${repository}" ]] && return
-    BUFFER="cd ${repository}"
+function cd-repository() {
+    local rootdir=${HOME}/src
+    local repostory="$(cd ${rootdir}; print -rl -- */*/*(N-/) | fzy)"
+    [[ -z "${repostory}" ]] && return
+    BUFFER="cd ${rootdir}/${repostory}"
     CURSOR=${#BUFFER}
     zle accept-line
 }
 
-zle -N cd-ghq-repository
-bindkey '^g^g' cd-ghq-repository
+zle -N cd-repository
+bindkey '^g^g' cd-repository
 
 # aliases {{{1
 alias ls='ls -F --color=auto --quoting-style=literal'
 alias la='ls -aF --color=auto --quoting-style=literal'
 alias lA='ls -AF --color=auto --quoting-style=literal'
 alias ll='ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-alias mvi='mv -i'
+alias grep='grep -E --color=auto'
 alias rmi='rm -i'
 alias rr='rm -rf'
 alias p='print -rl --'
+alias args='() { print -rl -- "${(@qqqq)argv}" }'
 alias reload='exec zsh'
 alias dot='git -C ${DOTFILES}'
-alias args='() { print -rl -- "${(@qqqq)argv}" }'
 (( ${+commands[hub]} )) && alias git='hub'
 
 alias -g ...='../..'
 alias -g ....='../../..'
 alias -g .....='../../../..'
-alias -g G='| egrep -i'
+alias -g G='| grep -E'
+alias -g GV='| grep -E -v'
 alias -g L='| less'
 alias -g H='| head -n 20'
 alias -g T='| tail -n 20'
 alias -g S='| sort'
 alias -g SU='| sort -u'
-alias -g EG='|& egrep -i'
-alias -g EL='|& less'
-alias -g EH='|& head -n 20'
-alias -g ET='|& tail -n 20'
-alias -g ES='|& sort'
-alias -g ESU='|& sort -u'
 alias -g NO='1>/dev/null'
 alias -g NE='2>/dev/null'
 alias -g NUL='1>/dev/null 2>&1'
@@ -136,58 +132,63 @@ setopt auto_cd
 setopt auto_pushd
 setopt pushd_ignore_dups
 
-if (( ! ${+_bpath} )); then
-    _bpath=( ${path} )
-    _apath=()
-    _dpath=()
-fi
+function _chpwd_hook_direnv() {
+    local env t
 
-function pathadd() {
-    _apath=( ${^argv}(N-/:A) ${_apath} )
-    chpwd-path
+    for env in ${_direnv}; do
+        unset ${env}
+    done
+    if (( ${+_direnv_path} )); then
+        path=( ${path:|_direnv_path} )
+    fi
+
+    _direnv=()
+    _direnv_path=()
+
+    t=( (../)#node_modules/.bin(N-/:A) )
+    if (( ${#t} > 0 )); then
+        _direnv_path+=( ${t[1]} )
+    fi
+
+    t=( (../)#pyvenv.cfg(N-.:h:A) )
+    if (( ${#t} > 0 )); then
+        VIRTUAL_ENV="${t[1]}"
+        _direnv+=( VIRTUAL_ENV )
+        _direnv_path+=( ${t[1]}/bin )
+    fi
+
+    path=( ${_direnv_path} ${path} )
+    hash -r
 }
+add-zsh-hook chpwd _chpwd_hook_direnv
 
-function pathdel() {
-    _apath=( ${_apath:|argv} )
-    chpwd-path
-}
-
-compdef _pathdel pathdel
-function _pathdel() {
-    compadd -- ${_apath}
-}
-
-function chpwd-path() {
-    _dpath=( (../)#node_modules/.bin(N-/[1]:A) )
-    path=( ${_apath} ${_dpath} ${_bpath} )
-}
-
-function chpwd-ls() {
+function _chpwd_hook_ls() {
     (( ZSH_SUBSHELL == 0 )) && lA
 }
-
-add-zsh-hook chpwd chpwd-path
-add-zsh-hook chpwd chpwd-ls
+add-zsh-hook chpwd _chpwd_hook_ls
 
 # history {{{1
 setopt hist_ignore_all_dups
 
 # prompt {{{1
-autoload -Uz git-info
-
-_powerprompt_opts=()
+_plain_prompt="%F{green}%n%F{blue} %1~ %(!.#.$)%f "
 
 function nopowerline() {
-    _powerprompt_opts+=( -P )
+    async_stop_worker rprompt_worker
+    add-zsh-hook -d precmd _precmd_hook_prompt
+    add-zsh-hook -d precmd _precmd_hook_rprompt
+
+    PROMPT=${_plain_prompt}
+    RPROMPT=""
 }
 
-function prompt() {
+function _precmd_hook_prompt() {
     local _status=${status}
     local jobnum=${(%):-%j}
     local segments=()
 
     if (( _status != 0 )); then
-        segments+=( red:${_status} )
+        segments+=( "red:${_status}" )
     fi
     if (( jobnum != 0 )); then
         segments+=( "orange:${jobnum}" )
@@ -197,19 +198,18 @@ function prompt() {
     else
         segments+=( "green:%n" )
     fi
-    if [[ -n ${SSH_CONNECTION+set} ]]; then
+    if (( ${+SSH_CONNECTION} )); then
         segments+=( "yellow:%M" )
     fi
     segments+=( "gray3:%1~" )
-    PROMPT="$(powerprompt -f zsh -L ${_powerprompt_opts} ${segments}) "
+    PROMPT="$(powerprompt -f zsh -L ${segments}) "
 }
 
-function async_rprompt() {
-    local workdir="$1"
-    local powerprompt_opts=${argv[2,-1]}
+function _rprompt_async() {
+    local workdir=${argv[1]}
     local segments=()
 
-    cd "${workdir}"
+    cd -- ${workdir} || return 1
 
     git-info || return 1
 
@@ -247,28 +247,40 @@ function async_rprompt() {
     return 0
 }
 
-function rprompt() {
-    local workdir=${PWD}
-    [[ ${PWD} == ${HOME} ]] && workdir=${DOTFILES}
+function _precmd_hook_rprompt() {
     RPROMPT=""
-    async_job rprompt_worker async_rprompt ${workdir} ${_powerprompt_opts}
+
+    local workdir=${PWD}
+    [[ ${workdir} == ${HOME} ]] && workdir=${DOTFILES}
+    async_job rprompt_worker _rprompt_async ${workdir}
 }
 
-function rprompt_callback() {
-    (( $2 != 0 )) && return
-    RPROMPT="$3"
-    [[ -n "${RPROMPT}" ]] && zle && zle reset-prompt
+function _rprompt_callback() {
+    local returncode=${argv[2]}
+    local stdout=${argv[3]}
+
+    (( returncode != 0 )) && return
+    RPROMPT=${stdout}
+    [[ -n ${RPROMPT} ]] && zle && zle reset-prompt
 }
 
 if (( ${+commands[powerprompt]} )); then
     async_start_worker rprompt_worker -u -n
-    async_register_callback rprompt_worker rprompt_callback
-    add-zsh-hook precmd prompt
-    add-zsh-hook precmd rprompt
+    async_register_callback rprompt_worker _rprompt_callback
+    add-zsh-hook -Uz precmd _precmd_hook_prompt
+    add-zsh-hook -Uz precmd _precmd_hook_rprompt
 else
-    PROMPT="%F{green}%n%F{blue} %1 %(!.#.$) %f"
+    PROMPT=${_plain_prompt}
     RPROMPT=""
 fi
+
+# env variable {{{1
+function gpg-agent-updatestartuptty() {
+    if (( ${+commands[gpg-connect-agent]} )); then
+        gpg-connect-agent updatestartuptty /bye &>/dev/null
+    fi
+}
+add-zsh-hook preexec gpg-agent-updatestartuptty
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8
