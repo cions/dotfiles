@@ -21,5 +21,6 @@ tmux bind-key -n WheelUpPane select-pane -t= "\;" ${(Q)${(z)cmdline}}
 generate-if \
     "#{mouse_any_flag}" "send-keys -M" \
     "#{pane_in_mode}" "send-keys -M; send-keys -M; send-keys -M" \
-    "send-keys Down Down Down" | read -r cmdline
+    "#{alternate_on}" "send-keys Down Down Down" \
+    "" | read -r cmdline
 tmux bind-key -n WheelDownPane select-pane -t= "\;" ${(Q)${(z)cmdline}}
