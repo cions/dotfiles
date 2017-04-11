@@ -2,13 +2,17 @@
 
 emulate -L zsh
 
-typeset -gA gitstate=()
+typeset -gA gitstate
 local gitdir grevparse gstatus tmp
 
-gitdir=$(git rev-parse --git-dir 2>/dev/null) || return 1
-grevparse=("${(@f)$(git rev-parse --is-inside-work-tree \
-    --is-inside-git-dir --is-bare-repository --show-prefix --show-toplevel)}")
-gstatus=("${(@f)$(git status --porcelain --branch 2>/dev/null)}")
+gitdir="$(git rev-parse --git-dir 2>/dev/null)" || return 1
+grevparse=( "${(@f)$(git rev-parse \
+    --is-inside-work-tree \
+    --is-inside-git-dir \
+    --is-bare-repository \
+    --show-prefix \
+    --show-toplevel)}" )
+gstatus=( "${(@f)$(git status --porcelain --branch 2>/dev/null)}" )
 
 gitstate[gitdir]=${gitdir:A}
 gitstate[inworktree]=$((${grevparse[1]/true/1}))
@@ -20,53 +24,53 @@ gitstate[name]=${grevparse[5]:t}
 
 if [[ -f ${gitdir}/MERGE_HEAD ]]; then
     gitstate[state]="merge"
-    gitstate[target_sha1]=$(git rev-parse MERGE_HEAD)
+    gitstate[target_sha1]="$(git rev-parse MERGE_HEAD)"
 elif [[ -d ${gitdir}/rebase-apply ]]; then
     if [[ -f ${gitdir}/rebase-apply/applying ]]; then
         gitstate[state]="am"
     else
         gitstate[state]="rebase"
-        gitstate[head_sha1]=$(<${gitdir}/rebase-apply/orig-head)
-        gitstate[head_fullname]=$(<${gitdir}/rebase-apply/head-name)
+        gitstate[head_sha1]="$(<${gitdir}/rebase-apply/orig-head)"
+        gitstate[head_fullname]="$(<${gitdir}/rebase-apply/head-name)"
         if [[ ${gitstate[head_fullname]} == "detached HEAD" ]]; then
             gitstate[head_detached]=1
         fi
-        gitstate[target_sha1]=$(<${gitdir}/rebase-apply/onto)
+        gitstate[target_sha1]="$(<${gitdir}/rebase-apply/onto)"
     fi
-    gitstate[step]=$(<${gitdir}/rebase-apply/next)
-    gitstate[total]=$(<${gitdir}/rebase-apply/last)
+    gitstate[step]="$(<${gitdir}/rebase-apply/next)"
+    gitstate[total]="$(<${gitdir}/rebase-apply/last)"
 elif [[ -d ${gitdir}/rebase-merge ]]; then
     if [[ -f ${gitdir}/rebase-merge/interactive ]]; then
         gitstate[state]="rebase-i"
     else
         gitstate[state]="rebase-m"
     fi
-    gitstate[head_sha1]=$(<${gitdir}/rebase-merge/orig-head)
-    gitstate[head_fullname]=$(<${gitdir}/rebase-merge/head-name)
+    gitstate[head_sha1]="$(<${gitdir}/rebase-merge/orig-head)"
+    gitstate[head_fullname]="$(<${gitdir}/rebase-merge/head-name)"
     if [[ ${gitstate[head_fullname]} == "detached HEAD" ]]; then
         gitstate[head_detached]=1
     fi
-    gitstate[target_sha1]=$(<${gitdir}/rebase-merge/onto)
-    gitstate[step]=$(<${gitdir}/rebase-merge/msgnum)
-    gitstate[total]=$(<${gitdir}/rebase-merge/end)
+    gitstate[target_sha1]="$(<${gitdir}/rebase-merge/onto)"
+    gitstate[step]="$(<${gitdir}/rebase-merge/msgnum)"
+    gitstate[total]="$(<${gitdir}/rebase-merge/end)"
 elif [[ -f ${gitdir}/CHERRY_PICK_HEAD ]]; then
     gitstate[state]="cherry-pick"
-    gitstate[target_sha1]=$(git rev-parse CHERRY_PICK_HEAD)
+    gitstate[target_sha1]="$(git rev-parse CHERRY_PICK_HEAD)"
     if [[ -f ${gitdir}/sequencer/todo ]]; then
-        tmp=${(wf)#$(git rev-list $(<${gitdir}/sequencer/head)..HEAD)}
+        tmp="$(git rev-list sequencer/head..HEAD | wc -l)"
         gitstate[step]=$(( tmp + 1 ))
-        gitstate[total]=$(( tmp + ${(wf)#$(<${gitdir}/sequencer/todo)} ))
+        gitstate[total]=$(( tmp + "$(wc -l ${gitdir}/sequencer/todo)" ))
     else
         gitstate[step]=1
         gitstate[total]=1
     fi
 elif [[ -f ${gitdir}/REVERT_HEAD ]]; then
     gitstate[state]="revert"
-    gitstate[target_sha1]=$(git rev-parse REVERT_HEAD)
+    gitstate[target_sha1]="$(git rev-parse REVERT_HEAD)"
     if [[ -f ${gitdir}/sequencer/todo ]]; then
-        tmp=${(wf)#$(git rev-list $(<${gitdir}/sequencer/head)..HEAD)}
+        tmp="$(git rev-list sequencer/head..HEAD | wc -l)"
         gitstate[step]=$(( tmp + 1 ))
-        gitstate[total]=$(( tmp + ${(wf)#$(<${gitdir}/sequencer/todo)} ))
+        gitstate[total]=$(( tmp + "$(wc -l ${gitdir}/sequencer/todo)" ))
     else
         gitstate[step]=1
         gitstate[total]=1
@@ -75,7 +79,7 @@ elif [[ -f ${gitdir}/BISECT_LOG ]]; then
     gitstate[state]="bisect"
     tmp="$(git rev-list --bisect --bisect-vars 2>/dev/null)"
     if [[ -n "${tmp}" ]]; then
-        gitstate[step]="${(wf)#${(f)$(<${gitdir}/BISECT_LOG)}:#\#*}"
+        gitstate[step]="$(grep -cv '^#' ${gitdir}/BISECT_LOG)"
         gitstate[total]=$(( gitstate[step] + ${tmp[(fr)bisect_steps=*]#*=} ))
     fi
 else
@@ -83,7 +87,7 @@ else
 fi
 
 if (( ! ${+gitstate[head_sha1]} )); then
-    if tmp=$(git symbolic-ref -q HEAD); then
+    if tmp="$(git symbolic-ref -q HEAD)"; then
         gitstate[head_fullname]=${tmp}
         if ! git show-ref --quiet --verify -- ${tmp}; then
             gitstate[head_unborn]=1
@@ -92,19 +96,19 @@ if (( ! ${+gitstate[head_sha1]} )); then
         gitstate[head_detached]=1
     fi
     if (( ! ${+gitstate[head_unborn]} )); then
-        gitstate[head_sha1]=$(git rev-parse HEAD)
+        gitstate[head_sha1]="$(git rev-parse HEAD)"
     fi
 fi
 
 if (( ! ${gitstate[head_unborn]:=0} )); then
-    gitstate[head_abbrev]=$(git rev-parse --short ${gitstate[head_sha1]})
+    gitstate[head_abbrev]="$(git rev-parse --short ${gitstate[head_sha1]})"
 fi
 
 if (( ! ${gitstate[head_detached]:=0} )); then
     if (( ${gitstate[head_unborn]} )); then
         gitstate[head_name]=${gitstate[head_fullname]#refs/heads/}
     else
-        gitstate[head_name]=$(git rev-parse --abbrev-ref=strict ${gitstate[head_fullname]})
+        gitstate[head_name]="$(git rev-parse --abbrev-ref=strict ${gitstate[head_fullname]})"
     fi
     if [[ ${gstatus[1]} =~ '\[ahead ([0-9]+)]$' ]]; then
         gitstate[ahead]=${match[1]}
@@ -120,22 +124,24 @@ if (( ! ${gitstate[head_detached]:=0} )); then
         gitstate[behind]=0
     fi
 else
-    tmp=$(git for-each-ref --points-at=${gitstate[head_sha1]} --count=1 --format='%(refname)')
+    tmp="$(git for-each-ref --points-at=${gitstate[head_sha1]} --count=1 --format='%(refname)')"
     if [[ -n ${tmp} ]]; then
         gitstate[head_fullname]=${tmp}
-        gitstate[head_name]=$(git rev-parse --abbrev-ref=strict ${tmp})
+        gitstate[head_name]="$(git rev-parse --abbrev-ref=strict ${tmp})"
     else
         gitstate[head_fullname]=${gitstate[head_sha1]}
         gitstate[head_name]=${gitstate[head_abbrev]}
     fi
+    gitstate[ahead]=0
+    gitstate[behind]=0
 fi
 
 if (( ${+gitstate[target_sha1]} )); then
-    gitstate[target_abbrev]=$(git rev-parse --short ${gitstate[target_sha1]})
-    tmp=$(git for-each-ref --points-at=${gitstate[target_sha1]} --count=1 --format='%(refname)')
+    gitstate[target_abbrev]="$(git rev-parse --short ${gitstate[target_sha1]})"
+    tmp="$(git for-each-ref --points-at=${gitstate[target_sha1]} --count=1 --format='%(refname)')"
     if [[ -n ${tmp} ]]; then
         gitstate[target_fullname]=${tmp}
-        gitstate[target_name]=$(git rev-parse --abbrev-ref=strict ${tmp})
+        gitstate[target_name]="$(git rev-parse --abbrev-ref=strict ${tmp})"
     else
         gitstate[target_fullname]=${gitstate[target_sha1]}
         gitstate[target_name]=${gitstate[target_abbrev]}
@@ -153,4 +159,4 @@ gitstate[renamed]=${(M)#gstatus:#R[ MD] *}
 gitstate[copied]=${(M)#gstatus:#C[ MD] *}
 gitstate[staged]=${(M)#gstatus:#([MARC][ MD]|D[ M]) *}
 gitstate[unmerged]=${(M)#gstatus:#(U[ADU]|A[AU]|D[DU]) *}
-gitstate[stash]=$(git stash list --oneline 2>/dev/null | wc -l)
+gitstate[stash]="$(git stash list --oneline 2>/dev/null | wc -l)"

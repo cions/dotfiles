@@ -3,6 +3,12 @@
 
 export DOTFILES=${${(%):-%x}:A:h:h}
 
+# modules {{{1
+zmodload zsh/mapfile
+zmodload zsh/parameter
+zmodload zsh/terminfo
+zmodload zsh/zutil
+
 # cgclassify {{{1
 () {
     local cgroup cgpath
@@ -13,16 +19,17 @@ export DOTFILES=${${(%):-%x}:A:h:h}
         mkdir -- ${cgpath} 2>/dev/null || continue
         print $$ > ${cgpath}/cgroup.procs
         print 1 > ${cgpath}/notify_on_release
-        [[ -f ${cgpath}/freezer.state ]] \
-            && chgrp wheel ${cgpath}/freezer.state \
-            && chmod g+w ${cgpath}/freezer.state
+        [[ -f ${cgpath}/freezer.state ]] && {
+            chgrp wheel ${cgpath}/freezer.state
+            chmod g+w ${cgpath}/freezer.state
+        }
         [[ -f ${cgpath}/pids.max ]] && echo 1024 > ${cgpath}/pids.max
     done
 }
 
 # zplug {{{1
 ZPLUG_HOME=${ZDOTDIR}/zplug
-ZPLUG_THREADS=$(nproc)
+ZPLUG_THREADS="$(nproc)"
 
 if [[ ! -f ${ZPLUG_HOME}/init.zsh ]]; then
     git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
@@ -35,8 +42,7 @@ zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-syntax-highlighting", defer:2
-zplug "cions/dotfiles", use:"zsh/functions/*", lazy:1
-zplug "glidenote/hub-zsh-completion", if:"(( ${+commands[hub]} ))"
+zplug "cions/dotfiles", use:"zsh/{completions,functions}/*", lazy:1
 
 if ! zplug check --verbose; then
     print -n "Install? [y/N]: "
@@ -66,7 +72,6 @@ setopt rm_star_silent
 autoload -Uz add-zsh-hook
 autoload -Uz git-info
 autoload -Uz zargs
-autoload -Uz zcompileall
 autoload -Uz zmv
 
 # completion {{{1
@@ -79,18 +84,27 @@ setopt hist_expand
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' menu select=2
-zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
+zstyle ':completion:*' list-colors "${(@s/:/)LS_COLORS}"
 
 zstyle ':completion:*:functions:*' ignored-patterns '_*'
 
 # zle {{{1
 bindkey -e
 
-function cd-repository() {
-    local rootdir=${HOME}/src
-    local repostory="$(cd ${rootdir}; print -rl -- */*/*(N-/) | fzy)"
-    [[ -z "${repostory}" ]] && return
-    BUFFER="cd ${rootdir}/${repostory}"
+bindkey '^P' history-substring-search-up
+bindkey '^N' history-substring-search-down
+
+cd-repository() {
+    local rootdir repo
+
+    (( ${+commands[fzy]} )) || return
+    rootdir=${HOME}/src
+    [[ -d ${rootdir} ]] || return
+
+    print
+    repo="$(cd -q ${rootdir}; print -rl -- */*/*(N-/) | fzy)"
+    [[ -d ${rootdir}/${repo} ]] || return
+    BUFFER="cd ${rootdir}/${repo}"
     CURSOR=${#BUFFER}
     zle accept-line
 }
@@ -104,8 +118,9 @@ alias la='ls -aF --color=auto --quoting-style=literal'
 alias lA='ls -AF --color=auto --quoting-style=literal'
 alias ll='ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
 alias grep='grep -E --color=auto'
-alias rmi='rm -i'
-alias rr='rm -rf'
+alias rm='rm -I'
+alias rr='rm -rI'
+alias rrf='rm -rf'
 alias p='print -rl --'
 alias args='() { print -rl -- "${(@qqqq)argv}" }'
 alias reload='exec zsh'
@@ -132,8 +147,8 @@ setopt auto_cd
 setopt auto_pushd
 setopt pushd_ignore_dups
 
-function _chpwd_hook_direnv() {
-    local env t
+_chpwd_hook_direnv() {
+    local env
 
     for env in ${_direnv}; do
         unset ${env}
@@ -145,27 +160,27 @@ function _chpwd_hook_direnv() {
     _direnv=()
     _direnv_path=()
 
-    t=( (../)#node_modules/.bin(N-/:A) )
-    if (( ${#t} > 0 )); then
-        _direnv_path+=( ${t[1]} )
+    set -- (../)#node_modules/.bin(N-/:A)
+    if (( $# > 0 )); then
+        _direnv_path+=( $1 )
     fi
 
-    t=( (../)#pyvenv.cfg(N-.:h:A) )
-    if (( ${#t} > 0 )); then
-        VIRTUAL_ENV="${t[1]}"
+    set -- (../)#pyvenv.cfg(N-.:h:A)
+    if (( $# > 0 )); then
+        VIRTUAL_ENV=$1
         _direnv+=( VIRTUAL_ENV )
-        _direnv_path+=( ${t[1]}/bin )
+        _direnv_path+=( $1/bin )
     fi
 
     path=( ${_direnv_path} ${path} )
     hash -r
 }
-add-zsh-hook chpwd _chpwd_hook_direnv
+add-zsh-hook -Uz chpwd _chpwd_hook_direnv
 
-function _chpwd_hook_ls() {
-    (( ZSH_SUBSHELL == 0 )) && lA
+_chpwd_hook_ls() {
+    (( ZSH_SUBSHELL == 0 )) && ls -AF --color=auto --quoting-style=literal
 }
-add-zsh-hook chpwd _chpwd_hook_ls
+add-zsh-hook -Uz chpwd _chpwd_hook_ls
 
 # history {{{1
 setopt hist_ignore_all_dups
@@ -173,16 +188,7 @@ setopt hist_ignore_all_dups
 # prompt {{{1
 _plain_prompt="%F{green}%n%F{blue} %1~ %(!.#.$)%f "
 
-function nopowerline() {
-    async_stop_worker rprompt_worker
-    add-zsh-hook -d precmd _precmd_hook_prompt
-    add-zsh-hook -d precmd _precmd_hook_rprompt
-
-    PROMPT=${_plain_prompt}
-    RPROMPT=""
-}
-
-function _precmd_hook_prompt() {
+_precmd_hook_prompt() {
     local _status=${status}
     local jobnum=${(%):-%j}
     local segments=()
@@ -202,15 +208,19 @@ function _precmd_hook_prompt() {
         segments+=( "yellow:%M" )
     fi
     segments+=( "gray3:%1~" )
-    PROMPT="$(powerprompt -f zsh -L ${segments}) "
+    PROMPT="$(powerprompt -f zsh -L -- "${segments[@]}") "
+
+    local width segment
+    width=${(%)#PROMPT}
+    print -v segment -f '%%%d<<%*s%%<<' $((width-4)) ${width} '%1_'
+    PROMPT2="$(powerprompt -f zsh -L -- "gray3:${segment}") "
 }
 
-function _rprompt_async() {
+_rprompt_async() {
     local workdir=${argv[1]}
     local segments=()
 
-    cd -- ${workdir} || return 1
-
+    cd -- ${workdir} 2>/dev/null || return 1
     git-info || return 1
 
     if (( gitstate[head_detached] )); then
@@ -235,19 +245,19 @@ function _rprompt_async() {
     (( gitstate[behind] )) && _status+=( "${gitstate[behind]}" )
     (( gitstate[unmerged] )) && _status+=( "${gitstate[unmerged]}" )
     (( gitstate[staged] )) && _status+=( "${gitstate[staged]}" )
-    (( gitstate[wt_modified] )) && _status+=( "${gitstate[unstaged]}" )
-    (( gitstate[wt_deleted] )) && _status+=( "${gitstate[unstaged]}" )
+    (( gitstate[wt_modified] )) && _status+=( "${gitstate[wt_modified]}" )
+    (( gitstate[wt_deleted] )) && _status+=( "${gitstate[wt_deleted]}" )
     (( gitstate[untracked] )) && _status+=( "${gitstate[untracked]}" )
     (( gitstate[stash] )) && _status+=( "${gitstate[stash]}" )
     if (( ${#_status} > 0 )); then
         segments+=( "yellow:${(j: :)_status}" )
     fi
 
-    powerprompt -f zsh -R ${powerprompt_opts} ${segments}
+    powerprompt -f zsh -R -- "${segments[@]}"
     return 0
 }
 
-function _precmd_hook_rprompt() {
+_precmd_hook_rprompt() {
     RPROMPT=""
 
     local workdir=${PWD}
@@ -255,7 +265,7 @@ function _precmd_hook_rprompt() {
     async_job rprompt_worker _rprompt_async ${workdir}
 }
 
-function _rprompt_callback() {
+_rprompt_callback() {
     local returncode=${argv[2]}
     local stdout=${argv[3]}
 
@@ -264,23 +274,38 @@ function _rprompt_callback() {
     [[ -n ${RPROMPT} ]] && zle && zle reset-prompt
 }
 
+_aligned_prompt2() {
+    local width=${(%)#PROMPT}
+    print -v PROMPT2 -f '%%F{blue}%%%d<<%*s%%<<>%%f ' \
+        $((width-2)) ${width} '%1_'
+}
+
+nopowerline() {
+    async_stop_worker rprompt_worker
+    add-zsh-hook -d precmd _precmd_hook_prompt
+    add-zsh-hook -d precmd _precmd_hook_rprompt
+
+    PROMPT=${_plain_prompt}
+    RPROMPT=""
+    add-zsh-hook -Uz precmd _aligned_prompt2
+}
+
 if (( ${+commands[powerprompt]} )); then
     async_start_worker rprompt_worker -u -n
     async_register_callback rprompt_worker _rprompt_callback
     add-zsh-hook -Uz precmd _precmd_hook_prompt
     add-zsh-hook -Uz precmd _precmd_hook_rprompt
 else
-    PROMPT=${_plain_prompt}
-    RPROMPT=""
+    nopowerline
 fi
 
-# env variable {{{1
-function gpg-agent-updatestartuptty() {
+# gpg-agent {{{1
+_preexec_hook_gpg_agent() {
     if (( ${+commands[gpg-connect-agent]} )); then
-        gpg-connect-agent updatestartuptty /bye &>/dev/null
+        gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     fi
 }
-add-zsh-hook preexec gpg-agent-updatestartuptty
+add-zsh-hook -Uz preexec _preexec_hook_gpg_agent
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8

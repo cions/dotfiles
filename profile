@@ -8,7 +8,7 @@ for shfile in /etc/profile.d/*.sh; do
     source "${shfile}"
 done
 
-if [[ -n "${MSYSTEM+set}" ]]; then
+if [[ -v MSYSTEM ]]; then
     export GOROOT="/mingw64/lib/go"
     export GOPATH="/mingw64/go:${HOME}"
     IFS=":" read -ra paths <<< "${PATH}"
@@ -42,10 +42,14 @@ for path in "${paths[@]}"; do
 done
 export PATH
 
-if command -v gpg-connect-agent &>/dev/null; then
-    gpg-connect-agent updatestartuptty /bye &>/dev/null
+if command -v gpg-connect-agent >/dev/null 2>&1; then
+    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     unset SSH_AGENT_PID
-    export SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh
+    if [[ -n "${XDG_RUNTIME_DIR}" ]]; then
+        export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
+    else
+        export SSH_AUTH_SOCK="${HOME}/.gnupg/S.gpg-agent.ssh"
+    fi
     tty -s && export GPG_TTY="$(tty)"
 fi
 

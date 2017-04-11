@@ -1,22 +1,38 @@
 #!/bin/zsh
 
 zmodload zsh/terminfo
+zmodload zsh/zutil
 
-function usage() {
-    print -u2 "usage: powerprompt [-f format] [-nPLR] color:text ..."
+usage() {
+    print -u2 <<'EOF'
+usage: powerprompt [-f FORMAT] [-nPLR] color:text ...
+
+options:
+ -f FORMAT              character sequence format for styling
+                        (available: ansi, zsh, bash, tmux)
+ -n                     do not add spaces at both ends of the field
+ -P                     do not use Powerline symbols as separators
+ -L                     generate left-side prompt
+ -R                     generate right-side prompt
+
+supported colors:
+    red orange yellow green cyan blue purple magenta
+    black gray1 gray2 gray3 gray4 white
+EOF
     exit 1
 }
 
 typeset -A colorscheme
 if (( terminfo[colors] >= 256 )); then
     colorscheme=(
-        red     235:210
-        magenta 235:213
-        blue    235:111
-        cyan    235:117
-        green   235:156
-        yellow  235:227
+        red     235:203
         orange  235:216
+        yellow  235:227
+        green   235:156
+        cyan    235:117
+        blue    235:111
+        purple  235:170
+        magenta 235:207
         black   252:235
         gray1   252:238
         gray2   252:242
@@ -27,12 +43,13 @@ if (( terminfo[colors] >= 256 )); then
 else
     colorscheme=(
         red     0:1
-        magenta 0:5
-        blue    7:4
-        cyan    0:6
-        green   0:2
-        yellow  0:3
         orange  0:1
+        yellow  0:3
+        green   0:2
+        cyan    0:6
+        blue    7:4
+        purple  0:5
+        magenta 0:5
         black   7:0
         gray1   7:0
         gray2   7:0
@@ -42,47 +59,41 @@ else
     )
 fi
 
-format="raw"
-direction="left"
-nospace=0
-separators=($'\uE0B0' $'\uE0B1' $'\uE0B2' $'\uE0B3')
+zparseopts -D -M -A opts -- h=-help -help f: n P L R
+(( ${+opts[--help]} )) && usage
 
-while (( $# > 0 )); do
-    case $1 in
-        -f) format=$2; shift ;;
-        -n) nospace=1 ;;
-        -P) separators=("" "" "" "") ;;
-        -L) direction="left" ;;
-        -R) direction="right" ;;
-        -*) usage ;;
-        *)  break ;;
-    esac
-    shift
-done
+format=${opts[-f]:-ansi}
+nospace=${+opts[-n]}
+direction=${${opts[-R]+right}:-left}
+separators=($'\uE0B0' $'\uE0B1' $'\uE0B2' $'\uE0B3')
+if (( ${+opts[-P]} )); then
+    separators=("" "" "" "")
+fi
 
 case ${format} in
-    raw)
-        function setaf() { print -nrP "%F{$1}" }
-        function setab() { print -nrP "%K{$1}" }
-        function reset() { print -nrP "%f%k" }
+    ansi)
+        setaf() { print -nrP "%F{$1}" }
+        setab() { print -nrP "%K{$1}" }
+        reset() { print -nrP "%f%k" }
         ;;
     zsh)
-        function setaf() { print -nrP "%%F{$1}" }
-        function setab() { print -nrP "%%K{$1}" }
-        function reset() { print -nrP "%%f%%k" }
-        ;;
-    tmux)
-        function setaf() { print -nrP "#[fg=colour$1]" }
-        function setab() { print -nrP "#[bg=colour$1]" }
-        function reset() { print -nrP "#[default]" }
+        setaf() { print -nrP "%%F{$1}" }
+        setab() { print -nrP "%%K{$1}" }
+        reset() { print -nrP "%%f%%k" }
         ;;
     bash)
-        function setaf() { print -nrP "\[%F{$1}\]" }
-        function setab() { print -nrP "\[%K{$1}\]" }
-        function reset() { print -nrP "\[%f%k\]" }
+        setaf() { print -nrP "\[%F{$1}\]" }
+        setab() { print -nrP "\[%K{$1}\]" }
+        reset() { print -nrP "\[%f%k\]" }
+        ;;
+    tmux)
+        setaf() { print -nrP "#[fg=colour$1]" }
+        setab() { print -nrP "#[bg=colour$1]" }
+        reset() { print -nrP "#[default]" }
         ;;
     *)
-        usage
+        print -u2 "powerprompt: invalid -f: ${format}"
+        exit 1
         ;;
 esac
 
@@ -100,23 +111,23 @@ if [[ ${direction} == "left" ]]; then
         elif [[ ${color[2]} == ${prev[2]} ]]; then
             setaf ${color[1]}
             setab ${color[2]}
-            print -nr ${separators[2]}
+            print -nr -- ${separators[2]}
         else
             setaf ${prev[2]}
             setab ${color[2]}
-            print -nr ${separators[1]}
+            print -nr -- ${separators[1]}
             setaf ${color[1]}
         fi
         if (( nospace )); then
-            print -nr "${text}"
+            print -nr -- "${text}"
         else
-            print -nr " ${text} "
+            print -nr -- " ${text} "
         fi
         prev=( ${color} )
     done
     reset
     setaf ${prev[2]}
-    print -nr ${separators[1]}
+    print -nr -- ${separators[1]}
     reset
 else
     reset
@@ -127,17 +138,17 @@ else
         if [[ ${color[2]} == ${prev[2]} ]]; then
             setaf ${color[1]}
             setab ${color[2]}
-            print -nr ${separators[4]}
+            print -nr -- ${separators[4]}
         else
             setaf ${color[2]}
-            print -nr ${separators[3]}
+            print -nr -- ${separators[3]}
             setaf ${color[1]}
             setab ${color[2]}
         fi
         if (( nospace )); then
-            print -nr "${text}"
+            print -nr -- "${text}"
         else
-            print -nr " ${text} "
+            print -nr -- " ${text} "
         fi
         prev=( ${color} )
     done

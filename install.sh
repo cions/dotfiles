@@ -1,13 +1,13 @@
 #!/bin/bash
 
-DOTFILES="$(cd -- "$(dirname -- "$0")"; pwd -P)"
+DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")"; pwd -P)"
 IGNORE_PATTERNS=(
     '.*'
-    install.sh
-    zsh/functions
+    'install.sh'
+    'zsh/functions'
 )
 
-function check_ignore() {
+check_ignore() {
     local pattern
     for pattern in "${IGNORE_PATTERNS[@]}"; do
         [[ "$1" == ${pattern} ]] && return 0
@@ -15,22 +15,26 @@ function check_ignore() {
     return 1
 }
 
-function overwrite_prompt() {
+overwrite_prompt() {
     local -l choice
     read -r -n 1 -u 3 -p "$1 already exists. overwrite? [y/N]: " choice
     echo 1>&2
     [[ "${choice}" == y ]]
 }
 
-function ask_prompt() {
+ask_prompt() {
     local -l choice
     read -r -n 1 -u 3 -p "install $1? [Y/n]: " choice
     echo 1>&2
     [[ "${choice}" != n ]]
 }
 
-function usage() {
+usage() {
     echo "usage: $0 [-af] [DESTDIR]" 1>&2
+    echo
+    echo "Options:"
+    echo " -a       prompt before install"
+    echo " -f       force to overwrite an existing destination file"
     exit 1
 }
 
@@ -51,7 +55,7 @@ shift $(( OPTIND - 1 ))
 exec 3<&0
 
 pushd -- "${DOTFILES}" >/dev/null
-git ls-files | cut -d '/' -f '1-2' | sort -u | while read target; do
+git ls-files | cut -d '/' -f '1-2' | sort -u | while IFS= read -r target; do
     check_ignore "${target}" && continue
     src="${DOTFILES}/${target}"
     dst="${DESTDIR}/.${target}"
@@ -67,4 +71,4 @@ git ls-files | cut -d '/' -f '1-2' | sort -u | while read target; do
     fi
     mkdir -p -- "${dst%/*}" && ln -sfT -- "${src}" "${dst}"
 done
-popd -- "${DESTDIR}" >/dev/null
+popd >/dev/null

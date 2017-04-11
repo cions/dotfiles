@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-function memusage() {
+memusage() {
     local meminfo total used free percent color
 
     meminfo=( "${(@f)$(</proc/meminfo)}" )
@@ -19,7 +19,8 @@ function memusage() {
         color="green"
     fi
     if [[ $1 != "-s" ]]; then
-        print -nf "${color}:%4s/%4s (%.2f%%)" \
+        print -nf "%s:%4s/%4s (%.2f%%)" \
+            ${color} \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
             ${percent}
@@ -28,7 +29,7 @@ function memusage() {
     fi
 }
 
-function swapusage() {
+swapusage() {
     local meminfo total used percent color
 
     meminfo=( "${(@f)$(</proc/meminfo)}" )
@@ -46,7 +47,8 @@ function swapusage() {
         color="green"
     fi
     if [[ $1 != "-s" ]]; then
-        print -nf "${color}:%4s/%4s (%.2f%%)" \
+        print -nf "%s:%4s/%4s (%.2f%%)" \
+            ${color} \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
             ${percent}
@@ -55,7 +57,7 @@ function swapusage() {
     fi
 }
 
-function loadavg() {
+loadavg() {
     local loadavg nproc color
 
     loadavg=( ${$(</proc/loadavg)[1,3]} )
@@ -69,7 +71,7 @@ function loadavg() {
         color="green"
     fi
     if [[ $1 != "-s" ]]; then
-        print -nr "${color}:${loadavg}"
+        print -nr "${color}:${(j: :)loadavg}"
     else
         print -nr "${color}:${loadavg[1]}"
     fi
@@ -81,11 +83,11 @@ case "$1" in
     left)
         segments+=( "cyan:#S" "cyan:#H" )
         frozen=""
-        frozen+=$(~/.tmux/freezer query pane "🄿" "")
-        frozen+=$(~/.tmux/freezer query emerge "🄴" "")
-        frozen+=$(~/.tmux/freezer query www-browser "🅆" "")
-        (( ${#frozen} > 0 )) && segments+=( "orange:${frozen}" )
-        powerprompt -f tmux -L ${segments}
+        frozen+="$(~/.tmux/freezer query pane "🄿" "")"
+        frozen+="$(~/.tmux/freezer query emerge "🄴" "")"
+        frozen+="$(~/.tmux/freezer query www-browser "🅆" "")"
+        [[ -n ${frozen} ]] && segments+=( "orange:${frozen}" )
+        powerprompt -f tmux -L -- "${segments[@]}"
         ;;
     right)
         if (( width >= 130 )); then
@@ -109,12 +111,12 @@ case "$1" in
         if (( width >= 70 )); then
             segments+=( "cyan:${(%):-"%D{%H:%M}"}" )
         fi
-        powerprompt -f tmux -R ${segments}
+        powerprompt -f tmux -R -- "${segments[@]}"
         ;;
     window)
-        powerprompt -f tmux -n -L "gray1:" "gray2: #I:#W#F "
+        powerprompt -f tmux -n -L -- "gray1:" "gray2: #I:#W#F "
         ;;
     cwindow)
-        powerprompt -f tmux -n -L "gray1:" "green: #I:#W#F "
+        powerprompt -f tmux -n -L -- "gray1:" "green: #I:#W#F "
         ;;
 esac

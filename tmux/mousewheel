@@ -1,26 +1,24 @@
 #!/bin/zsh
 
-function generate-if() {
-    if (( $# > 2 )); then
-        local cond="$1"; shift
-        local thencmd="$1"; shift
-        local elsecmd="$(generate-if "$@")"
-        print -r -- "if -Ft= ${(qqq)cond} ${(qqq)thencmd} ${(qqq)elsecmd}"
+tmux-if-chain() {
+    if (( $# > 1 )); then
+        print -rn -- "if -Ft= ${(qqq)argv[1]} ${(qqq)argv[2]}" \
+            "${(qqq)$(tmux-if-chain "${(@)argv[3,-1]}")}"
     else
-        print -r -- $1
+        print -rn -- ${argv[1]}
     fi
 }
 
-generate-if \
+cmdline="$(tmux-if-chain \
     "#{mouse_any_flag}" "send-keys -M" \
     "#{pane_in_mode}" "send-keys -M; send-keys -M; send-keys -M" \
     "#{alternate_on}" "send-keys Up Up Up" \
-    "copy-mode -e; send-keys -M; send-keys -M; send-keys -M" | read -r cmdline
+    "copy-mode -e; send-keys -M; send-keys -M; send-keys -M")"
 tmux bind-key -n WheelUpPane select-pane -t= "\;" ${(Q)${(z)cmdline}}
 
-generate-if \
+cmdline="$(tmux-if-chain \
     "#{mouse_any_flag}" "send-keys -M" \
     "#{pane_in_mode}" "send-keys -M; send-keys -M; send-keys -M" \
     "#{alternate_on}" "send-keys Down Down Down" \
-    "" | read -r cmdline
+    "")"
 tmux bind-key -n WheelDownPane select-pane -t= "\;" ${(Q)${(z)cmdline}}

@@ -37,8 +37,12 @@ else
 fi
 
 if (( ${+commands[gpg-connect-agent]} )); then
-    gpg-connect-agent updatestartuptty /bye &>/dev/null
+    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     unset SSH_AGENT_PID
-    export SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh
+    if (( ${+XDG_RUNTIME_DIR} )); then
+        export SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh
+    else
+        export SSH_AUTH_SOCK=${HOME}/.gnupg/S.gpg-agent.ssh
+    fi
     export GPG_TTY=${TTY}
 fi

@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-function usage() {
+usage() {
     print -u2 "usage: freezer {toggle,query} {pane,emerge,www-browser}"
     exit 1
 }
@@ -11,9 +11,9 @@ target=$2
 case ${target} in
     pane)
         pane_pid="$(tmux display -p "#{pane_pid}")"
-        if [[ "$(tmux display -p "#{pane_start_command}")" == "sudo -i" ]]; then
+        while [[ "$(</proc/${pane_pid}/comm)" == "sudo" ]]; do
             pane_pid="$(pgrep -P ${pane_pid})"
-        fi
+        done
         [[ -f /proc/${pane_pid}/cgroup ]] || exit 1
         for cgroup in "${(@f)$(</proc/${pane_pid}/cgroup)}"; do
             subsys=${cgroup[(ws.:.)2]}
@@ -48,9 +48,9 @@ case ${cmd} in
         ;;
     query)
         if [[ ${state} == FROZEN ]]; then
-            print -nr ${3-FROZEN}
+            print -nr -- ${3-FROZEN}
         else
-            print -nr ${4-THAWED}
+            print -nr -- ${4-THAWED}
         fi
         ;;
     *)

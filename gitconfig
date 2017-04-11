@@ -21,9 +21,11 @@
 	s = status
 	ss = status -s
 	d = diff
-	dc = diff --cached
 	ds = diff --stat
 	dn = diff --name-only
+	dc = diff --cached
+	dcs = diff --cached --stat
+	dcn = diff --cached --name-only
 	a = add
 	aa = add --all
 	au = add --update
