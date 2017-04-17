@@ -5,6 +5,7 @@ IGNORE_PATTERNS=(
     '.*'
     'install.sh'
     'zsh/functions'
+    'zsh/init.zsh'
 )
 
 check_ignore() {

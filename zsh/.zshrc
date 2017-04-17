@@ -1,13 +1,13 @@
 #!/bin/zsh
 # vim: foldmethod=marker
 
-export DOTFILES=${${(%):-%x}:A:h:h}
-
-# modules {{{1
-zmodload zsh/mapfile
+# preamble {{{1
+autoload -Uz add-zsh-hook
 zmodload zsh/parameter
 zmodload zsh/terminfo
 zmodload zsh/zutil
+
+export DOTFILES=${${(%):-%x}:A:h:h}
 
 # cgclassify {{{1
 () {
@@ -38,11 +38,12 @@ fi
 source ${ZPLUG_HOME}/init.zsh
 
 zplug "zplug/zplug"
+zplug "b4b4r07/enhancd"
 zplug "mafredri/zsh-async"
-zplug "zsh-users/zsh-completions"
+zplug "zsh-users/zaw"
 zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-syntax-highlighting", defer:2
-zplug "cions/dotfiles", use:"zsh/{completions,functions}/*", lazy:1
+zplug "cions/dotfiles", use:"zsh/"
 
 if ! zplug check --verbose; then
     print -n "Install? [y/N]: "
@@ -68,49 +69,22 @@ fi
 setopt extended_glob
 setopt rm_star_silent
 
-# autoloads {{{1
-autoload -Uz add-zsh-hook
+# commands {{{1
 autoload -Uz git-info
 autoload -Uz zargs
 autoload -Uz zmv
 
-# completion {{{1
-setopt no_beep
-setopt complete_aliases
-setopt complete_in_word
-setopt glob_complete
-setopt hist_expand
-
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
-zstyle ':completion:*' menu select=2
-zstyle ':completion:*' list-colors "${(@s/:/)LS_COLORS}"
-
-zstyle ':completion:*:functions:*' ignored-patterns '_*'
-
-# zle {{{1
-bindkey -e
-
-bindkey '^P' history-substring-search-up
-bindkey '^N' history-substring-search-down
-
-cd-repository() {
-    local rootdir repo
-
-    (( ${+commands[fzy]} )) || return
-    rootdir=${HOME}/src
-    [[ -d ${rootdir} ]] || return
-
-    print
-    repo="$(cd -q ${rootdir}; print -rl -- */*/*(N-/) | fzy)"
-    [[ -d ${rootdir}/${repo} ]] || return
-    BUFFER="cd ${rootdir}/${repo}"
-    CURSOR=${#BUFFER}
-    zle accept-line
+args() {
+    print -rl -- "${(@qqqq)argv}"
 }
 
-zle -N cd-repository
-bindkey '^g^g' cd-repository
+zrecompile() {
+    local file
+    for file in ${ZDOTDIR}/*.zwc(ND); do
+        [[ ${file:r} -nt ${file} ]] || continue
+        zcompile ${file:r}
+    done
+}
 
 # aliases {{{1
 alias ls='ls -F --color=auto --quoting-style=literal'
@@ -122,7 +96,6 @@ alias rm='rm -I'
 alias rr='rm -rI'
 alias rrf='rm -rf'
 alias p='print -rl --'
-alias args='() { print -rl -- "${(@qqqq)argv}" }'
 alias reload='exec zsh'
 alias dot='git -C ${DOTFILES}'
 (( ${+commands[hub]} )) && alias git='hub'
@@ -142,6 +115,33 @@ alias -g NE='2>/dev/null'
 alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
 
+# zle {{{1
+bindkey -e
+
+autoload -Uz history-search-end
+zle -N history-beginning-search-backward-end history-search-end
+zle -N history-beginning-search-forward-end history-search-end
+bindkey "^P" history-beginning-search-backward-end
+bindkey "^N" history-beginning-search-forward-end
+
+cd-repository() {
+    local rootdir repo
+
+    (( ${+commands[fzy]} )) || return
+    rootdir=${HOME}/src
+    [[ -d ${rootdir} ]] || return
+
+    print
+    repo="$(cd -q ${rootdir}; print -rl -- */*/*(N-/) | fzy)"
+    [[ -d ${rootdir}/${repo} ]] || return
+    BUFFER="cd ${rootdir}/${repo}"
+    CURSOR=${#BUFFER}
+    zle accept-line
+}
+
+zle -N cd-repository
+bindkey '^G^G' cd-repository
+
 # chdir {{{1
 setopt auto_cd
 setopt auto_pushd
@@ -160,12 +160,12 @@ _chpwd_hook_direnv() {
     _direnv=()
     _direnv_path=()
 
-    set -- (../)#node_modules/.bin(N-/:A)
+    set -- (../)#node_modules/.bin(N-/od:a)
     if (( $# > 0 )); then
         _direnv_path+=( $1 )
     fi
 
-    set -- (../)#pyvenv.cfg(N-.:h:A)
+    set -- (../)#pyvenv.cfg(N-.od:a:h)
     if (( $# > 0 )); then
         VIRTUAL_ENV=$1
         _direnv+=( VIRTUAL_ENV )
@@ -181,6 +181,30 @@ _chpwd_hook_ls() {
     (( ZSH_SUBSHELL == 0 )) && ls -AF --color=auto --quoting-style=literal
 }
 add-zsh-hook -Uz chpwd _chpwd_hook_ls
+
+# completion {{{1
+setopt no_beep
+setopt complete_aliases
+setopt complete_in_word
+setopt glob_complete
+setopt hist_expand
+
+zstyle ':completion:*' verbose on
+zstyle ':completion:*' completer _expand _complete _match _prefix _list _history
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
+zstyle ':completion:*' menu select=2
+zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+zstyle ':completion:*' format '%F{blue}%d%f'
+zstyle ':completion:messages' format '%F{yellow}%d%f'
+zstyle ':completion:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
+zstyle ':completion:descriptions' format '%F{yellow}completing %B%d%b%f'
+zstyle ':completion:options' description yes
+
+zstyle ':completion:*:functions:*' ignored-patterns '_*'
 
 # history {{{1
 setopt hist_ignore_all_dups
@@ -220,7 +244,7 @@ _rprompt_async() {
     local workdir=${argv[1]}
     local segments=()
 
-    cd -- ${workdir} 2>/dev/null || return 1
+    cd -q ${workdir} 2>/dev/null || return 1
     git-info || return 1
 
     if (( gitstate[head_detached] )); then
@@ -258,8 +282,6 @@ _rprompt_async() {
 }
 
 _precmd_hook_rprompt() {
-    RPROMPT=""
-
     local workdir=${PWD}
     [[ ${workdir} == ${HOME} ]] && workdir=${DOTFILES}
     async_job rprompt_worker _rprompt_async ${workdir}
