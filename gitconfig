@@ -9,7 +9,10 @@
 	compactionHeuristic = true
 [merge]
 	defaultToUpstream = true
+	ff = false
 	tool = vimdiff
+[pull]
+	ff = only
 [rebase]
 	autosquash = true
 [status]

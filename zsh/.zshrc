@@ -38,10 +38,7 @@ fi
 source ${ZPLUG_HOME}/init.zsh
 
 zplug "zplug/zplug"
-zplug "b4b4r07/enhancd"
 zplug "mafredri/zsh-async"
-zplug "zsh-users/zaw"
-zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-syntax-highlighting", defer:2
 zplug "cions/dotfiles", use:"zsh/"
 
@@ -70,7 +67,6 @@ setopt extended_glob
 setopt rm_star_silent
 
 # commands {{{1
-autoload -Uz git-info
 autoload -Uz zargs
 autoload -Uz zmv
 
@@ -80,7 +76,7 @@ args() {
 
 zrecompile() {
     local file
-    for file in ${ZDOTDIR}/*.zwc(ND); do
+    for file in ${ZDOTDIR}/**/*.zwc(ND); do
         [[ ${file:r} -nt ${file} ]] || continue
         zcompile ${file:r}
     done
@@ -124,23 +120,37 @@ zle -N history-beginning-search-forward-end history-search-end
 bindkey "^P" history-beginning-search-backward-end
 bindkey "^N" history-beginning-search-forward-end
 
-cd-repository() {
-    local rootdir repo
+bindkey "^G^G" zle-widget-cd-repository
 
-    (( ${+commands[fzy]} )) || return
-    rootdir=${HOME}/src
-    [[ -d ${rootdir} ]] || return
+# completion {{{1
+setopt no_beep
+setopt complete_aliases
+setopt complete_in_word
+setopt glob_complete
+setopt hist_expand
 
-    print
-    repo="$(cd -q ${rootdir}; print -rl -- */*/*(N-/) | fzy)"
-    [[ -d ${rootdir}/${repo} ]] || return
-    BUFFER="cd ${rootdir}/${repo}"
-    CURSOR=${#BUFFER}
-    zle accept-line
-}
+zstyle ':completion:*' verbose on
 
-zle -N cd-repository
-bindkey '^G^G' cd-repository
+zstyle ':completion:*' completer \
+    _expand _complete _match _prefix _files _list _history
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
+zstyle ':completion:*' menu select=2
+zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+zstyle ':completion:*' format '%F{blue}%d%f'
+zstyle ':completion:messages' format '%F{yellow}%d%f'
+zstyle ':completion:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
+zstyle ':completion:descriptions' format '%F{yellow}completing %B%d%b%f'
+zstyle ':completion:options' description yes
+
+zstyle ':completion:*:functions:*' ignored-patterns '_*'
+
+zle -C complete-file menu-expand-or-complete _generic
+zstyle ':completion:complete-file:*' completer _files
+bindkey '^X^F' complete-file
 
 # chdir {{{1
 setopt auto_cd
@@ -182,30 +192,6 @@ _chpwd_hook_ls() {
 }
 add-zsh-hook -Uz chpwd _chpwd_hook_ls
 
-# completion {{{1
-setopt no_beep
-setopt complete_aliases
-setopt complete_in_word
-setopt glob_complete
-setopt hist_expand
-
-zstyle ':completion:*' verbose on
-zstyle ':completion:*' completer _expand _complete _match _prefix _list _history
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' use-cache yes
-zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
-zstyle ':completion:*' menu select=2
-zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
-
-zstyle ':completion:*' format '%F{blue}%d%f'
-zstyle ':completion:messages' format '%F{yellow}%d%f'
-zstyle ':completion:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
-zstyle ':completion:descriptions' format '%F{yellow}completing %B%d%b%f'
-zstyle ':completion:options' description yes
-
-zstyle ':completion:*:functions:*' ignored-patterns '_*'
-
 # history {{{1
 setopt hist_ignore_all_dups
 
@@ -236,7 +222,7 @@ _precmd_hook_prompt() {
 
     local width segment
     width=${(%)#PROMPT}
-    print -v segment -f '%%%d<<%*s%%<<' $((width-4)) ${width} '%1_'
+    print -v segment -f "%%%d<<%*s%%<<" $((width-4)) ${width} "%1_"
     PROMPT2="$(powerprompt -f zsh -L -- "gray3:${segment}") "
 }
 
@@ -298,8 +284,8 @@ _rprompt_callback() {
 
 _aligned_prompt2() {
     local width=${(%)#PROMPT}
-    print -v PROMPT2 -f '%%F{blue}%%%d<<%*s%%<<>%%f ' \
-        $((width-2)) ${width} '%1_'
+    print -v PROMPT2 -f "%%F{blue}%%%d<<%*s%%<<>%%f"  \
+        $((width-2)) ${width} "%1_"
 }
 
 nopowerline() {

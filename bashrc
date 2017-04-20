@@ -1,6 +1,7 @@
 #!/bin/bash
 # vim: set foldmethod=marker:
 
+# preamble {{{1
 export DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
 
 exists() {
@@ -73,7 +74,6 @@ FG_NORM="$(tput sgr0)"
 FG_GREEN="$(tput setaf 2)"
 FG_BLUE="$(tput setaf 4)"
 PLAIN_PS1="\[${FG_NORM}${FG_GREEN}\]\u \[${FG_BLUE}\]\W \$\[${FG_NORM}\] "
-unset FG_{NORM,GREEN,BLUE}
 
 _prompt_width() {
     echo -n "${PS1@P}" | sed 's/\x01[^\x02]*\x02//g' | wc -L
@@ -101,18 +101,18 @@ _prompt_command() {
         segments+=( "yellow:\H" )
     fi
     segments+=( "gray3:\W" )
-    PS1="\[${f_norm}\]$(powerprompt -f bash -L "${segments[@]}") "
+    PS1="\[${FG_NORM}\]$(powerprompt -f bash -L "${segments[@]}") "
 
     width="$(_prompt_width)"
     printf -v padded "%*s" $(( width - 4 )) "cont"
-    PS2="\[${f_norm}\]$(powerprompt -f bash -L "gray3:${padded}") "
+    PS2="\[${FG_NORM}\]$(powerprompt -f bash -L "gray3:${padded}") "
 }
 
 _aligned_ps2() {
     local width padded
     width="$(_prompt_width)"
     printf -v padded "%*s" $(( width - 2 )) "cont"
-    PS2="\[${f_norm}${f_blue}\]${padded}>\[${f_norm}\] "
+    PS2="\[${FG_NORM}${FG_BLUE}\]${padded}>\[${FG_NORM}\] "
 }
 
 nopowerline() {

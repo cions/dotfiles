@@ -1,0 +1,17 @@
+# vim: set ft=zsh:
+
+local rootdir selected
+
+(( ${+commands[fzy]} )) || return
+
+rootdir=${HOME}/src
+[[ -d ${rootdir} ]] || return
+
+tput cud1
+selected="$(cd -q ${rootdir} && print -rl -- */*/*(N-/) | fzy)"
+tput cuu1
+zle reset-prompt
+[[ -z ${selected} ]] && return
+
+BUFFER="cd ${(q)rootdir}/${(q)selected}"
+zle accept-line
