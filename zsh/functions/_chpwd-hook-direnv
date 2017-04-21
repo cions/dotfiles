@@ -1,0 +1,31 @@
+# vim: set ft=zsh:
+
+emulate -L zsh
+setopt extended_glob
+
+local env
+
+for env in ${_direnv}; do
+    unset ${env}
+done
+if (( ${+_direnv_path} )); then
+    path=( ${path:|_direnv_path} )
+fi
+
+_direnv=()
+_direnv_path=()
+
+set -- (../)#node_modules/.bin(N-/od:a)
+if (( $# > 0 )); then
+    _direnv_path+=( $1 )
+fi
+
+set -- (../)#pyvenv.cfg(N-.od:a:h)
+if (( $# > 0 )); then
+    VIRTUAL_ENV=$1
+    _direnv+=( VIRTUAL_ENV )
+    _direnv_path+=( $1/bin )
+fi
+
+path=( ${_direnv_path} ${path} )
+hash -r

@@ -1,0 +1,7 @@
+# vim: set ft=zsh:
+
+emulate -L zsh
+
+if (( ZSH_SUBSHELL == 0 )); then
+    ls -AF --color=auto --quoting-style=literal
+fi

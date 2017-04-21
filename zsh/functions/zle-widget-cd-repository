@@ -1,17 +1,22 @@
 # vim: set ft=zsh:
 
-local rootdir selected
+emulate -L zsh
+
+local rootdir candidates selected
 
 (( ${+commands[fzy]} )) || return
 
 rootdir=${HOME}/src
 [[ -d ${rootdir} ]] || return
 
-tput cud1
-selected="$(cd -q ${rootdir} && print -rl -- */*/*(N-/) | fzy)"
-tput cuu1
+candidates="$(find ${rootdir} -type d -mindepth 3 -maxdepth 3 -printf '%P\n')"
+[[ -n ${candidates} ]] || return
+
+echoti cud1
+selected="$(print -r -- ${candidates} | fzy)"
+echoti cuu1
 zle reset-prompt
-[[ -z ${selected} ]] && return
+[[ -n ${selected} ]] || return
 
 BUFFER="cd ${(q)rootdir}/${(q)selected}"
 zle accept-line

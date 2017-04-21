@@ -3,6 +3,7 @@
 
 # preamble {{{1
 autoload -Uz add-zsh-hook
+zmodload zsh/complist
 zmodload zsh/parameter
 zmodload zsh/terminfo
 zmodload zsh/zutil
@@ -40,15 +41,12 @@ source ${ZPLUG_HOME}/init.zsh
 zplug "zplug/zplug"
 zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-syntax-highlighting", defer:2
-zplug "cions/dotfiles", use:"zsh/"
-
-if ! zplug check --verbose; then
-    print -n "Install? [y/N]: "
-    if read -q; then
-        print
-        zplug install
-    fi
+if [[ -O ${DOTFILES} ]]; then
+    zplug "${DOTFILES}/zsh", from:"local"
+else
+    zplug "cions/dotfiles", use:"zsh/"
 fi
+
 zplug load
 
 # dircolors {{{1
@@ -129,16 +127,15 @@ setopt complete_in_word
 setopt glob_complete
 setopt hist_expand
 
-zstyle ':completion:*' verbose on
-
+zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' completer \
     _expand _complete _match _prefix _files _list _history
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*' use-cache yes
-zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
-zstyle ':completion:*' menu select=2
 zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' verbose yes
 
 zstyle ':completion:*' format '%F{blue}%d%f'
 zstyle ':completion:messages' format '%F{yellow}%d%f'
@@ -152,45 +149,18 @@ zle -C complete-file menu-expand-or-complete _generic
 zstyle ':completion:complete-file:*' completer _files
 bindkey '^X^F' complete-file
 
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'j' down-line-or-history
+bindkey -M menuselect 'k' up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+
 # chdir {{{1
 setopt auto_cd
 setopt auto_pushd
 setopt pushd_ignore_dups
 
-_chpwd_hook_direnv() {
-    local env
-
-    for env in ${_direnv}; do
-        unset ${env}
-    done
-    if (( ${+_direnv_path} )); then
-        path=( ${path:|_direnv_path} )
-    fi
-
-    _direnv=()
-    _direnv_path=()
-
-    set -- (../)#node_modules/.bin(N-/od:a)
-    if (( $# > 0 )); then
-        _direnv_path+=( $1 )
-    fi
-
-    set -- (../)#pyvenv.cfg(N-.od:a:h)
-    if (( $# > 0 )); then
-        VIRTUAL_ENV=$1
-        _direnv+=( VIRTUAL_ENV )
-        _direnv_path+=( $1/bin )
-    fi
-
-    path=( ${_direnv_path} ${path} )
-    hash -r
-}
-add-zsh-hook -Uz chpwd _chpwd_hook_direnv
-
-_chpwd_hook_ls() {
-    (( ZSH_SUBSHELL == 0 )) && ls -AF --color=auto --quoting-style=literal
-}
-add-zsh-hook -Uz chpwd _chpwd_hook_ls
+add-zsh-hook -Uz chpwd _chpwd-hook-direnv
+add-zsh-hook -Uz chpwd _chpwd-hook-ls
 
 # history {{{1
 setopt hist_ignore_all_dups
@@ -308,12 +278,12 @@ else
 fi
 
 # gpg-agent {{{1
-_preexec_hook_gpg_agent() {
-    if (( ${+commands[gpg-connect-agent]} )); then
+if (( ${+commands[gpg-connect-agent]} )); then
+    _preexec-hook-gpg-agent() {
         gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
-    fi
-}
-add-zsh-hook -Uz preexec _preexec_hook_gpg_agent
+    }
+    add-zsh-hook -Uz preexec _preexec-hook-gpg-agent
+fi
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8
