@@ -4,19 +4,19 @@ emulate -L zsh
 
 local rootdir candidates selected
 
-(( ${+commands[fzy]} )) || return
+if (( ! ${+commands[fzy]} )) return
 
 rootdir=${HOME}/src
-[[ -d ${rootdir} ]] || return
+if [[ ! -d ${rootdir} ]] return
 
 candidates="$(find ${rootdir} -type d -mindepth 3 -maxdepth 3 -printf '%P\n')"
-[[ -n ${candidates} ]] || return
+if [[ -z ${candidates} ]] return
 
 echoti cud1
 selected="$(print -r -- ${candidates} | fzy)"
 echoti cuu1
 zle reset-prompt
-[[ -n ${selected} ]] || return
+if [[ -z ${selected} ]] return
 
 BUFFER="cd ${(q)rootdir}/${(q)selected}"
 zle accept-line

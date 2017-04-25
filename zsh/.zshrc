@@ -8,61 +8,72 @@ zmodload zsh/parameter
 zmodload zsh/terminfo
 zmodload zsh/zutil
 
-export DOTFILES=${${(%):-%x}:A:h:h}
+DOTFILES=${${(%):-%x}:A:h:h}
+
+# options {{{1
+setopt extended_glob
+setopt rm_star_silent
 
 # cgclassify {{{1
 () {
     local cgroup cgpath
-    [[ -f /proc/self/cgroup ]] || return
-    for cgroup in "${(@f)$(</proc/self/cgroup)}"; do
+    if [[ ! -f /proc/self/cgroup ]] return
+    for cgroup in "${(@f)$(</proc/self/cgroup)}"; {
         cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}/shell/zsh-$$
-        [[ -d ${cgpath:h} && ${cgroup[(ws.:.)3]} != /shell/* ]] || continue
-        mkdir -- ${cgpath} 2>/dev/null || continue
+        if ! [[ -d ${cgpath:h} && ${cgroup[(ws.:.)3]} != /shell/* ]] continue
+        mkdir ${cgpath} 2>/dev/null || continue
         print $$ > ${cgpath}/cgroup.procs
         print 1 > ${cgpath}/notify_on_release
-        [[ -f ${cgpath}/freezer.state ]] && {
+        if [[ -f ${cgpath}/freezer.state ]] {
             chgrp wheel ${cgpath}/freezer.state
             chmod g+w ${cgpath}/freezer.state
         }
-        [[ -f ${cgpath}/pids.max ]] && echo 1024 > ${cgpath}/pids.max
-    done
+        if [[ -f ${cgpath}/pids.max ]] {
+            echo 1024 > ${cgpath}/pids.max
+        }
+    }
 }
 
 # zplug {{{1
 ZPLUG_HOME=${ZDOTDIR}/zplug
 ZPLUG_THREADS="$(nproc)"
 
-if [[ ! -f ${ZPLUG_HOME}/init.zsh ]]; then
+if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] {
     git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
-fi
+}
 
 source ${ZPLUG_HOME}/init.zsh
 
 zplug "zplug/zplug"
 zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-syntax-highlighting", defer:2
-if [[ -O ${DOTFILES} ]]; then
+if [[ -O ${DOTFILES} ]] {
     zplug "${DOTFILES}/zsh", from:"local"
-else
+} else {
     zplug "cions/dotfiles", use:"zsh/"
-fi
+}
 
+zplug check || zplug install
 zplug load
 
-# dircolors {{{1
-if (( ${+commands[dircolors]} )); then
-    if [[ -f ~/.dir_colors ]]; then
-        eval "$(dircolors -b ~/.dir_colors)"
-    elif [[ -f /etc/DIR_COLORS ]]; then
-        eval "$(dircolors -b /etc/DIR_COLORS)"
-    else
-        eval "$(dircolors -b)"
-    fi
-fi
+# zcompile {{{1
+() {
+    local file
+    for file in ${ZDOTDIR}/*.zwc(ND); {
+        if [[ ${file:r} -nt ${file} ]] zcompile ${file:r}
+    }
+}
 
-# options {{{1
-setopt extended_glob
-setopt rm_star_silent
+# dircolors {{{1
+if (( ${+commands[dircolors]} )) {
+    if [[ -f ~/.dir_colors ]] {
+        eval "$(dircolors -b ~/.dir_colors)"
+    } elif [[ -f /etc/DIR_COLORS ]] {
+        eval "$(dircolors -b /etc/DIR_COLORS)"
+    } else {
+        eval "$(dircolors -b)"
+    }
+}
 
 # commands {{{1
 autoload -Uz zargs
@@ -70,14 +81,6 @@ autoload -Uz zmv
 
 args() {
     print -rl -- "${(@qqqq)argv}"
-}
-
-zrecompile() {
-    local file
-    for file in ${ZDOTDIR}/**/*.zwc(ND); do
-        [[ ${file:r} -nt ${file} ]] || continue
-        zcompile ${file:r}
-    done
 }
 
 # aliases {{{1
@@ -92,7 +95,7 @@ alias rrf='rm -rf'
 alias p='print -rl --'
 alias reload='exec zsh'
 alias dot='git -C ${DOTFILES}'
-(( ${+commands[hub]} )) && alias git='hub'
+if (( ${+commands[hub]} )) alias git='hub'
 
 alias -g ...='../..'
 alias -g ....='../../..'
@@ -115,10 +118,10 @@ bindkey -e
 autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
-bindkey "^P" history-beginning-search-backward-end
-bindkey "^N" history-beginning-search-forward-end
+bindkey '^P' history-beginning-search-backward-end
+bindkey '^N' history-beginning-search-forward-end
 
-bindkey "^G^G" zle-widget-cd-repository
+bindkey '^G^G' zle-widget-cd-repository
 
 # completion {{{1
 setopt no_beep
@@ -129,7 +132,7 @@ setopt hist_expand
 
 zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' completer \
-    _expand _complete _match _prefix _files _list _history
+    _expand _complete _match _prefix _list
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -166,124 +169,119 @@ add-zsh-hook -Uz chpwd _chpwd-hook-ls
 setopt hist_ignore_all_dups
 
 # prompt {{{1
-_plain_prompt="%F{green}%n%F{blue} %1~ %(!.#.$)%f "
+_PLAIN_PLOMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
 
-_precmd_hook_prompt() {
+_precmd-hook-prompt() {
     local _status=${status}
     local jobnum=${(%):-%j}
     local segments=()
 
-    if (( _status != 0 )); then
-        segments+=( "red:${_status}" )
-    fi
-    if (( jobnum != 0 )); then
-        segments+=( "orange:${jobnum}" )
-    fi
-    if (( EUID == 0 )); then
+    if (( _status != 0 )) segments+=( "red:${_status}" )
+    if (( jobnum != 0 )) segments+=( "orange:${jobnum}" )
+    if (( EUID == 0 )) {
         segments+=( "magenta:%n" )
-    else
+    } else {
         segments+=( "green:%n" )
-    fi
-    if (( ${+SSH_CONNECTION} )); then
-        segments+=( "yellow:%M" )
-    fi
+    }
+    if (( ${+SSH_CONNECTION} )) segments+=( "yellow:%M" )
     segments+=( "gray3:%1~" )
     PROMPT="$(powerprompt -f zsh -L -- "${segments[@]}") "
 
     local width segment
     width=${(%)#PROMPT}
-    print -v segment -f "%%%d<<%*s%%<<" $((width-4)) ${width} "%1_"
+    print -v segment -f '%%%d<<%*s%%<<' $((width-4)) ${width} '%1_'
     PROMPT2="$(powerprompt -f zsh -L -- "gray3:${segment}") "
 }
 
-_rprompt_async() {
+_rprompt-async() {
     local workdir=${argv[1]}
     local segments=()
 
     cd -q ${workdir} 2>/dev/null || return 1
     git-info || return 1
 
-    if (( gitstate[head_detached] )); then
+    if (( gitstate[head_detached] )) {
         segments+=( "yellow:${gitstate[head_name]}" )
-    else
+    } else {
         segments+=( "green:${gitstate[head_name]}" )
-    fi
+    }
 
-    if [[ -n ${gitstate[state]} ]]; then
-        local steps=""
-        if (( gitstate[total] > 1 )); then
-            steps=" (${gitstate[step]}/${gitstate[total]})"
-        fi
-        segments+=( "orange:${gitstate[state]}${steps}" )
-        if [[ -n ${gitstate[target_name]} ]]; then
+    if [[ -n ${gitstate[state]} ]] {
+        local state="${gitstate[state]}"
+        if (( gitstate[total] > 1 )) {
+            state+=" (${gitstate[step]}/${gitstate[total]})"
+        }
+        segments+=( "orange:${state}" )
+        if [[ -n ${gitstate[target_name]} ]] {
             segments+=( "orange:${gitstate[target_name]}" )
-        fi
-    fi
+        }
+    }
 
     local _status=()
-    (( gitstate[ahead] )) && _status+=( "${gitstate[ahead]}" )
-    (( gitstate[behind] )) && _status+=( "${gitstate[behind]}" )
-    (( gitstate[unmerged] )) && _status+=( "${gitstate[unmerged]}" )
-    (( gitstate[staged] )) && _status+=( "${gitstate[staged]}" )
-    (( gitstate[wt_modified] )) && _status+=( "${gitstate[wt_modified]}" )
-    (( gitstate[wt_deleted] )) && _status+=( "${gitstate[wt_deleted]}" )
-    (( gitstate[untracked] )) && _status+=( "${gitstate[untracked]}" )
-    (( gitstate[stash] )) && _status+=( "${gitstate[stash]}" )
-    if (( ${#_status} > 0 )); then
+    if (( gitstate[ahead]       )) _status+=( "${gitstate[ahead]}" )
+    if (( gitstate[behind]      )) _status+=( "${gitstate[behind]}" )
+    if (( gitstate[unmerged]    )) _status+=( "${gitstate[unmerged]}" )
+    if (( gitstate[staged]      )) _status+=( "${gitstate[staged]}" )
+    if (( gitstate[wt_modified] )) _status+=( "${gitstate[wt_modified]}" )
+    if (( gitstate[wt_deleted]  )) _status+=( "${gitstate[wt_deleted]}" )
+    if (( gitstate[untracked]   )) _status+=( "${gitstate[untracked]}" )
+    if (( gitstate[stash]       )) _status+=( "${gitstate[stash]}" )
+    if (( ${#_status} > 0 )) {
         segments+=( "yellow:${(j: :)_status}" )
-    fi
+    }
 
     powerprompt -f zsh -R -- "${segments[@]}"
     return 0
 }
 
-_precmd_hook_rprompt() {
+_precmd-hook-rprompt() {
     local workdir=${PWD}
-    [[ ${workdir} == ${HOME} ]] && workdir=${DOTFILES}
-    async_job rprompt_worker _rprompt_async ${workdir}
+    if [[ ${workdir} == ${HOME} ]] workdir=${DOTFILES}
+    RPROMPT=""
+    async_job rprompt_worker _rprompt-async ${workdir}
 }
 
-_rprompt_callback() {
+_rprompt-callback() {
     local returncode=${argv[2]}
     local stdout=${argv[3]}
 
-    (( returncode != 0 )) && return
+    if (( returncode != 0 )) return
     RPROMPT=${stdout}
-    [[ -n ${RPROMPT} ]] && zle && zle reset-prompt
+    zle reset-prompt
 }
 
-_aligned_prompt2() {
+_aligned-prompt2() {
     local width=${(%)#PROMPT}
-    print -v PROMPT2 -f "%%F{blue}%%%d<<%*s%%<<>%%f"  \
-        $((width-2)) ${width} "%1_"
+    print -v PROMPT2 -f '%%F{blue}%%%d<<%*s%%<<>%%f' \
+        $((width-2)) ${width} '%1_'
 }
 
 nopowerline() {
     async_stop_worker rprompt_worker
-    add-zsh-hook -d precmd _precmd_hook_prompt
-    add-zsh-hook -d precmd _precmd_hook_rprompt
+    add-zsh-hook -d precmd _precmd-hook-prompt
+    add-zsh-hook -d precmd _precmd-hook-rprompt
 
-    PROMPT=${_plain_prompt}
+    PROMPT=${_PLAIN_PLOMPT}
     RPROMPT=""
-    add-zsh-hook -Uz precmd _aligned_prompt2
+    add-zsh-hook -Uz precmd _aligned-prompt2
 }
 
-if (( ${+commands[powerprompt]} )); then
+if (( ${+commands[powerprompt]} )) {
     async_start_worker rprompt_worker -u -n
-    async_register_callback rprompt_worker _rprompt_callback
-    add-zsh-hook -Uz precmd _precmd_hook_prompt
-    add-zsh-hook -Uz precmd _precmd_hook_rprompt
-else
+    async_register_callback rprompt_worker _rprompt-callback
+    add-zsh-hook -Uz precmd _precmd-hook-prompt
+    add-zsh-hook -Uz precmd _precmd-hook-rprompt
+} else {
     nopowerline
-fi
+}
 
 # gpg-agent {{{1
-if (( ${+commands[gpg-connect-agent]} )); then
+if (( ${+commands[gpg-connect-agent]} )) {
     _preexec-hook-gpg-agent() {
         gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     }
     add-zsh-hook -Uz preexec _preexec-hook-gpg-agent
-fi
+}
 
 # env variable {{{1
 export LANG=ja_JP.UTF-8

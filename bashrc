@@ -2,10 +2,10 @@
 # vim: set foldmethod=marker:
 
 # preamble {{{1
-export DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
+DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
 
 exists() {
-    command -v -- "$1" >/dev/null 2>&1
+    command -v -- "$1" >/dev/null
 }
 
 # cgclassify {{{1
@@ -17,7 +17,7 @@ cgclassify() {
         IFS=":" read -r id subsys hier <<< "${cgroup}"
         cgpath="/sys/fs/cgroup/${subsys#name=}/shell/bash-$$"
         [[ -d "${cgpath%/*}" && "${hier}" != /shell/* ]] || continue
-        mkdir -- "${cgpath}" 2>/dev/null || continue
+        mkdir "${cgpath}" 2>/dev/null || continue
         echo "$$" > "${cgpath}/cgroup.procs"
         echo 1 > "${cgpath}/notify_on_release"
         if [[ -f "${cgpath}/freezer.state" ]]; then
@@ -45,9 +45,9 @@ fi
 # options {{{1
 shopt -s checkwinsize
 shopt -s dotglob
+shopt -s no_empty_cmd_completion
 shopt -s globstar
 shopt -s lithist
-shopt -s no_empty_cmd_completion
 shopt -s nullglob
 
 HISTCONTROL=ignoreboth
@@ -83,7 +83,6 @@ _prompt_command() {
     local exitcode=$?
     local jobnum="$(jobs -p | wc -l)"
     local segments=()
-    local width padded
 
     if (( exitcode != 0 )); then
         segments+=( "red:${exitcode}" )
@@ -101,17 +100,18 @@ _prompt_command() {
         segments+=( "yellow:\H" )
     fi
     segments+=( "gray3:\W" )
-    PS1="\[${FG_NORM}\]$(powerprompt -f bash -L "${segments[@]}") "
+    PS1="\[${FG_NORM}\]$(powerprompt -f bash -L -- "${segments[@]}") "
 
+    local width padded
     width="$(_prompt_width)"
-    printf -v padded "%*s" $(( width - 4 )) "cont"
-    PS2="\[${FG_NORM}\]$(powerprompt -f bash -L "gray3:${padded}") "
+    printf -v padded "%*s" $((width-4)) "cont"
+    PS2="\[${FG_NORM}\]$(powerprompt -f bash -L -- "gray3:${padded}") "
 }
 
 _aligned_ps2() {
     local width padded
     width="$(_prompt_width)"
-    printf -v padded "%*s" $(( width - 2 )) "cont"
+    printf -v padded "%*s" $((width-2)) "cont"
     PS2="\[${FG_NORM}${FG_BLUE}\]${padded}>\[${FG_NORM}\] "
 }
 

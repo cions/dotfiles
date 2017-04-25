@@ -1,13 +1,12 @@
 () {
-    local script_dir dir func
+    local zshdir dir func
 
-    script_dir=${${(%):-%x}:A:h}
-
-    for dir in ${script_dir}/*(N-/); do
+    zshdir=${${(%):-%x}:A:h}
+    for dir in ${zshdir}/*(N-/); {
         fpath=( ${dir} ${fpath} )
-        for func in ${dir}/*(N-.:t); do
+        for func in ${dir}/*(N-.:t); {
             autoload -Uz ${func}
-            [[ ${func} == zle-* ]] && zle -N ${func}
-        done
-    done
+            if [[ ${func} == zle-* ]] zle -N ${func}
+        }
+    }
 }

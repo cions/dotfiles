@@ -2,10 +2,10 @@
 
 TMUXPID=${TMUX[(ws:,:)2]}
 
-[[ -f /proc/${TMUXPID}/cgroup ]] || exit 0
+if [[ ! -f /proc/${TMUXPID}/cgroup ]] exit 0
 
-for cgroup in "${(@f)$(</proc/${TMUXPID}/cgroup)}"; do
+for cgroup in "${(@f)$(</proc/${TMUXPID}/cgroup)}"; {
     cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}
-    [[ -d ${cgpath} && ${cgroup[(ws.:.)3]} == /shell/* ]] || continue
+    if ! [[ -d ${cgpath} && ${cgroup[(ws.:.)3]} == /shell/* ]] continue
     print ${TMUXPID} > ${cgpath}/cgroup.procs
-done
+}

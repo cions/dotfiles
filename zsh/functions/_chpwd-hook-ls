@@ -2,6 +2,6 @@
 
 emulate -L zsh
 
-if (( ZSH_SUBSHELL == 0 )); then
+if (( ZSH_SUBSHELL == 0 )) {
     ls -AF --color=auto --quoting-style=literal
-fi
+}

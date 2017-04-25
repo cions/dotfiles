@@ -1,12 +1,12 @@
 #!/bin/zsh
 
 tmux-if-chain() {
-    if (( $# > 1 )); then
+    if (( $# > 1 )) {
         print -rn -- "if -Ft= ${(qqq)argv[1]} ${(qqq)argv[2]}" \
             "${(qqq)$(tmux-if-chain "${(@)argv[3,-1]}")}"
-    else
+    } else {
         print -rn -- ${argv[1]}
-    fi
+    }
 }
 
 cmdline="$(tmux-if-chain \

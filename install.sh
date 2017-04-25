@@ -63,7 +63,7 @@ git ls-files | cut -d '/' -f '1-2' | sort -u | while IFS= read -r target; do
     [[ "${src}" -ef "${dst}" ]] && continue
     if [[ -e "${dst}" ]]; then
         if (( OPT_FORCE )) || overwrite_prompt "${dst}"; then
-            rm -rf -- "${dst}"
+            rm -r -- "${dst}"
         else
             continue
         fi

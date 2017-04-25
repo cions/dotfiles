@@ -5,55 +5,55 @@ usage() {
     exit 1
 }
 
-cmd=$1
-target=$2
+cmd=${argv[1]}
+target=${argv[2]}
 
-case ${target} in
-    pane)
+case ${target} {
+    (pane)
         pane_pid="$(tmux display -p "#{pane_pid}")"
-        while [[ "$(</proc/${pane_pid}/comm)" == "sudo" ]]; do
+        while [[ "$(</proc/${pane_pid}/comm)" == "sudo" ]] {
             pane_pid="$(pgrep -P ${pane_pid})"
-        done
-        [[ -f /proc/${pane_pid}/cgroup ]] || exit 1
-        for cgroup in "${(@f)$(</proc/${pane_pid}/cgroup)}"; do
+        }
+        if [[ ! -f /proc/${pane_pid}/cgroup ]] exit 1
+        for cgroup in "${(@f)$(</proc/${pane_pid}/cgroup)}"; {
             subsys=${cgroup[(ws.:.)2]}
             hier=${cgroup[(ws.:.)3]}
-            [[ ",${subsys}," == *,freezer,* ]] || continue
-            [[ ${hier} == /shell/* ]] || continue
+            if [[ ",${subsys}," != *,freezer,* ]] continue
+            if [[ ${hier} != /shell/* ]] continue
             statefile=/sys/fs/cgroup/${subsys}${hier}/freezer.state
             break
-        done
+        }
         ;;
-    emerge)
+    (emerge)
         statefile=/sys/fs/cgroup/freezer/emerge/freezer.state
         ;;
-    www-browser)
+    (www-browser)
         statefile=/sys/fs/cgroup/freezer/www-browser/freezer.state
         ;;
-    *)
+    (*)
         usage
         ;;
-esac
+}
 
-[[ -f ${statefile} ]] || exit 1
+if [[ ! -f ${statefile} ]] exit 1
 
-state="$(<${statefile})"
-case ${cmd} in
-    toggle)
-        if [[ ${state} == FROZEN ]]; then
+read -r state < ${statefile}
+case ${cmd} {
+    (toggle)
+        if [[ ${state} == FROZEN ]] {
             print THAWED > ${statefile}
-        else
+        } else {
             print FROZEN > ${statefile}
-        fi
+        }
         ;;
-    query)
-        if [[ ${state} == FROZEN ]]; then
-            print -nr -- ${3-FROZEN}
-        else
-            print -nr -- ${4-THAWED}
-        fi
+    (query)
+        if [[ ${state} == FROZEN ]] {
+            print -nr -- ${argv[3]-FROZEN}
+        } else {
+            print -nr -- ${argv[4]-THAWED}
+        }
         ;;
-    *)
+    (*)
         usage
         ;;
-esac
+}

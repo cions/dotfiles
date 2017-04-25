@@ -42,10 +42,10 @@ for path in "${paths[@]}"; do
 done
 export PATH
 
-if command -v gpg-connect-agent >/dev/null 2>&1; then
+if command -v gpg-connect-agent >/dev/null; then
     gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     unset SSH_AGENT_PID
-    if [[ -n "${XDG_RUNTIME_DIR}" ]]; then
+    if [[ -v XDG_RUNTIME_DIR ]]; then
         export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
     else
         export SSH_AUTH_SOCK="${HOME}/.gnupg/S.gpg-agent.ssh"

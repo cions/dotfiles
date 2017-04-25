@@ -1,7 +1,7 @@
 # vim: set ft=gitconfig:
 [core]
-	excludesfile = ~/.gitignore
 	editor = vim
+	excludesfile = ~/.gitignore
 [branch]
 	autosetupmerge = always
 [diff]
@@ -22,7 +22,7 @@
 	co = checkout
 	cob = checkout -b
 	s = status
-	ss = status -s
+	ss = status --short
 	d = diff
 	ds = diff --stat
 	dn = diff --name-only
@@ -65,13 +65,13 @@
 [color]
 	ui = auto
 [color "diff"]
+	commit = bold yellow
 	context = white
-	meta = bold white
 	frag = bold cyan
 	func = cyan
-	old = red
+	meta = bold white
 	new = green
-	commit = bold yellow
+	old = red
 	whitespace = red reverse
 [color "grep"]
 	context = normal

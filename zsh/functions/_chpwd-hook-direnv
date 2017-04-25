@@ -5,27 +5,27 @@ setopt extended_glob
 
 local env
 
-for env in ${_direnv}; do
+for env in ${_direnv}; {
     unset ${env}
-done
-if (( ${+_direnv_path} )); then
+}
+if (( ${+_direnv_path} )) {
     path=( ${path:|_direnv_path} )
-fi
+}
 
 _direnv=()
 _direnv_path=()
 
 set -- (../)#node_modules/.bin(N-/od:a)
-if (( $# > 0 )); then
+if (( $# > 0 )) {
     _direnv_path+=( $1 )
-fi
+}
 
 set -- (../)#pyvenv.cfg(N-.od:a:h)
-if (( $# > 0 )); then
+if (( $# > 0 )) {
     VIRTUAL_ENV=$1
     _direnv+=( VIRTUAL_ENV )
     _direnv_path+=( $1/bin )
-fi
+}
 
 path=( ${_direnv_path} ${path} )
 hash -r
