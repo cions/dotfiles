@@ -8,10 +8,10 @@ for shfile in /etc/profile.d/*.sh; do
     source "${shfile}"
 done
 
+IFS=":" read -ra paths <<< "${PATH}"
 if [[ -v MSYSTEM ]]; then
     export GOROOT="/mingw64/lib/go"
     export GOPATH="/mingw64/go:${HOME}"
-    IFS=":" read -ra paths <<< "${PATH}"
     paths=(
         "${HOME}/.bin"
         "/mingw64/go/bin"
@@ -24,6 +24,7 @@ elif (( EUID == 0 )); then
         "/usr/local/go/bin"
         {/usr/local,/usr,}/{sbin,bin}
         "/opt/bin"
+        "${paths[@]}"
     )
 else
     export GOPATH="/usr/local/go:${HOME}"
@@ -32,6 +33,7 @@ else
         "/usr/local/go/bin"
         {/usr/local,/usr,}/bin
         "/opt/bin"
+        "${paths[@]}"
     )
 fi
 

@@ -16,7 +16,7 @@ if (( ${+MSYSTEM} )) {
     path=(
         ${HOME}/.bin(N-/)
         /mingw64/go/bin(N-/)
-        ${path}
+        ${^path}(N-/)
     )
 } elif (( EUID == 0 )) {
     gopath=( /usr/local/go )
@@ -25,6 +25,7 @@ if (( ${+MSYSTEM} )) {
         ${^gopath}/bin(N-/)
         {/usr/local,/usr,}/{sbin,bin}(N-/)
         /opt/bin(N-/)
+        ${^path}(N-/)
     )
 } else {
     gopath=( /usr/local/go ${HOME} )
@@ -33,6 +34,7 @@ if (( ${+MSYSTEM} )) {
         ${^gopath}/bin(N-/)
         {/usr/local,/usr,}/bin(N-/)
         /opt/bin(N-/)
+        ${^path}(N-/)
     )
 }
 

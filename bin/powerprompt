@@ -60,8 +60,10 @@ if (( terminfo[colors] >= 256 )) {
 }
 
 zparseopts -D -M -A opts -- h=-help -help f: n P L R
-if (( ${+opts[--help]} )) usage
 
+if (( ${+opts[--help]} )) {
+    usage
+}
 format=${opts[-f]:-ansi}
 nospace=${+opts[-n]}
 direction=${${opts[-R]+right}:-left}

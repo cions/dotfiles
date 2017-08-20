@@ -229,11 +229,11 @@ repo = 'ujihisa/repl.vim'
 repo = 'osyo-manga/vim-watchdogs'
 hook_source = 'SourceRcfile watchdogs.vim'
 
-[[plugins]]
-repo = 'dannyob/quickfixstatus'
-
-[[plugins]]
-repo = 'jceb/vim-hier'
+# [[plugins]]
+# repo = 'dannyob/quickfixstatus'
+#
+# [[plugins]]
+# repo = 'jceb/vim-hier'
 
 [[plugins]]
 repo = 'thinca/vim-prettyprint'

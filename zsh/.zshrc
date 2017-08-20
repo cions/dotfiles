@@ -12,6 +12,10 @@ DOTFILES=${${(%):-%x}:A:h:h}
 
 # options {{{1
 setopt extended_glob
+setopt hist_subst_pattern
+setopt multios
+setopt rc_quotes
+setopt re_match_pcre
 setopt rm_star_silent
 
 # cgclassify {{{1
@@ -80,7 +84,7 @@ autoload -Uz zargs
 autoload -Uz zmv
 
 args() {
-    print -rl -- "${(@qqqq)argv}"
+    print -rl -- "${(@q+)argv}"
 }
 
 # aliases {{{1
@@ -166,18 +170,17 @@ add-zsh-hook -Uz chpwd _chpwd-hook-direnv
 add-zsh-hook -Uz chpwd _chpwd-hook-ls
 
 # history {{{1
-setopt hist_ignore_all_dups
+HISTSIZE=100000
 
 # prompt {{{1
 _PLAIN_PLOMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
 
 _precmd-hook-prompt() {
     local _status=${status}
-    local jobnum=${(%):-%j}
     local segments=()
 
     if (( _status != 0 )) segments+=( "red:${_status}" )
-    if (( jobnum != 0 )) segments+=( "orange:${jobnum}" )
+    if (( ${(%):-%j} != 0 )) segments+=( "orange:%j" )
     if (( EUID == 0 )) {
         segments+=( "magenta:%n" )
     } else {
@@ -267,7 +270,7 @@ nopowerline() {
 }
 
 if (( ${+commands[powerprompt]} )) {
-    async_start_worker rprompt_worker -u -n
+    async_start_worker rprompt_worker -u
     async_register_callback rprompt_worker _rprompt-callback
     add-zsh-hook -Uz precmd _precmd-hook-prompt
     add-zsh-hook -Uz precmd _precmd-hook-rprompt

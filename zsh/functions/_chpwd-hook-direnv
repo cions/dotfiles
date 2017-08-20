@@ -24,7 +24,7 @@ set -- (../)#pyvenv.cfg(N-.od:a:h)
 if (( $# > 0 )) {
     VIRTUAL_ENV=$1
     _direnv+=( VIRTUAL_ENV )
-    _direnv_path+=( $1/bin )
+    _direnv_path+=( $1/bin(N-/) )
 }
 
 path=( ${_direnv_path} ${path} )
