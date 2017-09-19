@@ -255,3 +255,7 @@ augroup vimrc
   autocmd InsertLeave * PreciousReset
   autocmd InsertLeave * NeoSnippetClearMarkers
 augroup END
+
+let g:tex_nospell = 1
+let g:tex_fast = ""
+let g:tex_conceal = ""

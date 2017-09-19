@@ -1,19 +1,16 @@
 #!/bin/zsh
 
 memusage() {
-    local meminfo total used free percent color
+    local meminfo total used percentage color
 
     meminfo=( "${(@f)$(</proc/meminfo)}" )
     (( total = ${meminfo[(r)MemTotal:*][(w)2]:-0} ))
-    (( free = ${meminfo[(r)MemFree:*][(w)2]:-0} ))
-    (( free += ${meminfo[(r)Buffers:*][(w)2]:-0} ))
-    (( free += ${meminfo[(r)Cached:*][(w)2]:-0} ))
-    (( used = total - free ))
-    (( percent = used * 100.0 / total ))
+    (( used = total - ${meminfo[(r)MemAvailable:*][(w)2]:-0} ))
+    (( percentage = used * 100.0 / total ))
 
-    if (( percent >= 80.0 )) {
+    if (( percentage >= 80.0 )) {
         color="red"
-    } elif (( percent >= 60.0 )) {
+    } elif (( percentage >= 60.0 )) {
         color="yellow"
     } else {
         color="green"
@@ -23,19 +20,19 @@ memusage() {
             ${color} \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
-            ${percent}
+            ${percentage}
     } else {
         print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
     }
 }
 
 swapusage() {
-    local meminfo total used percent color
+    local meminfo total used percentage color
 
     meminfo=( "${(@f)$(</proc/meminfo)}" )
     (( total = ${meminfo[(r)SwapTotal:*][(w)2]:-0} ))
     (( used = total - ${meminfo[(r)SwapFree:*][(w)2]:-0} ))
-    (( percent = used * 100.0 / total ))
+    (( percentage = used * 100.0 / total ))
 
     if (( total == 0 )) {
         color="gray2"
@@ -51,7 +48,7 @@ swapusage() {
             ${color} \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
-            ${percent}
+            ${percentage}
     } else {
         print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
     }

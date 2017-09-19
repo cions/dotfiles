@@ -69,17 +69,22 @@ alias dot='git -C "${DOTFILES}"'
 bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
-# prompt {{{1
-FG_NORM="$(tput sgr0)"
-FG_GREEN="$(tput setaf 2)"
-FG_BLUE="$(tput setaf 4)"
-PLAIN_PS1="\[${FG_NORM}${FG_GREEN}\]\u \[${FG_BLUE}\]\W \$\[${FG_NORM}\] "
+# PROMPT_COMMAND
+_preprompt_hooks=()
+_prompt_command() {
+    local func
+    for func in "${_preprompt_hooks[@]}"; do
+        ${func}
+    done
+}
+PROMPT_COMMAND=_prompt_command
 
+# prompt {{{1
 _prompt_width() {
     echo -n "${PS1@P}" | sed 's/\x01[^\x02]*\x02//g' | wc -L
 }
 
-_prompt_command() {
+_powerprompt() {
     local exitcode=$?
     local jobnum="$(jobs -p | wc -l)"
     local segments=()
@@ -90,7 +95,7 @@ _prompt_command() {
     if (( jobnum != 0 )); then
         segments+=( "orange:${jobnum}" )
     fi
-    segments+=( "magenta:bash" )
+    segments+=( "magenta:\s" )
     if (( EUID == 0 )); then
         segments+=( "magenta:\u" )
     else
@@ -100,30 +105,43 @@ _prompt_command() {
         segments+=( "yellow:\H" )
     fi
     segments+=( "gray3:\W" )
-    PS1="\[${FG_NORM}\]$(powerprompt -f bash -L -- "${segments[@]}") "
+    PS1="$(powerprompt -f bash -L -- "${segments[@]}") "
 
     local width padded
     width="$(_prompt_width)"
-    printf -v padded "%*s" $((width-4)) "cont"
-    PS2="\[${FG_NORM}\]$(powerprompt -f bash -L -- "gray3:${padded}") "
+    printf -v padded "%*s" $((width-4)) "..."
+    PS2="$(powerprompt -f bash -L -- "gray3:${padded}") "
 }
 
-_aligned_ps2() {
+_plainprompt() {
+    local RESET="$(tput sgr0)"
+    local FG_GREEN="$(tput setaf 2)"
+    local FG_BLUE="$(tput setaf 4)"
+
+    PS1="\[${RESET}${FG_GREEN}\]\u \[${FG_BLUE}\]\W \$\[${RESET}\] "
+
     local width padded
     width="$(_prompt_width)"
-    printf -v padded "%*s" $((width-2)) "cont"
-    PS2="\[${FG_NORM}${FG_BLUE}\]${padded}>\[${FG_NORM}\] "
+    printf -v padded "%*s" $((width-2)) "..."
+    PS2="\[${RESET}${FG_BLUE}\]${padded}>\[${RESET}\] "
 }
 
 nopowerline() {
-    PS1="${PLAIN_PS1}"
-    PROMPT_COMMAND=_aligned_ps2
+    _preprompt_hooks=( "${_preprompt_hooks[@]/_powerprompt/_plainprompt}" )
 }
 
 if exists powerprompt; then
-    PROMPT_COMMAND=_prompt_command
+    _preprompt_hooks+=( _powerprompt )
 else
-    nopowerline
+    _preprompt_hooks+=( _plainprompt )
+fi
+
+# gpg-agent {{{1
+if exists gpg-connect-agent; then
+    _gpg_agent_updatestartuptty() {
+        ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
+    }
+    _preprompt_hooks+=( _gpg_agent_updatestartuptty )
 fi
 
 # environment variables {{{1

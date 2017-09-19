@@ -9,7 +9,7 @@ if (( ! ${+commands[fzy]} )) return
 rootdir=${HOME}/src
 if [[ ! -d ${rootdir} ]] return
 
-candidates="$(find ${rootdir} -type d -mindepth 3 -maxdepth 3 -printf '%P\n')"
+candidates="$(cd -q ${rootdir}; print -rl -- */*/*(N-/))"
 if [[ -z ${candidates} ]] return
 
 echoti cud1

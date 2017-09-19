@@ -170,7 +170,9 @@ add-zsh-hook -Uz chpwd _chpwd-hook-direnv
 add-zsh-hook -Uz chpwd _chpwd-hook-ls
 
 # history {{{1
-HISTSIZE=100000
+HISTFILE=${ZDOTDIR}/.zsh_history
+HISTSIZE=1000000
+SAVEHIST=1000000
 
 # prompt {{{1
 _PLAIN_PLOMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
@@ -281,7 +283,7 @@ if (( ${+commands[powerprompt]} )) {
 # gpg-agent {{{1
 if (( ${+commands[gpg-connect-agent]} )) {
     _preexec-hook-gpg-agent() {
-        gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+        ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 )
     }
     add-zsh-hook -Uz preexec _preexec-hook-gpg-agent
 }

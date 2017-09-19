@@ -44,8 +44,9 @@ for path in "${paths[@]}"; do
 done
 export PATH
 
+unset ROOTPATH shfile paths path
+
 if command -v gpg-connect-agent >/dev/null; then
-    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     unset SSH_AGENT_PID
     if [[ -v XDG_RUNTIME_DIR ]]; then
         export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
@@ -54,7 +55,5 @@ if command -v gpg-connect-agent >/dev/null; then
     fi
     tty -s && export GPG_TTY="$(tty)"
 fi
-
-unset ROOTPATH shfile paths path
 
 [[ $- == *i* && -f ~/.bashrc ]] && source ~/.bashrc

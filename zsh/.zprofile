@@ -39,7 +39,6 @@ if (( ${+MSYSTEM} )) {
 }
 
 if (( ${+commands[gpg-connect-agent]} )) {
-    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     unset SSH_AGENT_PID
     if (( ${+XDG_RUNTIME_DIR} )) {
         export SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh
