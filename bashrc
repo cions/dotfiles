@@ -5,7 +5,7 @@
 DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
 
 exists() {
-    command -v -- "$1" >/dev/null
+    command -v -- "$1" >/dev/null 2>&1
 }
 
 # cgclassify {{{1
@@ -69,7 +69,7 @@ alias dot='git -C "${DOTFILES}"'
 bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
-# PROMPT_COMMAND
+# PROMPT_COMMAND {{{1
 _preprompt_hooks=()
 _prompt_command() {
     local func
@@ -137,7 +137,11 @@ else
 fi
 
 # gpg-agent {{{1
-if exists gpg-connect-agent; then
+if exists gpgconf; then
+    unset SSH_AGENT_PID
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    export GPG_TTY="$(tty)"
+
     _gpg_agent_updatestartuptty() {
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }

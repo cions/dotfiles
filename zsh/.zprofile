@@ -37,13 +37,3 @@ if (( ${+MSYSTEM} )) {
         ${^path}(N-/)
     )
 }
-
-if (( ${+commands[gpg-connect-agent]} )) {
-    unset SSH_AGENT_PID
-    if (( ${+XDG_RUNTIME_DIR} )) {
-        export SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh
-    } else {
-        export SSH_AUTH_SOCK=${HOME}/.gnupg/S.gpg-agent.ssh
-    }
-    export GPG_TTY=${TTY}
-}

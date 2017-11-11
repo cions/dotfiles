@@ -66,6 +66,7 @@ let g:quickrun_config['cpp/asm'] = {
       \   'tempfile': '%{tempfile()}.cpp',
       \   'outputter/buffer/filetype': 'asm'
       \ }
+let g:quickrun_config['javascript'] = { 'type': 'javascript/nodejs' }
 let g:quickrun_config['markdown'] = {
       \   'type': 'markdown/pandoc',
       \   'cmdopt': '-s',

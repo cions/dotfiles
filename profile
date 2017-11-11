@@ -46,14 +46,4 @@ export PATH
 
 unset ROOTPATH shfile paths path
 
-if command -v gpg-connect-agent >/dev/null; then
-    unset SSH_AGENT_PID
-    if [[ -v XDG_RUNTIME_DIR ]]; then
-        export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
-    else
-        export SSH_AUTH_SOCK="${HOME}/.gnupg/S.gpg-agent.ssh"
-    fi
-    tty -s && export GPG_TTY="$(tty)"
-fi
-
 [[ $- == *i* && -f ~/.bashrc ]] && source ~/.bashrc

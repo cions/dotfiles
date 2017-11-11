@@ -12,7 +12,7 @@ DOTFILES=${${(%):-%x}:A:h:h}
 
 # options {{{1
 setopt extended_glob
-setopt hist_subst_pattern
+setopt ignore_eof
 setopt multios
 setopt rc_quotes
 setopt re_match_pcre
@@ -48,7 +48,7 @@ if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] {
 
 source ${ZPLUG_HOME}/init.zsh
 
-zplug "zplug/zplug"
+zplug "zplug/zplug", hook-build:"zplug --self-manage"
 zplug "mafredri/zsh-async"
 zplug "zsh-users/zsh-syntax-highlighting", defer:2
 if [[ -O ${DOTFILES} ]] {
@@ -57,7 +57,6 @@ if [[ -O ${DOTFILES} ]] {
     zplug "cions/dotfiles", use:"zsh/"
 }
 
-zplug check || zplug install
 zplug load
 
 # zcompile {{{1
@@ -87,17 +86,22 @@ args() {
     print -rl -- "${(@q+)argv}"
 }
 
+mkcd() {
+    mkdir -p -- $1 && cd -- $1
+}
+
 # aliases {{{1
-alias ls='ls -F --color=auto --quoting-style=literal'
-alias la='ls -aF --color=auto --quoting-style=literal'
-alias lA='ls -AF --color=auto --quoting-style=literal'
-alias ll='ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
+alias ls=' ls -F --color=auto --quoting-style=literal'
+alias la=' ls -aF --color=auto --quoting-style=literal'
+alias lA=' ls -AF --color=auto --quoting-style=literal'
+alias ll=' ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
 alias grep='grep -E --color=auto'
 alias rm='rm -I'
 alias rr='rm -rI'
 alias rrf='rm -rf'
 alias p='print -rl --'
 alias reload='exec zsh'
+alias zmv='noglob zmv -W'
 alias dot='git -C ${DOTFILES}'
 if (( ${+commands[hub]} )) alias git='hub'
 
@@ -125,14 +129,20 @@ zle -N history-beginning-search-forward-end history-search-end
 bindkey '^P' history-beginning-search-backward-end
 bindkey '^N' history-beginning-search-forward-end
 
+bindkey '^@' zle-widget-cd-recent-dirs
+bindkey '^^' zle-widget-cd-parents
 bindkey '^G^G' zle-widget-cd-repository
 
 # completion {{{1
-setopt no_beep
+setopt auto_list
+setopt auto_param_slash
+setopt auto_remove_slash
 setopt complete_aliases
 setopt complete_in_word
 setopt glob_complete
 setopt hist_expand
+setopt menu_complete
+setopt no_beep
 
 zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' completer \
@@ -145,10 +155,10 @@ zstyle ':completion:*' use-cache yes
 zstyle ':completion:*' verbose yes
 
 zstyle ':completion:*' format '%F{blue}%d%f'
-zstyle ':completion:messages' format '%F{yellow}%d%f'
-zstyle ':completion:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
-zstyle ':completion:descriptions' format '%F{yellow}completing %B%d%b%f'
-zstyle ':completion:options' description yes
+zstyle ':completion:*:descriptions' format '%F{yellow}completing %B%d%b%f'
+zstyle ':completion:*:messages' format '%F{yellow}%d%f'
+zstyle ':completion:*:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
+zstyle ':completion:*:options' description yes
 
 zstyle ':completion:*:functions:*' ignored-patterns '_*'
 
@@ -163,16 +173,35 @@ bindkey -M menuselect 'l' vi-forward-char
 
 # chdir {{{1
 setopt auto_cd
-setopt auto_pushd
-setopt pushd_ignore_dups
 
+autoload -Uz chpwd_recent_dirs
+
+add-zsh-hook -Uz chpwd chpwd_recent_dirs
 add-zsh-hook -Uz chpwd _chpwd-hook-direnv
 add-zsh-hook -Uz chpwd _chpwd-hook-ls
 
+zstyle ':completion:*' recent-dirs-insert both
+zstyle ':chpwd:*' recent-dirs-max 1000
+zstyle ':chpwd:*' recent-dirs-default yes
+zstyle ':chpwd:*' recent-dirs-file ${ZDOTDIR}/.recent-dirs-file
+zstyle ':chpwd:*' recent-dirs-pushd yes
+
 # history {{{1
 HISTFILE=${ZDOTDIR}/.zsh_history
-HISTSIZE=1000000
-SAVEHIST=1000000
+HISTSIZE=10000
+SAVEHIST=100000
+
+setopt extended_history
+setopt hist_find_no_dups
+setopt hist_ignore_all_dups
+setopt hist_ignore_space
+setopt hist_no_store
+setopt hist_subst_pattern
+setopt hist_no_functions
+setopt hist_reduce_blanks
+setopt hist_verify
+setopt inc_append_history
+setopt share_history
 
 # prompt {{{1
 _PLAIN_PLOMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
@@ -281,9 +310,13 @@ if (( ${+commands[powerprompt]} )) {
 }
 
 # gpg-agent {{{1
-if (( ${+commands[gpg-connect-agent]} )) {
+if (( ${+commands[gpgconf]} )) {
+    unset SSH_AGENT_PID
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    export GPG_TTY=${TTY}
+
     _preexec-hook-gpg-agent() {
-        ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 )
+        ( gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null 2>&1 & )
     }
     add-zsh-hook -Uz preexec _preexec-hook-gpg-agent
 }

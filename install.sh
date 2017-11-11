@@ -31,13 +31,13 @@ ask_prompt() {
 }
 
 usage() {
-    echo "usage: $0 [-af] [DESTDIR]" 1>&2
+    echo "usage: $0 [-af] [DESTDIR]"
     echo
     echo "Options:"
     echo " -a       prompt before install"
     echo " -f       force to overwrite an existing destination file"
     exit 1
-}
+} 1>&2
 
 OPT_ASK=0
 OPT_FORCE=0

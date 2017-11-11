@@ -1,0 +1,18 @@
+# vim: set ft=zsh:
+
+emulate -L zsh
+setopt extended_glob
+
+local rootdir candidates selected
+
+if (( ! ${+commands[fzy]} )) return
+if [[ ${PWD} == "/" ]] return
+
+echoti cud1
+selected="$(print -rl -- (../)#(od:A) | fzy)"
+echoti cuu1
+zle reset-prompt
+if [[ -z ${selected} ]] return
+
+BUFFER="cd ${(q)selected}"
+zle accept-line
