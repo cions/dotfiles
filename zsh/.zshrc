@@ -11,9 +11,10 @@ zmodload zsh/zutil
 DOTFILES=${${(%):-%x}:A:h:h}
 
 # options {{{1
+setopt combining_chars
 setopt extended_glob
+setopt hist_subst_pattern
 setopt ignore_eof
-setopt multios
 setopt rc_quotes
 setopt re_match_pcre
 setopt rm_star_silent
@@ -56,6 +57,8 @@ if [[ -O ${DOTFILES} ]] {
 } else {
     zplug "cions/dotfiles", use:"zsh/"
 }
+
+zplug check || zplug install
 
 zplug load
 
@@ -100,14 +103,12 @@ alias rm='rm -I'
 alias rr='rm -rI'
 alias rrf='rm -rf'
 alias p='print -rl --'
+alias duh='du -sb *(ND) | sort -nr | numfmt --to=iec --field 1 --padding 4'
 alias reload='exec zsh'
 alias zmv='noglob zmv -W'
 alias dot='git -C ${DOTFILES}'
 if (( ${+commands[hub]} )) alias git='hub'
 
-alias -g ...='../..'
-alias -g ....='../../..'
-alias -g .....='../../../..'
 alias -g G='| grep -E'
 alias -g GV='| grep -E -v'
 alias -g L='| less'
@@ -121,7 +122,12 @@ alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
 
 # zle {{{1
-bindkey -e
+setopt no_beep
+
+bindkey -v
+
+autoload -Uz select-word-style
+select-word-style bash
 
 autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
@@ -134,15 +140,8 @@ bindkey '^^' zle-widget-cd-parents
 bindkey '^G^G' zle-widget-cd-repository
 
 # completion {{{1
-setopt auto_list
-setopt auto_param_slash
-setopt auto_remove_slash
-setopt complete_aliases
-setopt complete_in_word
+setopt always_to_end
 setopt glob_complete
-setopt hist_expand
-setopt menu_complete
-setopt no_beep
 
 zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' completer \
@@ -177,8 +176,8 @@ setopt auto_cd
 autoload -Uz chpwd_recent_dirs
 
 add-zsh-hook -Uz chpwd chpwd_recent_dirs
-add-zsh-hook -Uz chpwd _chpwd-hook-direnv
-add-zsh-hook -Uz chpwd _chpwd-hook-ls
+add-zsh-hook -Uz chpwd chpwd-hook-direnv
+add-zsh-hook -Uz chpwd chpwd-hook-ls
 
 zstyle ':completion:*' recent-dirs-insert both
 zstyle ':chpwd:*' recent-dirs-max 1000
@@ -188,30 +187,37 @@ zstyle ':chpwd:*' recent-dirs-pushd yes
 
 # history {{{1
 HISTFILE=${ZDOTDIR}/.zsh_history
-HISTSIZE=10000
+HISTSIZE=100000
 SAVEHIST=100000
 
 setopt extended_history
-setopt hist_find_no_dups
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
-setopt hist_no_store
-setopt hist_subst_pattern
 setopt hist_no_functions
+setopt hist_no_store
 setopt hist_reduce_blanks
 setopt hist_verify
-setopt inc_append_history
 setopt share_history
 
 # prompt {{{1
 _PLAIN_PLOMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
 
-_precmd-hook-prompt() {
+zle-prompt() {
     local _status=${status}
     local segments=()
 
     if (( _status != 0 )) segments+=( "red:${_status}" )
     if (( ${(%):-%j} != 0 )) segments+=( "orange:%j" )
+
+    case ${KEYMAP} in
+        (viins|main)
+            segments+=( "cyan:INSERT" )
+            ;;
+        (vicmd)
+            segments+=( "red:NORMAL" )
+            ;;
+    esac
+
     if (( EUID == 0 )) {
         segments+=( "magenta:%n" )
     } else {
@@ -225,9 +231,18 @@ _precmd-hook-prompt() {
     width=${(%)#PROMPT}
     print -v segment -f '%%%d<<%*s%%<<' $((width-4)) ${width} '%1_'
     PROMPT2="$(powerprompt -f zsh -L -- "gray3:${segment}") "
+
+    zle reset-prompt
 }
 
-_rprompt-async() {
+zle-rprompt() {
+    local workdir=${PWD}
+    if [[ ${workdir} == ${HOME} ]] workdir=${DOTFILES}
+    RPROMPT=""
+    async_job rprompt_worker zle-rprompt-async ${workdir}
+}
+
+zle-rprompt-async() {
     local workdir=${argv[1]}
     local segments=()
 
@@ -268,14 +283,7 @@ _rprompt-async() {
     return 0
 }
 
-_precmd-hook-rprompt() {
-    local workdir=${PWD}
-    if [[ ${workdir} == ${HOME} ]] workdir=${DOTFILES}
-    RPROMPT=""
-    async_job rprompt_worker _rprompt-async ${workdir}
-}
-
-_rprompt-callback() {
+zle-rprompt-callback() {
     local returncode=${argv[2]}
     local stdout=${argv[3]}
 
@@ -284,7 +292,7 @@ _rprompt-callback() {
     zle reset-prompt
 }
 
-_aligned-prompt2() {
+zle-rprompt-simple() {
     local width=${(%)#PROMPT}
     print -v PROMPT2 -f '%%F{blue}%%%d<<%*s%%<<>%%f' \
         $((width-2)) ${width} '%1_'
@@ -292,19 +300,19 @@ _aligned-prompt2() {
 
 nopowerline() {
     async_stop_worker rprompt_worker
-    add-zsh-hook -d precmd _precmd-hook-prompt
-    add-zsh-hook -d precmd _precmd-hook-rprompt
+    add-zsh-hook -d precmd zle-rprompt
 
     PROMPT=${_PLAIN_PLOMPT}
     RPROMPT=""
-    add-zsh-hook -Uz precmd _aligned-prompt2
+    add-zsh-hook -Uz precmd zle-rprompt-simple
 }
 
+zle -N zle-line-init zle-prompt
+zle -N zle-keymap-select zle-prompt
 if (( ${+commands[powerprompt]} )) {
     async_start_worker rprompt_worker -u
-    async_register_callback rprompt_worker _rprompt-callback
-    add-zsh-hook -Uz precmd _precmd-hook-prompt
-    add-zsh-hook -Uz precmd _precmd-hook-rprompt
+    async_register_callback rprompt_worker zle-rprompt-callback
+    add-zsh-hook -Uz precmd zle-rprompt
 } else {
     nopowerline
 }
@@ -315,10 +323,10 @@ if (( ${+commands[gpgconf]} )) {
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
     export GPG_TTY=${TTY}
 
-    _preexec-hook-gpg-agent() {
+    _gpg-agent-updatestartuptty() {
         ( gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null 2>&1 & )
     }
-    add-zsh-hook -Uz preexec _preexec-hook-gpg-agent
+    add-zsh-hook -Uz preexec _gpg-agent-updatestartuptty
 }
 
 # env variable {{{1

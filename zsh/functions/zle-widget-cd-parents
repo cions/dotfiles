@@ -3,7 +3,7 @@
 emulate -L zsh
 setopt extended_glob
 
-local rootdir candidates selected
+local selected
 
 if (( ! ${+commands[fzy]} )) return
 if [[ ${PWD} == "/" ]] return

@@ -3,5 +3,5 @@
 emulate -L zsh
 
 if (( ZSH_SUBSHELL == 0 )) {
-    ls -AF --color=auto --quoting-style=literal
+    command ls -AF --color=auto --quoting-style=literal
 }

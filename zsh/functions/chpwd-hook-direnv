@@ -3,14 +3,13 @@
 emulate -L zsh
 setopt extended_glob
 
+typeset -ag _direnv _direnv_path
 local env
 
 for env in ${_direnv}; {
     unset ${env}
 }
-if (( ${+_direnv_path} )) {
-    path=( ${path:|_direnv_path} )
-}
+path=( ${path:|_direnv_path} )
 
 _direnv=()
 _direnv_path=()

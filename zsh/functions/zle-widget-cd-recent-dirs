@@ -2,10 +2,10 @@
 
 emulate -L zsh
 
-local rootdir candidates selected
+local file selected
 
 if (( ! ${+commands[fzy]} )) return
-zstyle -g file ':chpwd:*' recent-dirs-file || return
+zstyle -s ':chpwd:*' recent-dirs-file file || return
 if [[ ! -f ${file} ]] return
 
 echoti cud1
