@@ -1,0 +1,9 @@
+# vim: set ft=zsh:
+
+emulate -L zsh
+setopt extended_glob
+
+if [[ ${LBUFFER} == *\ (../)#.. ]] {
+    LBUFFER+="/."
+}
+zle self-insert

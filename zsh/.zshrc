@@ -72,8 +72,8 @@ zplug load
 
 # dircolors {{{1
 if (( ${+commands[dircolors]} )) {
-    if [[ -f ~/.dir_colors ]] {
-        eval "$(dircolors -b ~/.dir_colors)"
+    if [[ -f ~/.dircolors ]] {
+        eval "$(dircolors -b ~/.dircolors)"
     } elif [[ -f /etc/DIR_COLORS ]] {
         eval "$(dircolors -b /etc/DIR_COLORS)"
     } else {
@@ -148,6 +148,7 @@ alias run-help=' man'
 
 bindkey -v
 
+bindkey -M viins '.' zle-widget-repeating-dot
 bindkey -M viins '^@' zle-widget-cd-recent-dirs
 bindkey -M viins '^A' beginning-of-line
 bindkey -M viins '^B' backward-char

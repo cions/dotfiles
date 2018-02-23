@@ -33,8 +33,8 @@ unset -f cgclassify
 
 # dircolors {{{1
 if exists dircolors; then
-    if [[ -f ~/.dir_colors ]]; then
-        eval "$(dircolors -b ~/.dir_colors)"
+    if [[ -f ~/.dircolors ]]; then
+        eval "$(dircolors -b ~/.dircolors)"
     elif [[ -f /etc/DIR_COLORS ]]; then
         eval "$(dircolors -b /etc/DIR_COLORS)"
     else
