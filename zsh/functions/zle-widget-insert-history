@@ -6,14 +6,13 @@ setopt extended_glob
 local selected
 
 if (( ! ${+commands[fzy]} )) return
-if [[ ${PWD} == "/" ]] return
 
 echoti cud1
-selected="$(print -rl -- (../)#(od:A) | fzy)"
+selected="$(fc -l -nr 1 | fzy --query="${BUFFER}")"
 echoti cuu1
 zle reset-prompt
 
 if [[ -n ${selected} ]] {
-    BUFFER="cd ${(q)selected}"
-    zle accept-line
+    BUFFER="${selected}"
+    CURSOR=${#BUFFER}
 }

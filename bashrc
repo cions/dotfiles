@@ -143,7 +143,7 @@ if exists gpgconf; then
     export GPG_TTY="$(tty)"
 
     _gpg_agent_updatestartuptty() {
-        ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
+        ( gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null 2>&1 & )
     }
     _preprompt_hooks+=( _gpg_agent_updatestartuptty )
 fi

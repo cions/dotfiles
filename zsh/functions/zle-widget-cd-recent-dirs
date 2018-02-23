@@ -12,7 +12,8 @@ echoti cud1
 selected="$(print -rl -- "${(@fQ)$(<${file})}" | fzy)"
 echoti cuu1
 zle reset-prompt
-if [[ -z ${selected} ]] return
 
-BUFFER="cd ${(q)selected}"
-zle accept-line
+if [[ -z ${selected} ]] {
+    BUFFER="cd ${(q)selected}"
+    zle accept-line
+}

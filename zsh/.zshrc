@@ -4,15 +4,15 @@
 # preamble {{{1
 autoload -Uz add-zsh-hook
 zmodload zsh/complist
-zmodload zsh/parameter
 zmodload zsh/terminfo
-zmodload zsh/zutil
 
 DOTFILES=${${(%):-%x}:A:h:h}
 
 # options {{{1
+setopt no_beep
 setopt combining_chars
 setopt extended_glob
+setopt no_flow_control
 setopt hist_subst_pattern
 setopt ignore_eof
 setopt rc_quotes
@@ -103,17 +103,16 @@ alias rm='rm -I'
 alias rr='rm -rI'
 alias rrf='rm -rf'
 alias p='print -rl --'
-alias duh='du -sb *(ND) | sort -nr | numfmt --to=iec --field 1 --padding 4'
 alias reload='exec zsh'
-alias zmv='noglob zmv -W'
+alias rename='noglob zmv -W'
 alias dot='git -C ${DOTFILES}'
 if (( ${+commands[hub]} )) alias git='hub'
 
 alias -g G='| grep -E'
 alias -g GV='| grep -E -v'
 alias -g L='| less'
-alias -g H='| head -n 20'
-alias -g T='| tail -n 20'
+alias -g H='| head -n $((LINES-2))'
+alias -g T='| tail -n $((LINES-2))'
 alias -g S='| sort'
 alias -g SU='| sort -u'
 alias -g NO='1>/dev/null'
@@ -122,26 +121,73 @@ alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
 
 # zle {{{1
-setopt no_beep
-
-bindkey -v
-
 autoload -Uz select-word-style
 select-word-style bash
+
+autoload -Uz edit-command-line
+zle -N edit-command-line
 
 autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
-bindkey '^P' history-beginning-search-backward-end
-bindkey '^N' history-beginning-search-forward-end
 
-bindkey '^@' zle-widget-cd-recent-dirs
-bindkey '^^' zle-widget-cd-parents
-bindkey '^G^G' zle-widget-cd-repository
+autoload -Uz select-bracketed
+zle -N select-bracketed
+
+autoload -Uz select-quoted
+zle -N select-quoted
+
+autoload -Uz surround
+zle -N add-surround surround
+zle -N change-surround surround
+zle -N delete-surround surround
+
+unalias -m run-help
+autoload -Uz run-help run-help-{git,ip,openssl,sudo}
+alias run-help=' man'
+
+bindkey -v
+
+bindkey -M viins '^@' zle-widget-cd-recent-dirs
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^B' backward-char
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^F' forward-char
+bindkey -M viins '^G' zle-widget-cd-repository
+bindkey -M viins '^K' kill-line
+bindkey -M viins '^N' history-beginning-search-forward-end
+bindkey -M viins '^P' history-beginning-search-backward-end
+bindkey -M viins '^Q' push-line
+bindkey -M viins '^R' zle-widget-insert-history
+bindkey -M viins '^U' kill-whole-line
+bindkey -M viins '^X^E' edit-command-line
+bindkey -M viins '^X^H' expand-history
+bindkey -M viins '^X^W' expand-word
+bindkey -M viins '^[.' insert-last-word
+bindkey -M viins '^[h' run-help
+bindkey -M viins '^^' zle-widget-cd-parents
+
+bindkey -M vicmd 'ys' add-surround
+bindkey -M vicmd 'cs' change-surround
+bindkey -M vicmd 'ds' delete-surround
+bindkey -M visual 'S' add-surround
+
+() {
+    local m c
+    for m in visual viopp; {
+        for c in {a,i}${(s::)^:-'()[]{}<>bB'}; {
+            bindkey -M $m $c select-bracketed
+        }
+        for c in {a,i}{\',\",\`}; {
+            bindkey -M $m $c select-quoted
+        }
+    }
+}
 
 # completion {{{1
 setopt always_to_end
 setopt glob_complete
+setopt magic_equal_subst
 
 zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
 zstyle ':completion:*' completer \
@@ -160,15 +206,18 @@ zstyle ':completion:*:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
 zstyle ':completion:*:options' description yes
 
 zstyle ':completion:*:functions:*' ignored-patterns '_*'
+zstyle ':completion:*:manuals' separate-sections yes
+zstyle ':completion:*:cd:*' ignore-parents parent pwd
 
 zle -C complete-file menu-expand-or-complete _generic
 zstyle ':completion:complete-file:*' completer _files
 bindkey '^X^F' complete-file
 
 bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'j' down-line-or-history
-bindkey -M menuselect 'k' up-line-or-history
+bindkey -M menuselect 'j' vi-down-line-or-history
+bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect '^K' accept-and-infer-next-history
 
 # chdir {{{1
 setopt auto_cd
@@ -200,9 +249,7 @@ setopt hist_verify
 setopt share_history
 
 # prompt {{{1
-_PLAIN_PLOMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
-
-zle-prompt() {
+_powerprompt() {
     local _status=${status}
     local segments=()
 
@@ -210,12 +257,8 @@ zle-prompt() {
     if (( ${(%):-%j} != 0 )) segments+=( "orange:%j" )
 
     case ${KEYMAP} in
-        (viins|main)
-            segments+=( "cyan:INSERT" )
-            ;;
-        (vicmd)
-            segments+=( "red:NORMAL" )
-            ;;
+        (viins|main) segments+=( "cyan:INSERT" ) ;;
+        (vicmd)      segments+=( "red:NORMAL" ) ;;
     esac
 
     if (( EUID == 0 )) {
@@ -227,22 +270,33 @@ zle-prompt() {
     segments+=( "gray3:%1~" )
     PROMPT="$(powerprompt -f zsh -L -- "${segments[@]}") "
 
-    local width segment
-    width=${(%)#PROMPT}
-    print -v segment -f '%%%d<<%*s%%<<' $((width-4)) ${width} '%1_'
-    PROMPT2="$(powerprompt -f zsh -L -- "gray3:${segment}") "
+    local width=${(%)#PROMPT}
+    case ${KEYMAP} in
+        (viins|main) segments=( "cyan:INSERT" ) ;;
+        (vicmd)      segments=( "red:NORMAL" ) ;;
+    esac
+    segments+=( "gray3:%$((width-13))<<${(l:width-13:)}%1_%<<" )
+    PROMPT2="$(powerprompt -f zsh -L -- "${segments[@]}") "
 
     zle reset-prompt
 }
 
-zle-rprompt() {
+_plainprompt() {
+    PROMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
+    RPROMPT=""
+
+    local width=${(%)#PROMPT}
+    PROMPT2="%F{blue}%$((width-2))<<${(l:width-2:)}%1_%<<>%f "
+}
+
+_rprompt() {
     local workdir=${PWD}
     if [[ ${workdir} == ${HOME} ]] workdir=${DOTFILES}
     RPROMPT=""
-    async_job rprompt_worker zle-rprompt-async ${workdir}
+    async_job rprompt_worker _rprompt-async ${workdir}
 }
 
-zle-rprompt-async() {
+_rprompt-async() {
     local workdir=${argv[1]}
     local segments=()
 
@@ -283,7 +337,7 @@ zle-rprompt-async() {
     return 0
 }
 
-zle-rprompt-callback() {
+_rprompt-callback() {
     local returncode=${argv[2]}
     local stdout=${argv[3]}
 
@@ -292,27 +346,20 @@ zle-rprompt-callback() {
     zle reset-prompt
 }
 
-zle-rprompt-simple() {
-    local width=${(%)#PROMPT}
-    print -v PROMPT2 -f '%%F{blue}%%%d<<%*s%%<<>%%f' \
-        $((width-2)) ${width} '%1_'
-}
-
 nopowerline() {
+    zle -D zle-line-init zle-keymap-select 2>/dev/null
     async_stop_worker rprompt_worker
-    add-zsh-hook -d precmd zle-rprompt
+    add-zsh-hook -d precmd _rprompt
 
-    PROMPT=${_PLAIN_PLOMPT}
-    RPROMPT=""
-    add-zsh-hook -Uz precmd zle-rprompt-simple
+    add-zsh-hook -Uz precmd _plainprompt
 }
 
-zle -N zle-line-init zle-prompt
-zle -N zle-keymap-select zle-prompt
 if (( ${+commands[powerprompt]} )) {
+    zle -N zle-line-init _powerprompt
+    zle -N zle-keymap-select _powerprompt
     async_start_worker rprompt_worker -u
-    async_register_callback rprompt_worker zle-rprompt-callback
-    add-zsh-hook -Uz precmd zle-rprompt
+    async_register_callback rprompt_worker _rprompt-callback
+    add-zsh-hook -Uz precmd _rprompt
 } else {
     nopowerline
 }

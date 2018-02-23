@@ -2,6 +2,16 @@
 
 emulate -L zsh
 
+local files max
+local -x QUOTING_STYLE=literal
+
 if (( ZSH_SUBSHELL == 0 )) {
-    command ls -AF --color=auto --quoting-style=literal
+    zstyle -s ':chpwd:ls' max-files max || max=50
+    files=( *(DN) )
+    if (( ${#files} > max )) {
+        command ls -dACF --color -- "${(@)files[1,max]}"
+        print "${#files} files exist"
+    } else {
+        command ls -ACF --color
+    }
 }

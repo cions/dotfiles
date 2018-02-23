@@ -35,7 +35,7 @@ usage() {
     echo
     echo "Options:"
     echo " -a       prompt before install"
-    echo " -f       force to overwrite an existing destination file"
+    echo " -f       force to overwrite an existing destination files"
     exit 1
 } 1>&2
 

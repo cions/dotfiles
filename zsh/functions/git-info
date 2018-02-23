@@ -17,7 +17,7 @@ gstatus=( "${(@f)$(git status --porcelain --branch 2>/dev/null)}" )
 gitstate[gitdir]=${gitdir:A}
 gitstate[inworktree]=$((${grevparse[1]/true/1}))
 gitstate[ingitdir]=$((${grevparse[2]/true/1}))
-gitstate[barerepo]=$((${grevparse[3]/true/1}))
+gitstate[isbare]=$((${grevparse[3]/true/1}))
 gitstate[prefix]=${grevparse[4]}
 gitstate[root]=${grevparse[5]}
 gitstate[name]=${grevparse[5]:t}
@@ -149,9 +149,9 @@ if (( ${+gitstate[target_sha1]} )) {
 }
 
 gitstate[untracked]=${(M)#gstatus:#\?\? *}
-gitstate[wt_modified]=${(M)#gstatus:#[ MARC]M *}
+gitstate[wt_modified]=${(M)#gstatus:#([ MARC]M| A) *}
 gitstate[wt_deleted]=${(M)#gstatus:#[ MARC]D *}
-gitstate[unstaged]=${(M)#gstatus:#[ MARC][MD] *}
+gitstate[unstaged]=${(M)#gstatus:#([ MARC][MD]| A) *}
 gitstate[modified]=${(M)#gstatus:#M[ MD] *}
 gitstate[added]=${(M)#gstatus:#A[ MD] *}
 gitstate[deleted]=${(M)#gstatus:#D[ M] *}

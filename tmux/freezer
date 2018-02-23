@@ -11,6 +11,7 @@ target=${argv[2]}
 case ${target} {
     (pane)
         pane_pid="$(tmux display -p "#{pane_pid}")"
+        if [[ ! -f /proc/${pane_pid}/comm ]] exit 1
         while [[ "$(</proc/${pane_pid}/comm)" == "sudo" ]] {
             pane_pid="$(pgrep -P ${pane_pid})"
         }

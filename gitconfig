@@ -1,12 +1,9 @@
 # vim: set ft=gitconfig:
 [core]
 	editor = vim
-	excludesfile = ~/.gitignore
-[branch]
-	autosetupmerge = always
+	excludesFile = ~/.gitignore
 [diff]
 	algorithm = histogram
-	compactionHeuristic = true
 [merge]
 	defaultToUpstream = true
 	ff = false
@@ -14,7 +11,7 @@
 [pull]
 	ff = only
 [rebase]
-	autosquash = true
+	autoSquash = true
 [status]
 	relativePaths = false
 [alias]
@@ -62,8 +59,6 @@
 [pretty]
 	simple = %C(yellow)%h%C(reset) %s %C(green)(%cr)%C(reset) %C(bold blue)[%an]%C(reset)%C(auto)%d%C(reset)
 	detail = %C(yellow)commit %H%C(auto)%d%C(reset)%nauthor %an <%ae>%ndate   %ci %C(green)(%cr)%C(reset)%n%n%w(72,4,8)%B%w(0)
-[color]
-	ui = auto
 [color "diff"]
 	commit = bold yellow
 	context = white
