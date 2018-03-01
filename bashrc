@@ -143,7 +143,7 @@ if exists gpgconf; then
     export GPG_TTY="$(tty)"
 
     _gpg_agent_updatestartuptty() {
-        ( gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null 2>&1 & )
+        ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
     _preprompt_hooks+=( _gpg_agent_updatestartuptty )
 fi
@@ -154,5 +154,9 @@ export LC_TIME="en_US.UTF-8"
 export LC_MESSAGES="en_US.UTF-8"
 export LANGUAGE="en_US"
 
-export LESS="--no-init --quit-if-one-screen --RAW-CONTROL-CHARS"
-export LESSHISTFILE="/dev/null"
+export EDITOR="vim"
+export VISUAL="vim"
+export PAGER="less"
+
+export LESS="-FMRSgi -j.5 -z-4"
+export LESSHISTFILE="-"

@@ -8,11 +8,11 @@ local selected
 if (( ! ${+commands[fzy]} )) return
 
 echoti cud1
-selected="$(fc -l -nr 1 | fzy --query="${BUFFER}")"
+selected="$(fc -lr 1 | fzy --query="${BUFFER}")"
 echoti cuu1
 zle reset-prompt
 
 if [[ -n ${selected} ]] {
-    BUFFER="${selected}"
+    BUFFER=${history[$((${selected[(w)1%\*]}))]}
     CURSOR=${#BUFFER}
 }

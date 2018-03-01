@@ -51,7 +51,8 @@ source ${ZPLUG_HOME}/init.zsh
 
 zplug "zplug/zplug", hook-build:"zplug --self-manage"
 zplug "mafredri/zsh-async"
-zplug "zsh-users/zsh-syntax-highlighting", defer:2
+# zplug "zsh-users/zsh-syntax-highlighting", defer:2
+zplug "zdharma/fast-syntax-highlighting", defer:2
 if [[ -O ${DOTFILES} ]] {
     zplug "${DOTFILES}/zsh", from:"local"
 } else {
@@ -59,8 +60,14 @@ if [[ -O ${DOTFILES} ]] {
 }
 
 zplug check || zplug install
-
 zplug load
+
+# fast-syntax-highlighting {{{2
+typeset -gA FAST_HIGHLIGHT_STYLES
+FAST_HIGHLIGHT_STYLES[path]="underline"
+FAST_HIGHLIGHT_STYLES[single-hyphen-option]="none"
+FAST_HIGHLIGHT_STYLES[double-hyphen-option]="none"
+FAST_HIGHLIGHT_STYLES[mathnum]="none"
 
 # zcompile {{{1
 () {
@@ -105,6 +112,7 @@ alias rrf='rm -rf'
 alias p='print -rl --'
 alias reload='exec zsh'
 alias rename='noglob zmv -W'
+alias run-help=' man'
 alias dot='git -C ${DOTFILES}'
 if (( ${+commands[hub]} )) alias git='hub'
 
@@ -121,9 +129,10 @@ alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
 
 # zle {{{1
-autoload -Uz select-word-style
-select-word-style bash
+zstyle ':zle:*' word-chars '!#$%&()*+-.<>?@[\]^_{}~'
+zstyle ':zle:*' word-style standard
 
+# autoload {{{2
 autoload -Uz edit-command-line
 zle -N edit-command-line
 
@@ -142,31 +151,56 @@ zle -N add-surround surround
 zle -N change-surround surround
 zle -N delete-surround surround
 
-unalias -m run-help
-autoload -Uz run-help run-help-{git,ip,openssl,sudo}
-alias run-help=' man'
-
+# key bindings {{{2
 bindkey -v
 
-bindkey -M viins '.' zle-widget-repeating-dot
-bindkey -M viins '^@' zle-widget-cd-recent-dirs
+bindkey -M viins '.' zle-repeating-dot
 bindkey -M viins '^A' beginning-of-line
 bindkey -M viins '^B' backward-char
+bindkey -M viins '^D' list-choices
 bindkey -M viins '^E' end-of-line
 bindkey -M viins '^F' forward-char
-bindkey -M viins '^G' zle-widget-cd-repository
+bindkey -M viins '^G' zle-cd-repository
+bindkey -M viins '^H' vi-backward-delete-char
+bindkey -M viins '^I' expand-or-complete
+bindkey -M viins '^J' accept-line
 bindkey -M viins '^K' kill-line
+bindkey -M viins '^L' clear-screen
+bindkey -M viins '^M' accept-line
 bindkey -M viins '^N' history-beginning-search-forward-end
+bindkey -M viins '^O' zle-cd-recent-dirs
 bindkey -M viins '^P' history-beginning-search-backward-end
-bindkey -M viins '^Q' push-line
-bindkey -M viins '^R' zle-widget-insert-history
+bindkey -M viins '^Q' push-line-or-edit
+bindkey -M viins '^R' zle-insert-history
+bindkey -M viins '^S' send-break
+# bindkey -M viins '^T' self-insert
 bindkey -M viins '^U' kill-whole-line
+bindkey -M viins '^V' vi-quoted-insert
+bindkey -M viins '^W' zle-backward-kill-word
 bindkey -M viins '^X^E' edit-command-line
 bindkey -M viins '^X^H' expand-history
+bindkey -M viins '^X^R' redo
+bindkey -M viins '^X^U' undo
 bindkey -M viins '^X^W' expand-word
+bindkey -M viins '^Xh' run-help
+# bindkey -M viins '^Y' self-insert
 bindkey -M viins '^[.' insert-last-word
-bindkey -M viins '^[h' run-help
-bindkey -M viins '^^' zle-widget-cd-parents
+bindkey -M viins '^^' zle-cd-parents
+
+bindkey -M vicmd '^A' beginning-of-line
+bindkey -M vicmd '^D' list-choices
+bindkey -M vicmd '^E' end-of-line
+bindkey -M vicmd '^G' zle-cd-repository
+bindkey -M vicmd '^J' accept-line
+bindkey -M vicmd '^L' clear-screen
+bindkey -M vicmd '^M' accept-line
+bindkey -M vicmd '^N' history-beginning-search-forward-end
+bindkey -M vicmd '^O' zle-cd-recent-dirs
+bindkey -M vicmd '^P' history-beginning-search-backward-end
+bindkey -M vicmd '^Q' push-line-or-edit
+bindkey -M vicmd '^X^E' edit-command-line
+bindkey -M vicmd '^Xh' run-help
+bindkey -M vicmd '^^' zle-cd-parents
 
 bindkey -M vicmd 'ys' add-surround
 bindkey -M vicmd 'cs' change-surround
@@ -184,6 +218,34 @@ bindkey -M visual 'S' add-surround
         }
     }
 }
+
+# zle hooks {{{2
+zle-line-init() {
+    local _status=${status}
+
+    if [[ ${CONTEXT} == start && -z ${BUFFER} && -n ${ZLE_LINE_ABORTED}
+            && ${ZLE_LINE_ABORTED} != ${history[$((HISTCMD-1))]} ]] {
+        BUFFER=${ZLE_LINE_ABORTED}
+        CURSOR=${#BUFFER}
+        zle split-undo
+        BUFFER=""
+        CURSOR=0
+        unset ZLE_LINE_ABORTED
+    }
+
+    ${_prompt_func:-:} ${_status}
+}
+zle -N zle-line-init
+
+zle-line-finish() {
+    ZLE_LINE_ABORTED="${PREBUFFER}${BUFFER}"
+}
+zle -N zle-line-finish
+
+zle-keymap-select() {
+    ${_prompt_func:-:} ${status}
+}
+zle -N zle-keymap-select
 
 # completion {{{1
 setopt always_to_end
@@ -214,18 +276,23 @@ zle -C complete-file menu-expand-or-complete _generic
 zstyle ':completion:complete-file:*' completer _files
 bindkey '^X^F' complete-file
 
+bindkey -M menuselect '^B' vi-backward-char
+bindkey -M menuselect '^F' vi-forward-char
+bindkey -M menuselect '^K' accept-and-infer-next-history
+bindkey -M menuselect '^N' menu-complete
+bindkey -M menuselect '^P' reverse-menu-complete
+bindkey -M menuselect '^[[Z' reverse-menu-complete
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
-bindkey -M menuselect '^K' accept-and-infer-next-history
 
 # chdir {{{1
 setopt auto_cd
 
 autoload -Uz chpwd_recent_dirs
-
 add-zsh-hook -Uz chpwd chpwd_recent_dirs
+
 add-zsh-hook -Uz chpwd chpwd-hook-direnv
 add-zsh-hook -Uz chpwd chpwd-hook-ls
 
@@ -251,7 +318,7 @@ setopt share_history
 
 # prompt {{{1
 _powerprompt() {
-    local _status=${status}
+    local _status=${argv[1]:-${status}}
     local segments=()
 
     if (( _status != 0 )) segments+=( "red:${_status}" )
@@ -272,9 +339,10 @@ _powerprompt() {
     PROMPT="$(powerprompt -f zsh -L -- "${segments[@]}") "
 
     local width=${(%)#PROMPT}
+    segments=()
     case ${KEYMAP} in
-        (viins|main) segments=( "cyan:INSERT" ) ;;
-        (vicmd)      segments=( "red:NORMAL" ) ;;
+        (viins|main) segments+=( "cyan:INSERT" ) ;;
+        (vicmd)      segments+=( "red:NORMAL" ) ;;
     esac
     segments+=( "gray3:%$((width-13))<<${(l:width-13:)}%1_%<<" )
     PROMPT2="$(powerprompt -f zsh -L -- "${segments[@]}") "
@@ -283,11 +351,20 @@ _powerprompt() {
 }
 
 _plainprompt() {
+    local _status=${argv[1]:-${status}}
+
     PROMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
-    RPROMPT=""
+
+    case ${KEYMAP} in
+        (viins|main) print -v RPROMPT '%F{green}--INSERT--%f' ;;
+        (vicmd)      print -v RPROMPT '%F{red}--NORMAL--%f' ;;
+    esac
+    RPROMPT2=${RPROMPT}
 
     local width=${(%)#PROMPT}
     PROMPT2="%F{blue}%$((width-2))<<${(l:width-2:)}%1_%<<>%f "
+
+    zle reset-prompt
 }
 
 _rprompt() {
@@ -348,16 +425,13 @@ _rprompt-callback() {
 }
 
 nopowerline() {
-    zle -D zle-line-init zle-keymap-select 2>/dev/null
+    _prompt_func=_plainprompt
     async_stop_worker rprompt_worker
     add-zsh-hook -d precmd _rprompt
-
-    add-zsh-hook -Uz precmd _plainprompt
 }
 
 if (( ${+commands[powerprompt]} )) {
-    zle -N zle-line-init _powerprompt
-    zle -N zle-keymap-select _powerprompt
+    _prompt_func=_powerprompt
     async_start_worker rprompt_worker -u
     async_register_callback rprompt_worker _rprompt-callback
     add-zsh-hook -Uz precmd _rprompt
@@ -372,16 +446,20 @@ if (( ${+commands[gpgconf]} )) {
     export GPG_TTY=${TTY}
 
     _gpg-agent-updatestartuptty() {
-        ( gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null 2>&1 & )
+        ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
     add-zsh-hook -Uz preexec _gpg-agent-updatestartuptty
 }
 
-# env variable {{{1
+# environment variables {{{1
 export LANG=ja_JP.UTF-8
 export LC_TIME=en_US.UTF-8
 export LC_MESSAGES=en_US.UTF-8
 export LANGUAGE=en_US
 
-export LESS="--no-init --quit-if-one-screen --RAW-CONTROL-CHARS"
-export LESSHISTFILE=/dev/null
+export EDITOR=vim
+export VISUAL=vim
+export PAGER=less
+
+export LESS="-FMRSgi -j.5 -z-4"
+export LESSHISTFILE="-"

@@ -13,7 +13,9 @@ selected="$(print -rl -- "${(@fQ)$(<${file})}" | fzy)"
 echoti cuu1
 zle reset-prompt
 
-if [[ -z ${selected} ]] {
+if [[ -n ${selected} ]] {
+    if [[ -n ${BUFFER} ]] zle push-line
     BUFFER="cd ${(q)selected}"
+    CURSOR=${#BUFFER}
     zle accept-line
 }

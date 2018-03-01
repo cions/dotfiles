@@ -3,7 +3,7 @@
 emulate -L zsh
 setopt extended_glob
 
-if [[ ${LBUFFER} == *\ (../)#.. ]] {
+if [[ ${LBUFFER} == (*[[:space:]\"\'\(,:\;=\{\|]|)(../)#.. ]] {
     LBUFFER+="/."
 }
 zle self-insert

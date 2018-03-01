@@ -14,6 +14,8 @@ echoti cuu1
 zle reset-prompt
 
 if [[ -n ${selected} ]] {
+    if [[ -n ${BUFFER} ]] zle push-line
     BUFFER="cd ${(q)selected}"
+    CURSOR=${#BUFFER}
     zle accept-line
 }

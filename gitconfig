@@ -38,7 +38,7 @@
 	cam = !git add --all && git commit -m
 	cu = !git add --update && git commit
 	cum = !git add --update && git commit -m
-	amend = commit --amend
+	amend = commit --amend --reuse-message=HEAD
 	wip = stash save --include-untracked
 	l = log --pretty=simple --no-merges
 	la = log --pretty=simple --no-merges --all
@@ -51,7 +51,7 @@
 	ld = log --pretty=detail --graph --patch
 	lda = log --pretty=detail --graph --patch --all
 	ls-unmerged = diff --diff-filter=U --name-only
-	resolve = !git ls-unmerged -z | xargs -0r sh -c '</dev/tty "${EDITOR:-vim}" -- "$@" && git add -- "$@"' -
+	resolve = !git ls-unmerged -z | xargs -0r sh -c '</dev/tty "${VISUAL:-${EDITOR:-vi}}" -- "$@" && git add -- "$@"' -
 	ours = !sh -c 'git checkout --ours -- "$@" && git add -- "$@"' -
 	theirs = !sh -c 'git checkout --theirs -- "$@" && git add -- "$@"' -
 [format]
