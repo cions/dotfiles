@@ -5,7 +5,7 @@ emulate -L zsh
 local file selected
 
 if (( ! ${+commands[fzy]} )) return
-zstyle -s ':chpwd:*' recent-dirs-file file || return
+zstyle -s ':chpwd:' recent-dirs-file file || return
 if [[ ! -f ${file} ]] return
 
 echoti cud1

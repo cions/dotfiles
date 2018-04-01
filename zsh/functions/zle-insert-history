@@ -13,6 +13,6 @@ echoti cuu1
 zle reset-prompt
 
 if [[ -n ${selected} ]] {
-    BUFFER=${history[$((${selected[(w)1%\*]}))]}
+    BUFFER=${history[${selected[(w)1]%\*}]}
     CURSOR=${#BUFFER}
 }

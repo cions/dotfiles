@@ -3,10 +3,13 @@
 
 # preamble {{{1
 autoload -Uz add-zsh-hook
+autoload -Uz zrecompile
 zmodload zsh/complist
 zmodload zsh/terminfo
 
 DOTFILES=${${(%):-%x}:A:h:h}
+
+zrecompile -q ${ZDOTDIR}
 
 # options {{{1
 setopt no_beep
@@ -69,14 +72,6 @@ FAST_HIGHLIGHT_STYLES[single-hyphen-option]="none"
 FAST_HIGHLIGHT_STYLES[double-hyphen-option]="none"
 FAST_HIGHLIGHT_STYLES[mathnum]="none"
 
-# zcompile {{{1
-() {
-    local file
-    for file in ${ZDOTDIR}/*.zwc(ND); {
-        if [[ ${file:r} -nt ${file} ]] zcompile ${file:r}
-    }
-}
-
 # dircolors {{{1
 if (( ${+commands[dircolors]} )) {
     if [[ -f ~/.dircolors ]] {
@@ -114,7 +109,6 @@ alias reload='exec zsh'
 alias rename='noglob zmv -W'
 alias run-help=' man'
 alias dot='git -C ${DOTFILES}'
-if (( ${+commands[hub]} )) alias git='hub'
 
 alias -g G='| grep -E'
 alias -g GV='| grep -E -v'
@@ -178,11 +172,12 @@ bindkey -M viins '^U' kill-whole-line
 bindkey -M viins '^V' vi-quoted-insert
 bindkey -M viins '^W' zle-backward-kill-word
 bindkey -M viins '^X^E' edit-command-line
-bindkey -M viins '^X^H' expand-history
+bindkey -M viins '^X^H' run-help
 bindkey -M viins '^X^R' redo
 bindkey -M viins '^X^U' undo
-bindkey -M viins '^X^W' expand-word
-bindkey -M viins '^Xh' run-help
+bindkey -M viins '^X^X' _complete_help
+bindkey -M viins '^Xh' expand-history
+bindkey -M viins '^Xw' expand-word
 # bindkey -M viins '^Y' self-insert
 bindkey -M viins '^[.' insert-last-word
 bindkey -M viins '^^' zle-cd-parents
@@ -199,7 +194,10 @@ bindkey -M vicmd '^O' zle-cd-recent-dirs
 bindkey -M vicmd '^P' history-beginning-search-backward-end
 bindkey -M vicmd '^Q' push-line-or-edit
 bindkey -M vicmd '^X^E' edit-command-line
-bindkey -M vicmd '^Xh' run-help
+bindkey -M viins '^X^H' run-help
+bindkey -M viins '^X^R' redo
+bindkey -M viins '^X^U' undo
+bindkey -M viins '^X^X' _complete_help
 bindkey -M vicmd '^^' zle-cd-parents
 
 bindkey -M vicmd 'ys' add-surround
@@ -251,12 +249,12 @@ zle -N zle-keymap-select
 setopt always_to_end
 setopt glob_complete
 setopt magic_equal_subst
+setopt menu_complete
 
-zstyle ':completion:*' cache-path ${ZDOTDIR}/cache
-zstyle ':completion:*' completer \
-    _expand _complete _match _prefix _list
+zstyle ':completion:*' completer _expand _complete
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' list-prompt '%F{black}%K{white}%l %p%f%k'
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 zstyle ':completion:*' menu select
 zstyle ':completion:*' use-cache yes
@@ -266,11 +264,10 @@ zstyle ':completion:*' format '%F{blue}%d%f'
 zstyle ':completion:*:descriptions' format '%F{yellow}completing %B%d%b%f'
 zstyle ':completion:*:messages' format '%F{yellow}%d%f'
 zstyle ':completion:*:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
-zstyle ':completion:*:options' description yes
 
-zstyle ':completion:*:functions:*' ignored-patterns '_*'
 zstyle ':completion:*:manuals' separate-sections yes
-zstyle ':completion:*:cd:*' ignore-parents parent pwd
+zstyle ':completion:*:processes' command 'ps -e -o pid=,user=:10,comm='
+zstyle ':completion:*:*:cd:*:*' ignore-parents parent pwd
 
 zle -C complete-file menu-expand-or-complete _generic
 zstyle ':completion:complete-file:*' completer _files
@@ -278,9 +275,11 @@ bindkey '^X^F' complete-file
 
 bindkey -M menuselect '^B' vi-backward-char
 bindkey -M menuselect '^F' vi-forward-char
+bindkey -M menuselect '^H' accept-and-hold
 bindkey -M menuselect '^K' accept-and-infer-next-history
 bindkey -M menuselect '^N' menu-complete
 bindkey -M menuselect '^P' reverse-menu-complete
+bindkey -M menuselect '^R' history-incremental-search-forward
 bindkey -M menuselect '^[[Z' reverse-menu-complete
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
