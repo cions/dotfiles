@@ -1,40 +1,24 @@
-# vim: set ft=zsh:
+#autoload
 
 emulate -L zsh
 setopt extended_glob
 
 autoload -Uz match-words-by-style
 
-local curcontext=":zle:${WIDGET}" word done
+local word
 local -a matched_words
-integer count=${NUMERIC:-1}
 
-if (( count < 0 )) {
-    zle -l -a ${WIDGET/backward-} && zle -n $((-count)) -w ${WIDGET/backward-}
-    return
+match-words-by-style
+
+if [[ ${matched_words[3]} == [[:space:]]##[^[:space:]]* ]] {
+    match-words-by-style -w space
 }
 
-while (( count-- )) {
-    match-words-by-style
-
-    if [[ ${matched_words[3]} == [[:space:]]##[^[:space:]]* ]] {
-        match-words-by-style -w space
-    }
-
-    word="${matched_words[2]}${matched_words[3]}"
-    if [[ -n ${word} ]] {
-        if (( done )) || [[ ${LASTWIDGET} == *kill* ]] {
-            CUTBUFFER="${word}${CUTBUFFER}"
-        } else {
-            zle copy-region-as-kill -- "${word}"
-        }
-        LBUFFER="${matched_words[1]}"
-    } else {
-        return 1
-    }
-    done=1
+word="${matched_words[2]}${matched_words[3]}"
+if [[ -n ${word} ]] {
+    zle copy-region-as-kill -- "${word}"
+    LBUFFER="${matched_words[1]}"
+    return 0
+} else {
+    return 1
 }
-
-zle -f 'kill'
-
-return 0

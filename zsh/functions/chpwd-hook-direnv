@@ -1,4 +1,4 @@
-# vim: set ft=zsh:
+#autoload
 
 emulate -L zsh
 setopt extended_glob
@@ -6,6 +6,7 @@ setopt extended_glob
 typeset -ag _direnv _direnv_path
 local env
 
+# initialize {{{1
 for env in ${_direnv}; {
     unset ${env}
 }
@@ -14,11 +15,13 @@ path=( ${path:|_direnv_path} )
 _direnv=()
 _direnv_path=()
 
+# npm {{{1
 set -- (../)#node_modules/.bin(N-/od:a)
 if (( $# > 0 )) {
     _direnv_path+=( $1 )
 }
 
+# python {{{1
 set -- (../)#pyvenv.cfg(N-.od:a:h)
 if (( $# > 0 )) {
     export VIRTUAL_ENV=$1
@@ -26,5 +29,7 @@ if (( $# > 0 )) {
     _direnv_path+=( $1/bin(N-/) )
 }
 
+# finalize {{{1
 path=( ${_direnv_path} ${path} )
 hash -r
+return 0

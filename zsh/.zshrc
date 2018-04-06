@@ -1,5 +1,5 @@
 #!/bin/zsh
-# vim: foldmethod=marker
+# vim: set foldmethod=marker:
 
 # preamble {{{1
 autoload -Uz add-zsh-hook
@@ -23,9 +23,8 @@ setopt re_match_pcre
 setopt rm_star_silent
 
 # cgclassify {{{1
-() {
+[[ -f /proc/self/cgroup ]] && () {
     local cgroup cgpath
-    if [[ ! -f /proc/self/cgroup ]] return
     for cgroup in "${(@f)$(</proc/self/cgroup)}"; {
         cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}/shell/zsh-$$
         if ! [[ -d ${cgpath:h} && ${cgroup[(ws.:.)3]} != /shell/* ]] continue
@@ -54,7 +53,6 @@ source ${ZPLUG_HOME}/init.zsh
 
 zplug "zplug/zplug", hook-build:"zplug --self-manage"
 zplug "mafredri/zsh-async"
-# zplug "zsh-users/zsh-syntax-highlighting", defer:2
 zplug "zdharma/fast-syntax-highlighting", defer:2
 if [[ -O ${DOTFILES} ]] {
     zplug "${DOTFILES}/zsh", from:"local"
@@ -122,10 +120,39 @@ alias -g NE='2>/dev/null'
 alias -g NUL='1>/dev/null 2>&1'
 alias -g EO='2>&1'
 
-# zle {{{1
-zstyle ':zle:*' word-chars '!#$%&()*+-.<>?@[\]^_{}~'
-zstyle ':zle:*' word-style standard
+# completion {{{1
+setopt always_to_end
+setopt magic_equal_subst
 
+if (( ${+functions[_completer]} )) {
+    zstyle ':completion:*' completer _expand _completer:complete
+} else {
+    zstyle ':completion:*' completer _expand _complete
+}
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' list-prompt '%F{black}%K{white}%l %p%f%k'
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' verbose yes
+
+zstyle ':completion:*:*' format '%F{blue}%d%f'
+zstyle ':completion:*:messages' format '%F{yellow}%B%d%b%f'
+zstyle ':completion:*:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
+
+zstyle ':completion:*:manuals' separate-sections yes
+zstyle ':completion:*:processes' command 'ps -e -o pid=,user=:10,comm='
+zstyle ':completion:*:*:cd:*:*' ignore-parents parent pwd
+
+zle -C expand menu-complete _generic
+zstyle ':completion:expand:*' completer _expand
+zstyle ':completion:expand:*' accept-exact yes
+
+zle -C complete-file menu-complete _generic
+zstyle ':completion:complete-file:*' completer _complete_file
+
+# zle {{{1
 # autoload {{{2
 autoload -Uz edit-command-line
 zle -N edit-command-line
@@ -145,6 +172,10 @@ zle -N add-surround surround
 zle -N change-surround surround
 zle -N delete-surround surround
 
+# zstyles {{{2
+zstyle ':zle:*' word-chars '!#$%&()*+-.<>?@[\]^_{}~'
+zstyle ':zle:*' word-style standard
+
 # key bindings {{{2
 bindkey -v
 
@@ -156,7 +187,7 @@ bindkey -M viins '^E' end-of-line
 bindkey -M viins '^F' forward-char
 bindkey -M viins '^G' zle-cd-repository
 bindkey -M viins '^H' vi-backward-delete-char
-bindkey -M viins '^I' expand-or-complete
+bindkey -M viins '^I' menu-complete
 bindkey -M viins '^J' accept-line
 bindkey -M viins '^K' kill-line
 bindkey -M viins '^L' clear-screen
@@ -172,12 +203,12 @@ bindkey -M viins '^U' kill-whole-line
 bindkey -M viins '^V' vi-quoted-insert
 bindkey -M viins '^W' zle-backward-kill-word
 bindkey -M viins '^X^E' edit-command-line
+bindkey -M viins '^X^F' complete-file
 bindkey -M viins '^X^H' run-help
 bindkey -M viins '^X^R' redo
 bindkey -M viins '^X^U' undo
+bindkey -M viins '^X^W' expand
 bindkey -M viins '^X^X' _complete_help
-bindkey -M viins '^Xh' expand-history
-bindkey -M viins '^Xw' expand-word
 # bindkey -M viins '^Y' self-insert
 bindkey -M viins '^[.' insert-last-word
 bindkey -M viins '^^' zle-cd-parents
@@ -217,6 +248,19 @@ bindkey -M visual 'S' add-surround
     }
 }
 
+bindkey -M menuselect '^B' vi-backward-char
+bindkey -M menuselect '^F' vi-forward-char
+bindkey -M menuselect '^H' accept-and-hold
+bindkey -M menuselect '^K' accept-and-infer-next-history
+bindkey -M menuselect '^N' menu-complete
+bindkey -M menuselect '^P' reverse-menu-complete
+bindkey -M menuselect '^R' history-incremental-search-forward
+bindkey -M menuselect '^[[Z' reverse-menu-complete
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+
 # zle hooks {{{2
 zle-line-init() {
     local _status=${status}
@@ -244,47 +288,6 @@ zle-keymap-select() {
     ${_prompt_func:-:} ${status}
 }
 zle -N zle-keymap-select
-
-# completion {{{1
-setopt always_to_end
-setopt glob_complete
-setopt magic_equal_subst
-setopt menu_complete
-
-zstyle ':completion:*' completer _expand _complete
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' list-prompt '%F{black}%K{white}%l %p%f%k'
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
-zstyle ':completion:*' menu select
-zstyle ':completion:*' use-cache yes
-zstyle ':completion:*' verbose yes
-
-zstyle ':completion:*' format '%F{blue}%d%f'
-zstyle ':completion:*:descriptions' format '%F{yellow}completing %B%d%b%f'
-zstyle ':completion:*:messages' format '%F{yellow}%d%f'
-zstyle ':completion:*:warnings' format '%F{red}No matches for: %F{yellow}%d%f'
-
-zstyle ':completion:*:manuals' separate-sections yes
-zstyle ':completion:*:processes' command 'ps -e -o pid=,user=:10,comm='
-zstyle ':completion:*:*:cd:*:*' ignore-parents parent pwd
-
-zle -C complete-file menu-expand-or-complete _generic
-zstyle ':completion:complete-file:*' completer _files
-bindkey '^X^F' complete-file
-
-bindkey -M menuselect '^B' vi-backward-char
-bindkey -M menuselect '^F' vi-forward-char
-bindkey -M menuselect '^H' accept-and-hold
-bindkey -M menuselect '^K' accept-and-infer-next-history
-bindkey -M menuselect '^N' menu-complete
-bindkey -M menuselect '^P' reverse-menu-complete
-bindkey -M menuselect '^R' history-incremental-search-forward
-bindkey -M menuselect '^[[Z' reverse-menu-complete
-bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'j' vi-down-line-or-history
-bindkey -M menuselect 'k' vi-up-line-or-history
-bindkey -M menuselect 'l' vi-forward-char
 
 # chdir {{{1
 setopt auto_cd

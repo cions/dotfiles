@@ -1,0 +1,11 @@
+#autoload
+
+_complete || return 1
+
+if [[ ${QIPREFIX}${IPREFIX}${PREFIX} == ${compstate[unambiguous]} ]] {
+    compstate[insert]=automenu${compstate[exact_string]+:2}
+} else {
+    compstate[insert]=unambiguous
+}
+
+return 0

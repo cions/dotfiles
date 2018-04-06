@@ -1,4 +1,4 @@
-# vim: set ft=zsh:
+#autoload
 
 emulate -L zsh
 setopt extended_glob

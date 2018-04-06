@@ -1,4 +1,4 @@
-# vim: set ft=zsh:
+#autoload
 
 emulate -L zsh
 
@@ -160,3 +160,5 @@ gitstate[copied]=${(M)#gstatus:#C[ MD] *}
 gitstate[staged]=${(M)#gstatus:#([MARC][ MD]|D[ M]) *}
 gitstate[unmerged]=${(M)#gstatus:#(U[ADU]|A[AU]|D[DU]) *}
 gitstate[stash]="$(git stash list --oneline 2>/dev/null | wc -l)"
+
+return 0

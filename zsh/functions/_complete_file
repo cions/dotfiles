@@ -1,0 +1,22 @@
+#autoload
+
+case "${compstate[context]}" {
+    (brace_parameter)
+        compset -P '*[-+=?]'
+        ;;
+    (subscript)
+        compset -P '\(*\)'
+        ;;
+    (command)
+        compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
+        ;;
+    (value)
+        if compset -P '*[[:space:]]' || [[ ${PREFIX} == -* ]] {
+            compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
+        } else {
+            compset -P '*:'
+        }
+        ;;
+}
+
+_files

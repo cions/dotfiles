@@ -1,18 +1,18 @@
-# vim: set ft=zsh:
+#autoload
 
 emulate -L zsh
-setopt extended_glob
 
 local selected
 
-if (( ! ${+commands[fzy]} )) return
+if (( ! ${+commands[fzy]} )) return 1
 
 echoti cud1
 selected="$(fc -lr 1 | fzy --query="${BUFFER}")"
 echoti cuu1
 zle reset-prompt
 
-if [[ -n ${selected} ]] {
-    BUFFER=${history[${selected[(w)1]%\*}]}
-    CURSOR=${#BUFFER}
-}
+if [[ -z ${selected} ]] return 1
+
+BUFFER=${history[${selected[(w)1]%\*}]}
+CURSOR=${#BUFFER}
+return 0
