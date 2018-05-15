@@ -1,42 +1,100 @@
+[ftplugin]
+javascript = 'setl et sw=2'
+toml = 'setl et sw=2'
+vim = 'setl et sw=2 isk-=#'
+go = 'setl fdm=syntax'
+
+[[plugins]]
+repo = 'Shougo/context_filetype.vim'
+
+[[plugins]]
+repo = 'othree/html5.vim'
+
+[[plugins]]
+repo = 'hail2u/vim-css3-syntax'
+
 [[plugins]]
 repo = 'othree/yajs.vim'
-on_ft = 'javascript'
 
 [[plugins]]
-repo = 'othree/es.next.syntax.vim'
-on_ft = 'javascript'
+repo = 'rhysd/vim-wasm'
 
 [[plugins]]
-repo = 'plasticboy/vim-markdown'
-on_ft = 'markdown'
-hook_source = '''
-let g:vim_markdown_math = 1
-let g:vim_markdown_new_list_item_indent = 2
-let g:vim_markdown_no_default_key_mappings = 1
+repo = 'Quramy/vim-js-pretty-template'
+
+[[plugins]]
+repo = 'jason0x43/vim-js-indent'
+
+[[plugins]]
+repo = 'leafgarland/typescript-vim'
+
+[[plugins]]
+repo = 'carlitux/deoplete-ternjs'
+
+[[plugins]]
+repo = 'ternjs/tern_for_vim'
+
+[[plugins]]
+repo = 'Quramy/tsuquyomi'
+
+[[plugins]]
+repo = 'Shougo/deoplete-clangx'
+if = 'executable("clang")'
+
+[[plugins]]
+repo = 'rhysd/vim-clang-format'
+if = 'executable("clang-format")'
+hook_source = 'call vimrc#clang_format#on_source()'
+
+[[plugins]]
+repo = 'fatih/vim-go'
+if = 'executable("go")'
+hook_source = 'call vimrc#vim_go#on_source()'
+hook_post_source = 'call vimrc#vim_go#on_post_source()'
+
+[[plugins]]
+repo = 'zchee/deoplete-go'
+build = 'make'
+if = 'executable("gocode")'
+
+[[plugins]]
+repo = 'kana/vim-filetype-haskell'
+
+[[plugins]]
+repo = 'eagletmt/neco-ghc'
+if = 'executable("ghc-mod")'
+
+[[plugins]]
+repo = 'eagletmt/ghcmod-vim'
+if = 'executable("ghc-mod")'
+hook_update = '''
+let g:ghcmod_max_preview_size = 10
+
+nnoremap <buffer><silent> st :<C-u>GhcModType<CR>
+nnoremap <buffer><silent> sT :<C-u>GhcModTypeInsert<CR>
+nnoremap <buffer><silent> sh :<C-u>GhcModClear<CR>
+nnoremap <buffer><silent> si :<C-u>GhcModInfo<CR>
+nnoremap <buffer><silent> sI :<C-u>GhcModInfoPreview<CR>
 '''
 
 [[plugins]]
-repo = 'kannokanno/previm'
-on_ft = 'markdown'
+repo = 'zchee/deoplete-jedi'
+hook_post_update = 'call system("git submodule update --init")'
 
 [[plugins]]
-repo = 'vim-jp/syntax-vim-ex'
-on_ft = 'vim'
+repo = 'Shougo/neco-vim'
+
+[[plugins]]
+repo = 'zchee/deoplete-zsh'
+
+[[plugins]]
+repo = 'Matt-Deacalion/vim-systemd-syntax'
 
 [[plugins]]
 repo = 'cespare/vim-toml'
-on_ft = 'toml'
 
 [[plugins]]
-repo = 'keith/tmux.vim'
-on_ft = 'tmux'
+repo = 'rhysd/vim-gfm-syntax'
 
-[ftplugin]
-c = '''
-setl cino=:0,l1
-let b:undo_ftplugin .= 'setl cino<'
-'''
-cpp = '''
-setl cino=:0,l1,g0
-let b:undo_ftplugin .= 'setl cino<'
-'''
+[[plugins]]
+repo = 'ekalinin/Dockerfile.vim'

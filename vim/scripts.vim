@@ -4,8 +4,14 @@ if did_filetype()
   finish
 endif
 
-let s:firstline = getline(1)
+let s:cpo_save = &cpo
+set cpo&vim
 
-if s:firstline =~# '\M-*- C++ -*-'
-  setfiletype cpp
+let s:line1 = getline(1)
+
+if s:line1 =~# '\M-*- C++ -*-'
+  setf cpp
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save s:line1

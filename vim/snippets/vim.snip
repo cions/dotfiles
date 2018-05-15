@@ -1,20 +1,21 @@
-snippet if
+snippet plugin
 options head
-	if ${1:#:condition}
-		${0:TARGET}
+	" ${2:#:description}
+	" Maintainer: ${3:cions <gh.cions@gmail.com>}
+	" License:    ${4:MIT}
+
+	if exists('g:loaded_${1}')
+	  finish
 	endif
+	let g:loaded_$1 = 1
 
-snippet while
-options head
-	while ${1:#:condition}
-		${0:TARGET}
-	endwhile
+	let s:save_cpo = &cpo
+	set cpo&vim
 
-snippet for
-options head
-	for ${1:#:var} in ${2:#:list}
-		${0:TARGET}
-	endfor
+	${0:TARGET}
+
+	let &cpo = s:save_cpo
+	unlet s:save_cpo
 
 snippet function
 options head
@@ -28,23 +29,3 @@ options head
 		autocmd!
 		${0:TARGET}
 	augroup END
-
-snippet plugin
-options head
-	" ${2:#:description}
-	" Version: ${3:0.0.1}
-	" Author: ${4:cions <gh.cions@gmail.com>}
-	" License: ${5:MIT License}
-
-	if exists('g:loaded_${1}')
-		finish
-	endif
-	let g:loaded_$1 = 1
-
-	let s:save_cpo = &cpo
-	set cpo&vim
-
-	${0:TARGET}
-
-	let &cpo = s:save_cpo
-	unlet s:save_cpo

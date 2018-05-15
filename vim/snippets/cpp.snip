@@ -1,12 +1,21 @@
 include c.snip
 
+snippet cppheader
+options head
+	#ifndef ${1:`toupper(expand('%:t:gs/\W\+/_/'))`}
+	#define $1
+
+	${0:TARGET}
+
+	#endif /* $1 */
+
 snippet namespace
 options head
 	namespace ${1:#:name} {
 		${0:TARGET}
 	} /* namespace $1 */
 
-snippet puts
-abbr std::cout << expr << std::endl;
+snippet println
+abbr    std::cout << expr << std::endl;
 options head
 	std::cout << ${0:TARGET} << std::endl;

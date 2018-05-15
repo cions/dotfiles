@@ -7,12 +7,10 @@ options word
 	`expand('%:p:t')`${0}
 
 snippet datetime
-alias   dt
 options word
 	`strftime('%F %T')`${0}
 
-snippet datetime-iso8601
-alias   diso
+snippet isodatetime
 options word
 	`strftime('%FT%T')`${0}
 
@@ -23,9 +21,6 @@ options word
 snippet time
 options word
 	`strftime('%T')`${0}
-
-snippet lastmod
-	Last Modified: `strftime('%FT%T')`${0}
 
 snippet loremipsum
 options word

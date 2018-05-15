@@ -1,39 +1,74 @@
 " vim: set foldmethod=marker:
 
-let g:dotvim = expand('<sfile>:p:h')
-let g:cachedir = expand('~/.cache/vim')
-let g:tempdir = exists('$TEMP') ? $TEMP : '/tmp'
+" prelude {{{1
+let $VIMFILES = expand('<sfile>:p:h')
 
-" disable builtin plugins {{{1
-let g:loaded_2html_plugin = 1
-let g:loaded_LogiPat = 1
-let g:loaded_bugsummary = 1
-let g:loaded_gentoo_common = 1
-let g:loaded_getscriptPlugin = 1
-let g:loaded_gzip = 1
-let g:loaded_matchparen = 1
-let g:loaded_netrwPlugin = 1
-let g:loaded_newebuild = 1
-let g:loaded_newinitd = 1
-let g:loaded_newmetadata = 1
-let g:loaded_rrhelper = 1
-let g:loaded_spellfile_plugin = 1
-let g:loaded_tarPlugin = 1
-let g:loaded_vimballPlugin = 1
-let g:loaded_zipPlugin = 1
+" python {{{2
+if has('vim_starting') && has('python3')
+  let g:pyenv = expand('$VIMFILES/.pyenv')
+  let g:python_modules = ['flake8', 'jedi', 'neovim']
+  if !isdirectory(g:pyenv)
+    call vimrc#pyenv#init()
+  endif
+
+  let $PATH = g:pyenv . '/bin:' . $PATH
+  let g:python3_host_prog = g:pyenv . '/bin/python3'
+  call vimrc#pyenv#init_path()
+endif
+
+" ndenv {{{2
+if has('vim_starting') && executable('npm')
+  let g:ndenv = expand('$VIMFILES/.ndenv')
+  let g:node_packages = ['eslint', 'tern', 'typescript']
+  if !isdirectory(g:ndenv)
+    call vimrc#ndenv#init()
+  endif
+
+  let $PATH = g:ndenv . '/node_modules/.bin:' . $PATH
+endif
+
+" goenv {{{2
+if has('vim_starting') && executable('go')
+  let g:goenv = expand('$VIMFILES/.goenv')
+  let $GOPATH = g:goenv . ':' . $GOPATH
+  let $PATH = g:goenv . '/bin:' . $PATH
+endif
+
+" cachedir {{{2
+if has('win32') && exists('$AppData')
+  let $CACHEDIR = expand('$AppData/Local/Vim/Cache')
+elseif exists('$XDG_CACHE_HOME')
+  let $CACHEDIR = expand('$XDG_CACHE_HOME/vim')
+else
+  let $CACHEDIR = expand('$VIMFILES/.cache')
+endif
+if isdirectory($CACHEDIR)
+  call setfperm($CACHEDIR, 'rwx------')
+else
+  call mkdir($CACHEDIR, 'p', 0700)
+endif
+
+" tempdir {{{2
+if !exists('$UID')
+  py3 import os
+  let $UID = py3eval('os.getuid()')
+endif
+if has('win32') && exists('$AppData')
+  let $TEMPDIR = expand('$AppData/Local/Temp')
+elseif exists('$TEMP')
+  let $TEMPDIR = expand('$TEMP/vim-$UID')
+else
+  let $TEMPDIR = expand('/tmp/vim-$UID')
+endif
+if isdirectory($TEMPDIR)
+  call setfperm($TEMPDIR, 'rwx------')
+else
+  call mkdir($TEMPDIR, 'p', 0700)
+endif
 
 " dein.vim {{{1
-function! s:source_rcfile(name) abort
-  let path = g:dotvim . '/rc/' . a:name
-  if filereadable(path)
-    execute "source" fnameescape(path)
-  endif
-endfunction
-command! -nargs=1 -bar SourceRcfile call s:source_rcfile(<q-args>)
-
-let s:deindir = g:dotvim . '/dein'
+let s:deindir = expand('$VIMFILES/dein')
 let s:deinrepo = s:deindir . '/repos/github.com/Shougo/dein.vim'
-let s:tomlfiles = glob(g:dotvim . '/rc/*.toml', 0, 1)
 
 if has('vim_starting')
   if !isdirectory(s:deinrepo)
@@ -44,9 +79,13 @@ if has('vim_starting')
 endif
 
 if dein#load_state(s:deindir)
-  call dein#begin(s:deindir, [$MYVIMRC] + s:tomlfiles)
-  for tomlfile in s:tomlfiles
-    call dein#load_toml(tomlfile)
+  let s:plugins = expand('$VIMFILES/rc/plugins.toml')
+  let s:ftplugins = expand('$VIMFILES/rc/ftplugins.toml')
+  call dein#begin(s:deindir, [$MYVIMRC, s:plugins, s:ftplugins])
+  call dein#load_toml(s:plugins)
+  call dein#load_toml(s:ftplugins)
+  for s:dir in glob('~/src/*/cions', 1, 1)
+    call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
   endfor
   call dein#end()
   call dein#save_state()
@@ -56,85 +95,129 @@ if dein#check_install()
   call dein#install()
 endif
 
+if has('nvim')
+  call dein#remote_plugins()
+endif
+
 if has('vim_starting')
   call dein#call_hook('source')
-  call dein#call_hook('post_source')
+  autocmd VimEnter * call dein#call_hook('post_source')
 endif
-" }}}1
-
-let s:V = vital#vital#new()
-let s:Prelude = s:V.import('Prelude')
 
 syntax enable
 filetype plugin indent on
-set mouse=a
-set hidden
-set notitle
-set shellslash
-set modeline
-set completeopt=menu
-set wildmode=longest:full,full
-set noundofile
-set viminfo=
-let &backupdir = g:tempdir
-let &directory = g:tempdir
 
-set matchpairs&vim matchpairs+=<:>
+" options {{{1
+set hidden
+set mouse=a
+set ttimeout
+set ttimeoutlen=100
+set shelltemp
+set splitbelow
+set splitright
+
+set showtabline=2
+set laststatus=2
+set statusline=%F\ %y[%{&fenc?&fenc:&enc}:%{&ff}]%m%r%w%=(%l,%c)
+set shortmess+=cmrFI
+set belloff=all
+set noruler
+set noshowcmd
+set noshowmode
+set notitle
+
+set scrolloff=3
+set sidescroll=1
+set sidescrolloff=1
 set backspace=indent,eol,start
-set nrformats-=octal
 set virtualedit=block
+set complete=.,i,d,t
+set completeopt=menu
+set pumheight=0
+set matchpairs& matchpairs+=<:>
+set nojoinspaces
+set nrformats=bin,hex
+set smarttab
+set shiftround
 set autoindent
 set smartindent
-set noexpandtab
-set tabstop=8
-set shiftwidth=8
-set softtabstop=8
+
+set history=200
+set cedit=<C-Q>
+set wildmenu
+set wildmode=longest:full,full
+set suffixes& suffixes-=.h
+
+set wrap
+set linebreak
+set breakindent
+set breakindentopt=min:35,sbr
+set showbreak=>\ 
+set list
+set listchars=tab:>-,trail:-,extends:>,precedes:<
+set display=truncate,uhex
+set concealcursor=nc
+set conceallevel=2
+set lazyredraw
+set hlsearch
+set highlight& highlight+=@:SpecialKey
+
+set path=.,,
+set noincsearch
 set ignorecase
 set smartcase
 
-set list
-set listchars=tab:>-,trail:-
-set conceallevel=2
-set concealcursor=i
-set hlsearch
-set shortmess+=I
-set laststatus=2
-set showtabline=2
-set noshowcmd
-set noshowmode
-set statusline=%F\ %y[%{&fenc?&fenc:&enc}:%{&ff}]%m%r%w%=(%l,%c)
-set background=dark
+set backupdir=.,$TEMPDIR
+set directory=$CACHEDIR
+set writebackup
+set nobackup
+set viminfo=
+set viminfofile=NONE
 
-language messages en_US.UTF-8
-colorscheme solarized
 if has('gui_running')
   set background=light
-  set guioptions=aefiMg
+  set guioptions=abefiMg
   set iminsert=0
   set imsearch=0
   if has('gui_gtk3')
     set guifont=Monospace\ 12
   elseif has('gui_win32')
     set guifont=MiG_Mono:h12:cSHIFTJIS:qDRAFT
-    set renderoptions=type:directx,gamma:1.0,contrast:0.5,level:1,geom:1,renmode:4,taamode:1
   endif
+  if has('directx')
+    set renderoptions=type:directx
+  endif
+else
+  set background=dark
 endif
+colorscheme solarized
+
+language messages en_US.UTF-8
+set helplang=en,ja
 
 if &term ==# 'win32'
   set termencoding=cp932
-  set t_Co=8
 else
   set termencoding=utf-8
 endif
 set encoding=utf-8
 set fileencodings=ucs-bom,utf-8,euc-jisx0213,cp932
 set fileformats=unix,dos
-set ambiwidth=single
 
-" keybindings {{{1
+if executable('ag')
+  set grepprg=ag\ --nocolor\ --nogroup\ --column\ --follow
+  set grepformat=%f:%l:%c:%m
+elseif
+  set grepprg=internal
+endif
+
+" key bindings {{{1
+noremap s <Nop>
+noremap S <Nop>
 nnoremap ZZ <Nop>
 nnoremap ZQ <Nop>
 nnoremap Y y$
+nnoremap x "_x
 nnoremap j gj
 nnoremap k gk
 nnoremap 0 g0
@@ -143,10 +226,13 @@ nnoremap gj j
 nnoremap gk k
 nnoremap g0 0
 nnoremap g^ ^
+xnoremap < <gv
+xnoremap > >gv
 
 nnoremap <silent> gh :<C-u>nohlsearch<CR>
 nnoremap <silent> gn :<C-u>set number!<CR>
 nnoremap <silent> gN :<C-u>set relativenumber!<CR>
+nnoremap <silent> gw :<C-u>set wrap! wrap?<CR>
 nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
 
 nmap ys <Plug>(operator-surround-append)
@@ -155,10 +241,18 @@ nmap cs <Plug>(operator-surround-replace)
 nmap ds <Plug>(operator-surround-delete)
 xmap S <Plug>(operator-surround-append)
 map _ <Plug>(operator-replace)
-map gl <Plug>(operator-reverse-lines)
-map gw <Plug>(operator-reverse-text)
-map gx <Plug>(openbrowser-smart-search)
+map sl <Plug>(operator-reverse-lines)
+map sw <Plug>(operator-reverse-text)
 map gc <Plug>(caw:prefix)
+nmap gci <Plug>(caw:hatpos:comment)
+nmap gcd <Plug>(textmanip-duplicate-up)<Plug>(caw:hatpos:comment)+
+xmap gcd <Plug>(textmanip-duplicate-up)gv<Plug>(caw:hatpos:comment)'>+
+map [e <Plug>(edgemotion-k)
+map ]e <Plug>(edgemotion-j)
+map * <Plug>(asterisk-*)
+map # <Plug>(asterisk-#)
+map g* <Plug>(asterisk-g*)
+map g# <Plug>(asterisk-g#)
 nmap <Space>d <Plug>(textmanip-duplicate-down)
 xmap <Space>d <Plug>(textmanip-duplicate-down)<Esc>
 nmap <Space>D <Plug>(textmanip-duplicate-up)
@@ -170,92 +264,57 @@ xmap J <Plug>(textmanip-move-down)
 xmap K <Plug>(textmanip-move-up)
 xmap L <Plug>(textmanip-move-right)
 nmap <Space>r <Plug>(quickrun)
-nmap <Space>i <Plug>(repl-run)
-nnoremap <Space>w :<C-u>WatchdogsRun<CR>
-xnoremap <silent> <Space>c :RengBangUsePrev<CR>
-xnoremap <silent> <Space>C :RengBangConfirm<CR>
 
-nnoremap <silent> <Leader>u :<C-u>Unite source<CR>
-nnoremap <silent> <Leader>f :<C-u>Unite
-      \ -buffer-name=files file/async file/new directory/new<CR>
-nnoremap <silent> <Leader>gf :<C-u>Unite
-      \ -buffer-name=files file_rec/async<CR>
-nnoremap <silent> <Leader>gg :<C-u>Unite
-      \ -buffer-name=files file_rec/git<CR>
-nnoremap <silent> <Leader>d :<C-u>Unite dein<CR>
-nnoremap <silent> <Leader>b :<C-u>Unite buffer:-<CR>
-nnoremap <silent> <Leader>B :<C-u>Unite buffer:!<CR>
-nnoremap <silent> <Leader>m :<C-u>Unite menu:menu<CR>
-nnoremap <silent> <Leader>r :<C-u>Unite register<CR>
-nnoremap <silent> <Leader>p :<C-u>Unite -default-action=append history/yank<CR>
-nnoremap <silent> <Leader>P :<C-u>Unite history/yank<CR>
-nnoremap <silent> <Leader>F :<C-u>Unite filetype filetype/new<CR>
-nnoremap <silent> <Leader>o :<C-u>Unite outline<CR>
-nnoremap <silent> <Leader>q :<C-u>Unite quickfix<CR>
-nnoremap <silent> <Leader>M :<C-u>Unite output:message<CR>
-nnoremap <silent> <Leader>h :<C-u>Unite help<CR>
-nnoremap <silent> <Leader>K :<C-u>Unite mapping<CR>
-nnoremap <silent> <Leader>l :<C-u>Unite
-      \ -buffer-name=search%`bufnr('%')` line:forward:wrap<CR>
+cnoremap <C-A> <Home>
+cnoremap <C-B> <Left>
+cnoremap <C-F> <Right>
 
-nnoremap <silent> <Leader>ee :<C-u>VimFiler<CR>
-nnoremap <silent> <Leader>es :<C-u>VimFiler -split<CR>
-nnoremap <silent> <Leader>ec :<C-u>VimFilerCurrentDir<CR>
-nnoremap <silent> <Leader>eb :<C-u>VimFilerBufferDir<CR>
-nnoremap <silent> <Leader>ep :<C-u>VimFilerBufferDir -project<CR>
-nnoremap <silent> <Leader>EE :<C-u>VimFilerExplorer<CR>
-nnoremap <silent> <Leader>s :<C-u>VimShellPop<CR>
-
-inoremap <expr> <C-u> pumvisible()
-      \ ? unite#sources#neocomplete#start_complete() : "\<C-u>"
-inoremap <expr> <C-l> neocomplete#complete_common_string()
-inoremap <expr> <Tab>
-      \ neocomplete#complete_common_string() !=# ''
-      \   ? neocomplete#complete_common_string()
-      \   : pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <C-g> neocomplete#undo_completion()
-inoremap <expr> <BS> neocomplete#smart_close_popup() . "\<BS>"
-inoremap <expr> <C-h> neocomplete#smart_close_popup() . "\<C-h>"
-inoremap <expr> <CR> pumvisible() ? "\<C-y>\<CR>" : "\<CR>"
-imap <C-k> <Plug>(neosnippet_expand_or_jump)
-smap <C-k> <Plug>(neosnippet_expand_or_jump)
-xmap <C-k> <Plug>(neosnippet_expand_target)
+tnoremap <C-W>gT <C-W>:tabprev<CR>
+tnoremap <C-W>gt <C-W>:tabnext<CR>
+tnoremap <silent> <C-W><C-h> <C-W>:call job_stop(term_getjob(bufnr('%')), 'hup')<CR>
+tnoremap <C-W><Esc> <C-W>N
 
 " commands {{{1
-function! s:dein_clean(run_gc) abort
-  for directory in dein#check_clean()
-    call delete(directory, 'rf')
-    call delete(fnamemodify(directory, ':h'), 'd')
+function! s:clean() abort
+  for plugin in dein#check_clean()
+    call delete(plugin, 'rf')
+    call delete(fnamemodify(plugin, ':h'), 'd')
   endfor
-  if a:run_gc
-    call dein#each('git gc --aggressive --prune=now')
-  endif
+  call dein#each('git gc')
+  call dein#recache_runtimepath()
 endfunction
-command! -bang -bar DeinClean call s:dein_clean(<bang>0)
+command! Clean call s:clean()
+
+function! s:synstack() abort
+  let stack = synstack(line('.'), col('.'))
+  let names = map(stack, { i, v -> synIDattr(v, 'name') })
+  echomsg join(names, ' / ')
+endfunction
+command! SynStack call s:synstack()
+
+function! s:highlight() abort
+  let synid = synIDtrans(synID(line('.'), col('.'), 1))
+  echomsg synIDattr(synid, 'name')
+endfunction
+command! Highlight call s:highlight()
 
 " autocmd {{{1
-function! s:lcd_project_directory() abort
-  if !&buflisted || !empty(&buftype)
+function! s:auto_mkdir(dir, force) abort
+  if isdirectory(a:dir)
     return
   endif
-  let path = s:Prelude.path2project_directory(expand('%:p'))
-  call s:Prelude.smart_execute_command('lcd', path)
+  let prompt = '"%s" does not exists. Create? [y/N] '
+  if a:force || input(prompt, a:dir) =~? '^y\%[es]$'
+    call mkdir(iconv(a:dir, &encoding, &termencoding), 'p')
+  endif
 endfunction
 
 augroup vimrc
   autocmd!
 
-  autocmd BufNewFile,BufRead,BufFilePost * call s:lcd_project_directory()
+  autocmd BufWritePre * call s:auto_mkdir(expand('<afile>:p:h'), v:cmdbang)
+
   autocmd BufWritePost,BufFilePost * nested filetype detect
-  autocmd BufWritePost $MYVIMRC nested source $MYVIMRC | let &l:ft = &l:ft
-  autocmd BufWritePost plugins.toml nested source $MYVIMRC | let &l:ft = &l:ft
-  autocmd BufWritePost ftplugins.toml nested source $MYVIMRC | let &l:ft = &l:ft
-
-  autocmd InsertEnter * PreciousSwitch
-  autocmd InsertLeave * PreciousReset
-  autocmd InsertLeave * NeoSnippetClearMarkers
+  autocmd BufWritePost vimrc nested source $MYVIMRC | let &l:ft = &l:ft
+  autocmd BufWritePost *.toml nested source $MYVIMRC | let &l:ft = &l:ft
 augroup END
-
-let g:tex_nospell = 1
-let g:tex_fast = ""
-let g:tex_conceal = ""

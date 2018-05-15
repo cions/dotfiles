@@ -1,7 +1,7 @@
 " Vim indent file
-" Language:     JSON
-" Maintainer:   cions <gh.cions@gmail.com>
-" Last Change:  2016-06-28
+" Language:    JSON
+" Maintainer:  cions <gh.cions@gmail.com>
+" Last Change: 2018-05-15
 
 if exists('b:did_indent')
   finish
@@ -12,8 +12,10 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 setlocal indentexpr=GetJSONIndent(v:lnum)
-setlocal indentkeys=0{,0[,},],!^F,o,O,e
+setlocal indentkeys=0{,0[,},],!^F,o,O
 setlocal nosmartindent
+
+let b:undo_indent = 'setlocal indentexpr< indentkeys< smartindent<'
 
 function! s:count_brackets(lnum, which)
   let open = 0
@@ -21,12 +23,13 @@ function! s:count_brackets(lnum, which)
   let line = getline(a:lnum)
   let i = match(line, '[][{}"]')
   while i != -1
-    if line[i] == '{' || line[i] == '['
+    if line[i] ==# '"'
+      let i = match(line, '\%(\%(\%([^\\"]\+\)\@>\|\\.\)*\)\@>"\zs', i + 1)
+      continue
+    elseif line[i] ==# '{' || line[i] ==# '['
       let open += 1
-    elseif line[i] == '}' || line[i] == ']'
+    elseif line[i] ==# '}' || line[i] ==# ']'
       let close += 1
-    elseif line[i] == '"'
-      let i = match(line, '\\\@<!"', i + 1)
     endif
     let i = match(line, '[][{}"]', i + 1)
   endwhile
