@@ -33,6 +33,7 @@ repo = 'carlitux/deoplete-ternjs'
 
 [[plugins]]
 repo = 'ternjs/tern_for_vim'
+hook_post_source = 'call system("npm install")'
 
 [[plugins]]
 repo = 'Quramy/tsuquyomi'
@@ -40,11 +41,6 @@ repo = 'Quramy/tsuquyomi'
 [[plugins]]
 repo = 'Shougo/deoplete-clangx'
 if = 'executable("clang")'
-
-[[plugins]]
-repo = 'rhysd/vim-clang-format'
-if = 'executable("clang-format")'
-hook_source = 'call vimrc#clang_format#on_source()'
 
 [[plugins]]
 repo = 'fatih/vim-go'
@@ -83,12 +79,6 @@ hook_post_update = 'call system("git submodule update --init")'
 
 [[plugins]]
 repo = 'Shougo/neco-vim'
-
-[[plugins]]
-repo = 'zchee/deoplete-zsh'
-
-[[plugins]]
-repo = 'Matt-Deacalion/vim-systemd-syntax'
 
 [[plugins]]
 repo = 'cespare/vim-toml'

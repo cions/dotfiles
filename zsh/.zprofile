@@ -10,15 +10,7 @@ for shfile in /etc/profile.d/*.sh(N-.); {
 
 unset ROOTPATH shfile
 
-if (( ${+MSYSTEM} )) {
-    export GOROOT="/mingw64/lib/go"
-    gopath=( /mingw64/go ${HOME} )
-    path=(
-        ${HOME}/.bin(N-/)
-        /mingw64/go/bin(N-/)
-        ${^path}(N-/)
-    )
-} elif (( EUID == 0 )) {
+if (( EUID == 0 )) {
     gopath=( /usr/local/go )
     path=(
         ${HOME}/.bin(N-/)
@@ -34,6 +26,6 @@ if (( ${+MSYSTEM} )) {
         ${^gopath}/bin(N-/)
         {/usr/local,/usr,}/bin(N-/)
         /opt/bin(N-/)
-        ${^path}(N-/)
+        ${^path:#*/sbin}(N-/)
     )
 }

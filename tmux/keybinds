@@ -29,7 +29,9 @@ if (( ${+commands[xsel]} )) {
     tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'clip'
     tmux bind-key p run "paste | tmux load-buffer -; tmux paste-buffer -r"
 }
-if (( ${+commands[chromium]} )) {
+if (( ${+commands[vivaldi]} )) {
+    tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 vivaldi'
+} elif (( ${+commands[chromium]} )) {
     tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 chromium'
 } elif (( ${+commands[chrome]} )) {
     tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 chrome'

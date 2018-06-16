@@ -17,4 +17,9 @@ function! vimrc#ale#on_source() abort
   let g:ale_echo_msg_info_str = 'I'
 
   let g:ale_virtualenv_dir_names = ['.venv']
+
+  nmap s; <Plug>(ale_next_wrap)
+  nmap s, <Plug>(ale_previous_wrap)
+  nmap sad <Plug>(ale_detail)
+  nmap sac <Plug>(ale_reset_buffer)
 endfunction

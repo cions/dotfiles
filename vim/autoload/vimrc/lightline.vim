@@ -67,7 +67,11 @@ function! vimrc#lightline#filetype() abort
 endfunction
 
 function! vimrc#lightline#gitbranch() abort
-  return !s:is_special_buffer() ? gina#component#repo#branch() : ''
+  if dein#is_sourced('gina.vim') && !s:is_special_buffer()
+    return gina#component#repo#branch()
+  else
+    return ''
+  endif
 endfunction
 
 function! vimrc#lightline#modified() abort

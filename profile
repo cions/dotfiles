@@ -9,15 +9,7 @@ for shfile in /etc/profile.d/*.sh; do
 done
 
 IFS=":" read -ra paths <<< "${PATH}"
-if [[ -v MSYSTEM ]]; then
-    export GOROOT="/mingw64/lib/go"
-    export GOPATH="/mingw64/go:${HOME}"
-    paths=(
-        "${HOME}/.bin"
-        "/mingw64/go/bin"
-        "${paths[@]}"
-    )
-elif (( EUID == 0 )); then
+if (( EUID == 0 )); then
     export GOPATH="/usr/local/go"
     paths=(
         "${HOME}/.bin"
@@ -40,6 +32,7 @@ fi
 PATH=""
 for path in "${paths[@]}"; do
     [[ -d "${path}" && ":${PATH}:" != *:"${path}":* ]] || continue
+    (( EUID != 0 )) && [[ "${path}" == */sbin ]] && continue
     PATH="${PATH}${PATH:+:}${path}"
 done
 export PATH

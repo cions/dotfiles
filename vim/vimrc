@@ -2,6 +2,7 @@
 
 " prelude {{{1
 let $VIMFILES = expand('<sfile>:p:h')
+let g:uid = executable('id') ? str2nr(system('id -u')) : -1
 
 " python {{{2
 if has('vim_starting') && has('python3')
@@ -17,18 +18,18 @@ if has('vim_starting') && has('python3')
 endif
 
 " ndenv {{{2
-if has('vim_starting') && executable('npm')
+if has('vim_starting') && executable('npm') && $UID != 0
   let g:ndenv = expand('$VIMFILES/.ndenv')
-  let g:node_packages = ['eslint', 'tern', 'typescript']
-  if !isdirectory(g:ndenv)
-    call vimrc#ndenv#init()
-  endif
+  let g:node_packages = ['eslint', 'tern', 'typescript', 'stylelint', 'prettier']
+  " if !isdirectory(g:ndenv)
+  "   call vimrc#ndenv#init()
+  " endif
 
   let $PATH = g:ndenv . '/node_modules/.bin:' . $PATH
 endif
 
 " goenv {{{2
-if has('vim_starting') && executable('go')
+if has('vim_starting') && executable('go') && $UID != 0
   let g:goenv = expand('$VIMFILES/.goenv')
   let $GOPATH = g:goenv . ':' . $GOPATH
   let $PATH = g:goenv . '/bin:' . $PATH
@@ -49,10 +50,6 @@ else
 endif
 
 " tempdir {{{2
-if !exists('$UID')
-  py3 import os
-  let $UID = py3eval('os.getuid()')
-endif
 if has('win32') && exists('$AppData')
   let $TEMPDIR = expand('$AppData/Local/Temp')
 elseif exists('$TEMP')
@@ -83,10 +80,12 @@ if dein#load_state(s:deindir)
   let s:ftplugins = expand('$VIMFILES/rc/ftplugins.toml')
   call dein#begin(s:deindir, [$MYVIMRC, s:plugins, s:ftplugins])
   call dein#load_toml(s:plugins)
-  call dein#load_toml(s:ftplugins)
-  for s:dir in glob('~/src/*/cions', 1, 1)
-    call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
-  endfor
+  if $UID != 0
+    call dein#load_toml(s:ftplugins)
+    for s:dir in glob('~/src/*/cions', 1, 1)
+      call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
+    endfor
+  endif
   call dein#end()
   call dein#save_state()
 endif
@@ -263,7 +262,6 @@ xmap H <Plug>(textmanip-move-left)
 xmap J <Plug>(textmanip-move-down)
 xmap K <Plug>(textmanip-move-up)
 xmap L <Plug>(textmanip-move-right)
-nmap <Space>r <Plug>(quickrun)
 
 cnoremap <C-A> <Home>
 cnoremap <C-B> <Left>
