@@ -24,7 +24,7 @@ function! vimrc#denite#on_post_source() abort
   if executable('ag')
     call denite#custom#var('file/rec', 'command',
           \ ['ag', '--hidden', '--nocolor', '--nogroup',
-          \  '-p', expand('$VIMFILES/.ignore'), '-g', ''])
+          \  '-p', g:vimfiles . '/.ignore', '-g', ''])
 
     call denite#custom#var('grep', 'command', ['ag'])
     call denite#custom#var('grep', 'default_opts', ['--nocolor', '--nogroup'])

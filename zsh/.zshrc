@@ -465,3 +465,6 @@ export PAGER=less
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
+
+export PIPENV_VENV_IN_PROJECT=1
+export PIPENV_DONT_LOAD_ENV=1

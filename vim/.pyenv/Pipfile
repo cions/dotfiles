@@ -1,0 +1,6 @@
+[packages]
+neovim = "*"
+
+[dev-packages]
+flake8 = "*"
+jedi = "*"

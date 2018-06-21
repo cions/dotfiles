@@ -22,9 +22,3 @@ function! vimrc#vim_go#on_source() abort
   au FileType go nmap <buffer> sk <Plug>(go-keyify)
   au FileType go nmap <buffer> sn <Plug>(go-rename)
 endfunction
-
-function! vimrc#vim_go#on_post_source() abort
-  if !isdirectory(g:goenv)
-    GoInstallBinaries
-  endif
-endfunction

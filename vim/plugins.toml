@@ -1,3 +1,9 @@
+[ftplugin]
+javascript = 'setl et sw=2'
+toml = 'setl et sw=2'
+vim = 'setl et sw=2 isk-=#'
+go = 'setl fdm=syntax'
+
 [[plugins]]
 repo = 'Shougo/dein.vim'
 
@@ -78,47 +84,7 @@ repo = 'deris/vim-rengbang'
 repo = 'h1mesuke/vim-alignta'
 
 [[plugins]]
-repo = 'tyru/open-browser.vim'
-if = '$UID != 0'
-hook_source = '''
-map gx <Plug>(openbrowser-smart-search)
-'''
-
-[[plugins]]
-repo = 'thinca/vim-quickrun'
-if = '$UID != 0'
-hook_source = '''
-nmap <Space>r <Plug>(quickrun)
-'''
-
-[[plugins]]
-repo = 'neoclide/vim-easygit'
-if = '$UID != 0'
-hook_source = '''
-let g:easygit_enable_command = 1
-let g:easygit_auto_lcd = 1
-'''
-
-[[plugins]]
-repo = 'lambdalisue/gina.vim'
-if = '$UID != 0'
-hook_source = 'call vimrc#gina#on_source()'
-
-[[plugins]]
-repo = 'rhysd/committia.vim'
-if = '$UID != 0'
-hook_source = '''
-let g:committia_open_only_vim_starting = 0
-let g:committia_use_singlecolumn = 'always'
-'''
-
-[[plugins]]
 repo = 'tpope/vim-sleuth'
-
-[[plugins]]
-repo = 'w0rp/ale'
-if = '$UID != 0'
-hook_source = 'call vimrc#ale#on_source()'
 
 [[plugins]]
 repo = 'roxma/nvim-yarp'
@@ -160,14 +126,14 @@ hook_post_source = 'call vimrc#denite#on_post_source()'
 [[plugins]]
 repo = 'Shougo/unite.vim'
 hook_source = '''
-let g:unite_data_directory = expand('$CACHEDIR/unite.vim')
+let g:unite_data_directory = g:cachedir . '/unite.vim'
 let g:unite_force_overwrite_statusline = 0
 '''
 
 [[plugins]]
 repo = 'Shougo/vimfiler.vim'
 hook_source = '''
-let g:vimfiler_data_directory = expand('$CACHEDIR/vimfiler')
+let g:vimfiler_data_directory = g:cachedir . '/vimfiler'
 let g:vimfiler_as_default_explorer = 1
 let g:vimfiler_force_overwrite_statusline = 0
 let g:vimfiler_define_wrapper_commands = 1

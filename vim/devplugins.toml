@@ -1,8 +1,36 @@
-[ftplugin]
-javascript = 'setl et sw=2'
-toml = 'setl et sw=2'
-vim = 'setl et sw=2 isk-=#'
-go = 'setl fdm=syntax'
+[[plugins]]
+repo = 'tyru/open-browser.vim'
+hook_source = '''
+map gx <Plug>(openbrowser-smart-search)
+'''
+
+[[plugins]]
+repo = 'thinca/vim-quickrun'
+hook_source = '''
+nmap <Space>r <Plug>(quickrun)
+'''
+
+[[plugins]]
+repo = 'neoclide/vim-easygit'
+hook_source = '''
+let g:easygit_enable_command = 1
+let g:easygit_auto_lcd = 1
+'''
+
+[[plugins]]
+repo = 'lambdalisue/gina.vim'
+hook_source = 'call vimrc#gina#on_source()'
+
+[[plugins]]
+repo = 'rhysd/committia.vim'
+hook_source = '''
+let g:committia_open_only_vim_starting = 0
+let g:committia_use_singlecolumn = 'always'
+'''
+
+[[plugins]]
+repo = 'w0rp/ale'
+hook_source = 'call vimrc#ale#on_source()'
 
 [[plugins]]
 repo = 'Shougo/context_filetype.vim'
@@ -33,7 +61,7 @@ repo = 'carlitux/deoplete-ternjs'
 
 [[plugins]]
 repo = 'ternjs/tern_for_vim'
-hook_post_source = 'call system("npm install")'
+build = 'npm install'
 
 [[plugins]]
 repo = 'Quramy/tsuquyomi'
@@ -46,12 +74,11 @@ if = 'executable("clang")'
 repo = 'fatih/vim-go'
 if = 'executable("go")'
 hook_source = 'call vimrc#vim_go#on_source()'
-hook_post_source = 'call vimrc#vim_go#on_post_source()'
+hook_post_source = 'GoInstallBinaries'
 
 [[plugins]]
 repo = 'zchee/deoplete-go'
-build = 'make'
-if = 'executable("gocode")'
+build = 'go get -u github.com/mdempsky/gocode && make'
 
 [[plugins]]
 repo = 'kana/vim-filetype-haskell'
@@ -75,7 +102,7 @@ nnoremap <buffer><silent> sI :<C-u>GhcModInfoPreview<CR>
 
 [[plugins]]
 repo = 'zchee/deoplete-jedi'
-hook_post_update = 'call system("git submodule update --init")'
+build = 'git submodule update --init'
 
 [[plugins]]
 repo = 'Shougo/neco-vim'

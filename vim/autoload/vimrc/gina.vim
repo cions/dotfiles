@@ -5,8 +5,6 @@ function! vimrc#gina#on_source() abort
   let g:gina#command#blame#formatter#timestamp_months = 0
   let g:gina#command#blame#formatter#timestamp_format1 = '%Y-%m-%d'
   let g:gina#command#blame#formatter#timestamp_format2 = '%Y-%m-%d'
-  " call gina#custom#mapping#nmap('blame', 'j', 'j<Plug>(gina-blame-echo)')
-  " call gina#custom#mapping#nmap('blame', 'k', 'k<Plug>(gina-blame-echo)')
 
   call gina#custom#command#option('branch', '--group', 'gina')
   call gina#custom#command#option('branch', '--opener', 'botright split')

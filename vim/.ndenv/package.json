@@ -1,0 +1,13 @@
+{
+  "name": "vim-ndenv",
+  "version": "0.0.0",
+  "description": "Virtual environment for Vim",
+  "scripts": {},
+  "dependencies": {
+    "eslint": "",
+    "prettier": "",
+    "stylelint": "",
+    "tern": "",
+    "typescript": ""
+  }
+}

@@ -1,87 +1,118 @@
 " vim: set foldmethod=marker:
 
 " prelude {{{1
-let $VIMFILES = expand('<sfile>:p:h')
+let g:vimfiles = expand('<sfile>:p:h')
+let g:isdev = isdirectory(expand('~/src'))
 let g:uid = executable('id') ? str2nr(system('id -u')) : -1
 
-" python {{{2
-if has('vim_starting') && has('python3')
-  let g:pyenv = expand('$VIMFILES/.pyenv')
-  let g:python_modules = ['flake8', 'jedi', 'neovim']
-  if !isdirectory(g:pyenv)
-    call vimrc#pyenv#init()
+" pyenv {{{2
+if has('vim_starting') && executable('pipenv')
+  let g:pyenv = g:vimfiles . '/.pyenv'
+
+  if !isdirectory(g:pyenv . '/.venv')
+    if g:isdev
+      let s:cmd = ['pipenv', '--site-packages', 'install', '--dev']
+    else
+      let s:cmd = ['pipenv', 'install']
+    endif
+    let s:job = job_start(s:cmd, {
+          \   'cwd': g:pyenv,
+          \   'env': { 'PIPENV_VENV_IN_PROJECT': '1' },
+          \   'out_io': 'null',
+          \   'err_io': 'null',
+          \   'stoponexit': ''
+          \ })
+    while job_status(s:job) ==# 'run'
+      sleep 100m
+    endwhile
+    unlet s:cmd s:job
   endif
 
-  let $PATH = g:pyenv . '/bin:' . $PATH
-  let g:python3_host_prog = g:pyenv . '/bin/python3'
-  call vimrc#pyenv#init_path()
+  let $PATH = g:pyenv . '/.venv/bin:' . $PATH
+  let g:python3_host_prog = g:pyenv . '/.venv/bin/python3'
+  let &pythonthreehome = g:pyenv . '/.venv'
 endif
 
 " ndenv {{{2
-if has('vim_starting') && executable('npm') && $UID != 0
-  let g:ndenv = expand('$VIMFILES/.ndenv')
-  let g:node_packages = ['eslint', 'tern', 'typescript', 'stylelint', 'prettier']
-  " if !isdirectory(g:ndenv)
-  "   call vimrc#ndenv#init()
-  " endif
+if has('vim_starting') && executable('npm') && g:isdev
+  let g:ndenv = g:vimfiles . '/.ndenv'
+
+  if !isdirectory(g:ndenv . '/node_modules')
+    call job_start(['npm', 'install'], {
+          \   'cwd': g:ndenv,
+          \   'out_io': 'null',
+          \   'err_io': 'null',
+          \   'stoponexit': ''
+          \ })
+  endif
 
   let $PATH = g:ndenv . '/node_modules/.bin:' . $PATH
 endif
 
 " goenv {{{2
-if has('vim_starting') && executable('go') && $UID != 0
-  let g:goenv = expand('$VIMFILES/.goenv')
+if has('vim_starting') && executable('go') && g:isdev
+  let g:goenv = g:vimfiles . '/.goenv'
+
   let $GOPATH = g:goenv . ':' . $GOPATH
   let $PATH = g:goenv . '/bin:' . $PATH
 endif
 
 " cachedir {{{2
 if has('win32') && exists('$AppData')
-  let $CACHEDIR = expand('$AppData/Local/Vim/Cache')
+  let g:cachedir = $AppData . '/Local/Vim/Cache'
 elseif exists('$XDG_CACHE_HOME')
-  let $CACHEDIR = expand('$XDG_CACHE_HOME/vim')
+  let g:cachedir = $XDG_CACHE_HOME . '/vim'
 else
-  let $CACHEDIR = expand('$VIMFILES/.cache')
+  let g:cachedir = g:vimfiles . '/.cache'
 endif
-if isdirectory($CACHEDIR)
-  call setfperm($CACHEDIR, 'rwx------')
+if isdirectory(g:cachedir)
+  call setfperm(g:cachedir, 'rwx------')
 else
-  call mkdir($CACHEDIR, 'p', 0700)
+  call mkdir(g:cachedir, 'p', 0700)
 endif
 
 " tempdir {{{2
 if has('win32') && exists('$AppData')
-  let $TEMPDIR = expand('$AppData/Local/Temp')
+  let g:tempdir = $AppData . '/Local/Temp'
 elseif exists('$TEMP')
-  let $TEMPDIR = expand('$TEMP/vim-$UID')
+  let g:tempdir = printf('%s/vim-%d', $TEMP, g:uid)
 else
-  let $TEMPDIR = expand('/tmp/vim-$UID')
+  let g:tempdir = printf('/tmp/vim-%d', g:uid)
 endif
-if isdirectory($TEMPDIR)
-  call setfperm($TEMPDIR, 'rwx------')
+if isdirectory(g:tempdir)
+  call setfperm(g:tempdir, 'rwx------')
 else
-  call mkdir($TEMPDIR, 'p', 0700)
+  call mkdir(g:tempdir, 'p', 0700)
 endif
 
 " dein.vim {{{1
-let s:deindir = expand('$VIMFILES/dein')
+let s:deindir = g:vimfiles . '/dein'
 let s:deinrepo = s:deindir . '/repos/github.com/Shougo/dein.vim'
 
 if has('vim_starting')
   if !isdirectory(s:deinrepo)
-    call system('git clone https://github.com/Shougo/dein.vim ' .
-          \ shellescape(s:deinrepo))
+    let s:job = job_start(['git', 'clone',
+          \ 'https://github.com/Shougo/dein.vim', s:deinrepo], {
+          \   'cwd': g:pyenv,
+          \   'out_io': 'null',
+          \   'err_io': 'null',
+          \   'stoponexit': ''
+          \ })
+    while job_status(s:job) ==# 'run'
+      sleep 100m
+    endwhile
+    unlet s:job
   endif
   let &runtimepath = s:deinrepo . ',' . &runtimepath
 endif
 
 if dein#load_state(s:deindir)
-  let s:plugins = expand('$VIMFILES/rc/plugins.toml')
-  let s:ftplugins = expand('$VIMFILES/rc/ftplugins.toml')
-  call dein#begin(s:deindir, [$MYVIMRC, s:plugins, s:ftplugins])
+  let s:plugins = g:vimfiles . '/plugins.toml'
+  let s:devplugins = g:vimfiles . '/devplugins.toml'
+  call dein#begin(s:deindir, [$MYVIMRC, s:plugins, s:devplugins])
   call dein#load_toml(s:plugins)
-  if $UID != 0
-    call dein#load_toml(s:ftplugins)
+  if g:isdev
+    call dein#load_toml(s:devplugins)
     for s:dir in glob('~/src/*/cions', 1, 1)
       call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
     endfor
@@ -166,8 +197,8 @@ set noincsearch
 set ignorecase
 set smartcase
 
-set backupdir=.,$TEMPDIR
-set directory=$CACHEDIR
+let &backupdir = '.,' . g:tempdir
+let &directory = g:cachedir
 set writebackup
 set nobackup
 set viminfo=
@@ -206,7 +237,7 @@ set fileformats=unix,dos
 if executable('ag')
   set grepprg=ag\ --nocolor\ --nogroup\ --column\ --follow
   set grepformat=%f:%l:%c:%m
-elseif
+else
   set grepprg=internal
 endif
 
@@ -273,6 +304,45 @@ tnoremap <silent> <C-W><C-h> <C-W>:call job_stop(term_getjob(bufnr('%')), 'hup')
 tnoremap <C-W><Esc> <C-W>N
 
 " commands {{{1
+" Update {{{2
+function! s:update() abort
+  call dein#update()
+
+  if executable('pipenv')
+    call job_start(['pipenv', 'update'], {
+          \   'cwd': g:pyenv,
+          \   'env': { 'PIPENV_VENV_IN_PROJECT': '1' },
+          \   'out_io': 'null',
+          \   'err_io': 'null',
+          \   'stoponexit': ''
+          \ })
+  endif
+
+  if executable('npm') && g:isdev
+    call job_start(['npm', 'install'], {
+          \   'cwd': g:ndenv,
+          \   'out_io': 'null',
+          \   'err_io': 'null',
+          \   'stoponexit': ''
+          \ })
+  endif
+
+  if exists(':GoUpdateBinaries') == 2
+    GoUpdateBinaries
+  endif
+
+  if executable('gocode')
+    call job_start(['go', 'get', '-u', 'github.com/mdempsky/gocode'], {
+          \   'cwd': g:goenv,
+          \   'out_io': 'null',
+          \   'err_io': 'null',
+          \   'stoponexit': ''
+          \ })
+  endif
+endfunction
+command! Update call s:update()
+
+" Clean {{{2
 function! s:clean() abort
   for plugin in dein#check_clean()
     call delete(plugin, 'rf')
@@ -283,6 +353,7 @@ function! s:clean() abort
 endfunction
 command! Clean call s:clean()
 
+" SynStack {{{2
 function! s:synstack() abort
   let stack = synstack(line('.'), col('.'))
   let names = map(stack, { i, v -> synIDattr(v, 'name') })
@@ -290,6 +361,7 @@ function! s:synstack() abort
 endfunction
 command! SynStack call s:synstack()
 
+" Highlight {{{2
 function! s:highlight() abort
   let synid = synIDtrans(synID(line('.'), col('.'), 1))
   echomsg synIDattr(synid, 'name')
@@ -297,7 +369,7 @@ endfunction
 command! Highlight call s:highlight()
 
 " autocmd {{{1
-function! s:auto_mkdir(dir, force) abort
+function! s:auto_mkdir(dir, force) abort " {{{2
   if isdirectory(a:dir)
     return
   endif
@@ -305,7 +377,7 @@ function! s:auto_mkdir(dir, force) abort
   if a:force || input(prompt, a:dir) =~? '^y\%[es]$'
     call mkdir(iconv(a:dir, &encoding, &termencoding), 'p')
   endif
-endfunction
+endfunction " }}}2
 
 augroup vimrc
   autocmd!

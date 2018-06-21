@@ -1,6 +1,6 @@
 #autoload
 
-(( ZSH_SUBSHELL == 0 )) || return 0
+if (( ZSH_SUBSHELL )) return 0
 
 local files max
 local -x QUOTING_STYLE=literal

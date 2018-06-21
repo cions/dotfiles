@@ -130,7 +130,7 @@ nopowerline() {
     _preprompt_hooks=( "${_preprompt_hooks[@]/_powerprompt/_plainprompt}" )
 }
 
-if exists powerprompt; then
+if exists powerprompt && exists /bin/zsh; then
     _preprompt_hooks+=( _powerprompt )
 else
     _preprompt_hooks+=( _plainprompt )
@@ -160,3 +160,6 @@ export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
+
+export PIPENV_VENV_IN_PROJECT=1
+export PIPENV_DONT_LOAD_ENV=1

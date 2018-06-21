@@ -5,7 +5,7 @@ umask 022
 [[ -f /etc/profile.env ]] && source /etc/profile.env
 
 for shfile in /etc/profile.d/*.sh; do
-    source "${shfile}"
+    [[ -f "${shfile}" ]] && source "${shfile}"
 done
 
 IFS=":" read -ra paths <<< "${PATH}"
