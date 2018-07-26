@@ -1,8 +1,9 @@
 [ftplugin]
+go = 'setl fdm=syntax'
 javascript = 'setl et sw=2'
 toml = 'setl et sw=2'
 vim = 'setl et sw=2 isk-=#'
-go = 'setl fdm=syntax'
+yaml = 'setl et sw=2'
 
 [[plugins]]
 repo = 'Shougo/dein.vim'

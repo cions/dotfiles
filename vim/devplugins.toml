@@ -6,9 +6,7 @@ map gx <Plug>(openbrowser-smart-search)
 
 [[plugins]]
 repo = 'thinca/vim-quickrun'
-hook_source = '''
-nmap <Space>r <Plug>(quickrun)
-'''
+hook_source = 'call vimrc#quickrun#on_source()'
 
 [[plugins]]
 repo = 'neoclide/vim-easygit'

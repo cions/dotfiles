@@ -109,7 +109,13 @@ endif
 if dein#load_state(s:deindir)
   let s:plugins = g:vimfiles . '/plugins.toml'
   let s:devplugins = g:vimfiles . '/devplugins.toml'
-  call dein#begin(s:deindir, [$MYVIMRC, s:plugins, s:devplugins])
+  if g:isdev
+    let s:vimrcs = [$MYVIMRC, s:plugins, s:devplugins]
+  else
+    let s:vimrcs = [$MYVIMRC, s:plugins]
+  endif
+  let s:vimrcs = map(s:vimrcs, { _, x -> resolve(x) })
+  call dein#begin(s:deindir, s:vimrcs)
   call dein#load_toml(s:plugins)
   if g:isdev
     call dein#load_toml(s:devplugins)

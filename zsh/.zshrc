@@ -3,13 +3,25 @@
 
 # preamble {{{1
 autoload -Uz add-zsh-hook
-autoload -Uz zrecompile
 zmodload zsh/complist
 zmodload zsh/terminfo
 
 DOTFILES=${${(%):-%x}:A:h:h}
 
-zrecompile -q ${ZDOTDIR}
+() {
+    local targets file
+
+    targets=(
+        ${ZDOTDIR}/.zprofile
+        ${ZDOTDIR}/.zshenv
+        ${ZDOTDIR}/.zshrc
+    )
+    for file in ${targets}; {
+        if [[ ${file} -nt ${file}.zwc ]] {
+            zcompile ${file}
+        }
+    }
+}
 
 # options {{{1
 setopt no_beep
@@ -93,6 +105,13 @@ mkcd() {
     mkdir -p -- $1 && cd -- $1
 }
 
+bak() {
+    local file
+    for file; {
+        mv -i ${file} ${file}.bak
+    }
+}
+
 # aliases {{{1
 alias ls=' ls -F --color=auto --quoting-style=literal'
 alias la=' ls -aF --color=auto --quoting-style=literal'
@@ -132,7 +151,7 @@ if (( ${+functions[_completer]} )) {
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' list-prompt '%F{black}%K{white}%l %p%f%k'
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+zstyle ':completion:*' matcher-list '' '+m:{a-z}={A-Z}' '+m:{A-Z}={a-z}'
 zstyle ':completion:*' menu select
 zstyle ':completion:*' use-cache yes
 zstyle ':completion:*' verbose yes

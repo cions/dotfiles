@@ -18,8 +18,14 @@ function! vimrc#ale#on_source() abort
 
   let g:ale_virtualenv_dir_names = ['.venv']
 
-  nmap s; <Plug>(ale_next_wrap)
-  nmap s, <Plug>(ale_previous_wrap)
-  nmap sad <Plug>(ale_detail)
-  nmap sac <Plug>(ale_reset_buffer)
+  let g:ale_fixers = {
+        \   'c': ['clang-format'],
+        \   'cpp': ['clang-format']
+        \ }
+
+  nmap sn <Plug>(ale_next_wrap)
+  nmap sN <Plug>(ale_previous_wrap)
+  nmap sf <Plug>(ale_fix)
+  nmap sd <Plug>(ale_detail)
+  nmap sc <Plug>(ale_reset_buffer)
 endfunction
