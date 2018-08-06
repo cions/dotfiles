@@ -12,7 +12,7 @@ set cpo&vim
 if !exists('b:local_include_paths')
   let s:project_dir = finddir('.git', '.;')
   if s:project_dir ==# ''
-    for s:file in ['CMakeLists.txt', 'configure.ac', 'configure', 'Makefile']
+    for s:file in ['CMakeLists.txt', 'configure.ac', 'configure', 'Makefile.am', 'Makefile']
       let s:result = findfile(s:file, '.;', -1)
       if !empty(s:result)
         let s:project_dir = s:result[-1]

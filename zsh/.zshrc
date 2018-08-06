@@ -6,8 +6,9 @@ autoload -Uz add-zsh-hook
 zmodload zsh/complist
 zmodload zsh/terminfo
 
-DOTFILES=${${(%):-%x}:A:h:h}
+export DOTFILES=${${(%):-%x}:A:h:h}
 
+# zrecompile {{{1
 () {
     local targets file
 

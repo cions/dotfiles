@@ -16,16 +16,3 @@ options head
 
 	let &cpo = s:save_cpo
 	unlet s:save_cpo
-
-snippet function
-options head
-	function! ${1:#:funcname}(${2:#:args})
-		${0:TARGET}
-	endfunction
-
-snippet augroup
-options head
-	augroup ${1:#:name}
-		autocmd!
-		${0:TARGET}
-	augroup END

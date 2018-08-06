@@ -3,6 +3,7 @@
 
 # preamble {{{1
 DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
+export DOTFILES
 
 exists() {
     command -v -- "$1" >/dev/null 2>&1
@@ -10,11 +11,11 @@ exists() {
 
 # cgclassify {{{1
 cgclassify() {
-    local cgroups cgroup cgpath id subsys hier
+    local cgroups cgroup cgpath subsys hier
     [[ -f /proc/self/cgroup ]] || return
     readarray -t cgroups < /proc/self/cgroup
     for cgroup in "${cgroups[@]}"; do
-        IFS=":" read -r id subsys hier <<< "${cgroup}"
+        IFS=":" read -r _ subsys hier <<< "${cgroup}"
         cgpath="/sys/fs/cgroup/${subsys#name=}/shell/bash-$$"
         [[ -d "${cgpath%/*}" && "${hier}" != /shell/* ]] || continue
         mkdir "${cgpath}" 2>/dev/null || continue
@@ -86,25 +87,25 @@ _prompt_width() {
 
 _powerprompt() {
     local exitcode=$?
-    local jobnum="$(jobs -p | wc -l)"
-    local segments=()
+    local segments=() jobnum
 
     if (( exitcode != 0 )); then
         segments+=( "red:${exitcode}" )
     fi
+    jobnum="$(jobs -p | wc -l)"
     if (( jobnum != 0 )); then
         segments+=( "orange:${jobnum}" )
     fi
-    segments+=( "magenta:\s" )
+    segments+=( "magenta:\\s" )
     if (( EUID == 0 )); then
-        segments+=( "magenta:\u" )
+        segments+=( "magenta:\\u" )
     else
-        segments+=( "green:\u" )
+        segments+=( "green:\\u" )
     fi
     if [[ -v SSH_CONNECTION ]]; then
-        segments+=( "yellow:\H" )
+        segments+=( "yellow:\\H" )
     fi
-    segments+=( "gray3:\W" )
+    segments+=( "gray3:\\W" )
     PS1="$(powerprompt -f bash -L -- "${segments[@]}") "
 
     local width padded
@@ -114,16 +115,17 @@ _powerprompt() {
 }
 
 _plainprompt() {
-    local RESET="$(tput sgr0)"
-    local FG_GREEN="$(tput setaf 2)"
-    local FG_BLUE="$(tput setaf 4)"
+    local RESET FG_GREEN FG_BLUE
+    RESET="$(tput sgr0)"
+    FG_GREEN="$(tput setaf 2)"
+    FG_BLUE="$(tput setaf 4)"
 
-    PS1="\[${RESET}${FG_GREEN}\]\u \[${FG_BLUE}\]\W \$\[${RESET}\] "
+    PS1="\\[${RESET}${FG_GREEN}\\]\\u \\[${FG_BLUE}\\]\\W \$\\[${RESET}\\] "
 
     local width padded
     width="$(_prompt_width)"
     printf -v padded "%*s" $((width-2)) "..."
-    PS2="\[${RESET}${FG_BLUE}\]${padded}>\[${RESET}\] "
+    PS2="\\[${RESET}${FG_BLUE}\\]${padded}>\\[${RESET}\\] "
 }
 
 nopowerline() {
@@ -139,8 +141,9 @@ fi
 # gpg-agent {{{1
 if exists gpgconf; then
     unset SSH_AGENT_PID
-    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-    export GPG_TTY="$(tty)"
+    SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    GPG_TTY="$(tty)"
+    export SSH_AUTH_SOCK GPG_TTY
 
     _gpg_agent_updatestartuptty() {
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )

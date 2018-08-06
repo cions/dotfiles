@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")"; pwd -P)"
+DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
 
 IGNORED_TARGETS=(
     'install.sh'

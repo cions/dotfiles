@@ -325,7 +325,7 @@ function! s:update() abort
   endif
 
   if executable('npm') && g:isdev
-    call job_start(['npm', 'install'], {
+    call job_start(['npm', 'update'], {
           \   'cwd': g:ndenv,
           \   'out_io': 'null',
           \   'err_io': 'null',
@@ -362,7 +362,7 @@ command! Clean call s:clean()
 " SynStack {{{2
 function! s:synstack() abort
   let stack = synstack(line('.'), col('.'))
-  let names = map(stack, { i, v -> synIDattr(v, 'name') })
+  let names = map(stack, { _, x -> synIDattr(x, 'name') })
   echomsg join(names, ' / ')
 endfunction
 command! SynStack call s:synstack()

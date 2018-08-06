@@ -5,6 +5,7 @@ umask 022
 [[ -f /etc/profile.env ]] && source /etc/profile.env
 
 for shfile in /etc/profile.d/*.sh; do
+    # shellcheck disable=SC1090
     [[ -f "${shfile}" ]] && source "${shfile}"
 done
 
@@ -29,6 +30,7 @@ else
     )
 fi
 
+# shellcheck disable=SC2123
 PATH=""
 for path in "${paths[@]}"; do
     [[ -d "${path}" && ":${PATH}:" != *:"${path}":* ]] || continue
@@ -39,4 +41,5 @@ export PATH
 
 unset ROOTPATH shfile paths path
 
+# shellcheck disable=SC1090
 [[ $- == *i* && -f ~/.bashrc ]] && source ~/.bashrc

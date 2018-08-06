@@ -26,23 +26,21 @@ function! vimrc#lightline#on_source()
 endfunction
 
 function! s:is_special_buffer() abort
-  return &buftype ==# 'help' || &buftype ==# 'terminal' || &buftype == 'nofile'
+  return &buftype ==# 'help' || &buftype ==# 'terminal' || &buftype ==# 'nofile'
 endfunction
 
 function! vimrc#lightline#fileencoding() abort
   if s:is_special_buffer()
     return ''
-  else
-    return &fenc !=# '' && &fenc !=# 'utf-8' ? &fenc : ''
   endif
+  return &fenc !=# '' && &fenc !=# 'utf-8' ? &fenc : ''
 endfunction
 
 function! vimrc#lightline#fileformat() abort
   if s:is_special_buffer()
     return ''
-  else
-    return &ff !=# 'unix' ? &ff : ''
   endif
+  return &ff !=# 'unix' ? &ff : ''
 endfunction
 
 function! vimrc#lightline#filename() abort
@@ -67,19 +65,17 @@ function! vimrc#lightline#filetype() abort
 endfunction
 
 function! vimrc#lightline#gitbranch() abort
-  if dein#is_sourced('gina.vim') && !s:is_special_buffer()
-    return gina#component#repo#branch()
-  else
+  if !dein#is_sourced('gina.vim') || s:is_special_buffer()
     return ''
   endif
+  return gina#component#repo#branch()
 endfunction
 
 function! vimrc#lightline#modified() abort
   if s:is_special_buffer()
     return ''
-  else
-    return &modified ? '+' : &modifiable ? '' : '-'
   endif
+  return &modified ? '+' : &modifiable ? '' : '-'
 endfunction
 
 function! vimrc#lightline#readonly() abort

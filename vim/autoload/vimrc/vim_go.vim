@@ -16,9 +16,9 @@ function! vimrc#vim_go#on_source() abort
   au FileType go nmap <buffer> gi <Plug>(go-imports)
   au FileType go nmap <buffer> gt <Plug>(go-test)
   au FileType go nmap <buffer> sc <Plug>(go-coverage-toggle)
-  au FileType go nmap <buffer> sf <Plug>(go-fillstruct)
+  au FileType go nmap <buffer> ss <Plug>(go-fillstruct)
   au FileType go nmap <buffer> sg <Plug>(go-generate)
   au FileType go nmap <buffer> si <Plug>(go-info)
   au FileType go nmap <buffer> sk <Plug>(go-keyify)
-  au FileType go nmap <buffer> sn <Plug>(go-rename)
+  au FileType go nmap <buffer> sr <Plug>(go-rename)
 endfunction

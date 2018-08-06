@@ -28,13 +28,13 @@ let s:palette = {
       \     'right': [s:gray3, s:gray2]
       \   },
       \   'insert': { 'left': [s:green, s:gray2] },
-      \   'replace': { 'left':  [s:red, s:gray2] },
-      \   'visual': { 'left':  [s:orange, s:gray2] },
+      \   'replace': { 'left': [s:red, s:gray2] },
+      \   'visual': { 'left': [s:orange, s:gray2] },
       \   'tabline': {
-      \     'left':  [s:gray2],
-      \     'tabsel':  [s:gray1],
-      \     'middle':  [s:gray3],
-      \     'right':  [s:gray4]
+      \     'left': [s:gray2],
+      \     'tabsel': [s:gray1],
+      \     'middle': [s:gray3],
+      \     'right': [s:gray4]
       \   }
       \ }
 

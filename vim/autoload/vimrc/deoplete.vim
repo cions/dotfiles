@@ -6,7 +6,7 @@ function! vimrc#deoplete#on_source() abort
 endfunction
 
 function! vimrc#deoplete#on_post_source() abort
-  if !has('win32') && executable('nproc')
+  if executable('nproc')
     call deoplete#custom#option('num_processes', str2nr(system('nproc')))
   endif
   call deoplete#custom#option('auto_complete_delay', 10)
@@ -18,7 +18,7 @@ endfunction
 function! vimrc#deoplete#tab() abort
   let common_string = deoplete#complete_common_string()
   return common_string !=# '' ? common_string :
-       \ pumvisible() ? "\<C-n>" :
-       \ line('.') =~# '\S\%#' ? deoplete#manual_complete() :
-       \ "\<TAB>"
+        \ pumvisible() ? "\<C-n>" :
+        \ line('.') =~# '\S\%#' ? deoplete#manual_complete() :
+        \ "\<TAB>"
 endfunction
