@@ -64,9 +64,10 @@ if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] {
 
 source ${ZPLUG_HOME}/init.zsh
 
-zplug "zplug/zplug", hook-build:"zplug --self-manage"
+zplug "zplug/zplug", hook-build:'zplug --self-manage'
 zplug "mafredri/zsh-async"
-zplug "zdharma/fast-syntax-highlighting", defer:2
+zplug "zdharma/fast-syntax-highlighting", defer:2, \
+    hook-load:'fast-theme -q ${ZDOTDIR}/theme.ini'
 if [[ -O ${DOTFILES} ]] {
     zplug "${DOTFILES}/zsh", from:"local"
 } else {
@@ -75,13 +76,6 @@ if [[ -O ${DOTFILES} ]] {
 
 zplug check || zplug install
 zplug load
-
-# fast-syntax-highlighting {{{2
-typeset -gA FAST_HIGHLIGHT_STYLES
-FAST_HIGHLIGHT_STYLES[path]="underline"
-FAST_HIGHLIGHT_STYLES[single-hyphen-option]="none"
-FAST_HIGHLIGHT_STYLES[double-hyphen-option]="none"
-FAST_HIGHLIGHT_STYLES[mathnum]="none"
 
 # dircolors {{{1
 if (( ${+commands[dircolors]} )) {
