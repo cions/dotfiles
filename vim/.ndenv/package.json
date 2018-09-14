@@ -4,10 +4,10 @@
   "description": "Virtual environment for Vim",
   "scripts": {},
   "dependencies": {
-    "eslint": "",
-    "prettier": "",
-    "stylelint": "",
-    "tern": "",
-    "typescript": ""
+    "eslint": "latest",
+    "prettier": "latest",
+    "stylelint": "latest",
+    "tern": "latest",
+    "typescript": "latest"
   }
 }
