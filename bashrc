@@ -9,6 +9,18 @@ exists() {
     command -v -- "$1" >/dev/null 2>&1
 }
 
+# options {{{1
+shopt -s checkwinsize
+shopt -s dotglob
+shopt -s no_empty_cmd_completion
+shopt -s globstar
+shopt -s lithist
+shopt -s nullglob
+
+HISTCONTROL=ignoreboth
+HISTSIZE=10000
+unset HISTFILE
+
 # cgclassify {{{1
 cgclassify() {
     local cgroups cgroup cgpath subsys hier
@@ -43,27 +55,59 @@ if exists dircolors; then
     fi
 fi
 
-# options {{{1
-shopt -s checkwinsize
-shopt -s dotglob
-shopt -s no_empty_cmd_completion
-shopt -s globstar
-shopt -s lithist
-shopt -s nullglob
+# commands {{{1
+args() {
+    printf '%s\n' "${@@Q}"
+}
 
-HISTCONTROL=ignoreboth
-HISTSIZE=10000
-unset HISTFILE
+mkcd() {
+    # shellcheck disable=SC2164
+    mkdir -p -- "$1" && cd -- "$1"
+}
+
+rm() (
+    shopt -s extglob nocasematch
+    local ans
+    echo rm "$@"
+    read -r -p 'execute? ' ans
+    [[ "${ans}" == @(y|yes) ]] && command rm "$@"
+)
+
+bak() {
+    local file
+    for file; do
+        mv -i "${file}" "${file}.bak"
+    done
+}
+
+# shellcheck disable=SC2034
+exists pipenv && pipenv() {
+    local -x PIPENV_VENV_IN_PROJECT=1
+    local -x PIPENV_DONT_LOAD_ENV=1
+    command pipenv "$@"
+}
 
 # aliases {{{1
-alias ls='ls -F --color=auto --quoting-style=literal'
-alias la='ls -aF --color=auto --quoting-style=literal'
-alias lA='ls -AF --color=auto --quoting-style=literal'
-alias ll='ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
-alias grep='grep -E --color=auto'
-alias rm='rm -I'
-alias rr='rm -rI'
-alias rrf='rm -rf'
+if exists dircolors; then
+    alias ls='ls -F --color=auto --quoting-style=literal'
+    alias la='ls -aF --color=auto --quoting-style=literal'
+    alias lA='ls -AF --color=auto --quoting-style=literal'
+    alias ll='ls -AlF --color=auto --quoting-style=literal --time-style=long-iso'
+else
+    alias ls='ls -F'
+    alias la='ls -aF'
+    alias lA='ls -AF'
+    alias ll='ls -AlF'
+fi
+
+if grep -q --color=auto '^' <<< '' &>/dev/null; then
+    alias grep='grep -E --color=auto'
+else
+    alias grep='grep -E'
+fi
+
+alias rr='rm -rf'
+alias reload='exec bash'
 alias dot='git -C "${DOTFILES}"'
 
 # key bindings {{{1
@@ -71,10 +115,10 @@ bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
 # PROMPT_COMMAND {{{1
-_preprompt_hooks=()
+_PROMPT_COMMANDS=()
 _prompt_command() {
     local func
-    for func in "${_preprompt_hooks[@]}"; do
+    for func in "${_PROMPT_COMMANDS[@]}"; do
         ${func}
     done
 }
@@ -82,12 +126,13 @@ PROMPT_COMMAND=_prompt_command
 
 # prompt {{{1
 _prompt_width() {
-    echo -n "${PS1@P}" | sed 's/\x01[^\x02]*\x02//g' | wc -L
+    echo -n "${PS1@P}" | sed $'s/\x01[^\x02]*\x02//g' | wc -L
 }
 
-_powerprompt() {
+_prompt_default() {
     local exitcode=$?
-    local segments=() jobnum
+    local segments=()
+    local jobnum
 
     if (( exitcode != 0 )); then
         segments+=( "red:${exitcode}" )
@@ -114,28 +159,51 @@ _powerprompt() {
     PS2="$(powerprompt -f bash -L -- "gray3:${padded}") "
 }
 
-_plainprompt() {
-    local RESET FG_GREEN FG_BLUE
-    RESET="$(tput sgr0)"
-    FG_GREEN="$(tput setaf 2)"
-    FG_BLUE="$(tput setaf 4)"
+_prompt_simple() {
+    local RESET
+    local -A FG
 
-    PS1="\\[${RESET}${FG_GREEN}\\]\\u \\[${FG_BLUE}\\]\\W \$\\[${RESET}\\] "
+    RESET="\e[0m"
+    FG=(
+        [black]="\e[30m"
+        [red]="\e[31m"
+        [green]="\e[32m"
+        [yellow]="\e[33m"
+        [blue]="\e[34m"
+        [magenta]="\e[35m"
+        [cyan]="\e[36m"
+        [white]="\e[37m"
+    )
+
+    PS1="\\[${RESET}${FG[green]}\\]\\u \\[${FG[blue]}\\]\\W \\$\\[${RESET}\\] "
 
     local width padded
     width="$(_prompt_width)"
     printf -v padded "%*s" $((width-2)) "..."
-    PS2="\\[${RESET}${FG_BLUE}\\]${padded}>\\[${RESET}\\] "
+    PS2="\\[${RESET}${FG[blue]}\\]${padded}>\\[${RESET}\\] "
 }
 
-nopowerline() {
-    _preprompt_hooks=( "${_preprompt_hooks[@]/_powerprompt/_plainprompt}" )
+prompt() {
+    local style="${1:-default}"
+
+    if [[ "${style}" == default ]]; then
+        exists powerprompt || style=simple
+        exists /bin/zsh || style=simple
+    fi
+
+    case "${style}" in
+        (default)
+            _PROMPT_COMMANDS=( "${_PROMPT_COMMANDS[@]/_prompt_*/_prompt_default}" )
+            ;;
+        (*)
+            _PROMPT_COMMANDS=( "${_PROMPT_COMMANDS[@]/_prompt_*/_prompt_simple}" )
+            ;;
+    esac
 }
 
-if exists powerprompt && exists /bin/zsh; then
-    _preprompt_hooks+=( _powerprompt )
-else
-    _preprompt_hooks+=( _plainprompt )
+_PROMPT_COMMANDS+=( _prompt_simple )
+if (( ENABLE_ICONS )); then
+    prompt default
 fi
 
 # gpg-agent {{{1
@@ -148,7 +216,7 @@ if exists gpgconf; then
     _gpg_agent_updatestartuptty() {
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
-    _preprompt_hooks+=( _gpg_agent_updatestartuptty )
+    _PROMPT_COMMANDS+=( _gpg_agent_updatestartuptty )
 fi
 
 # environment variables {{{1
@@ -163,6 +231,3 @@ export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
-
-export PIPENV_VENV_IN_PROJECT=1
-export PIPENV_DONT_LOAD_ENV=1

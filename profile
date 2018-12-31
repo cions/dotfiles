@@ -10,25 +10,7 @@ for shfile in /etc/profile.d/*.sh; do
 done
 
 IFS=":" read -ra paths <<< "${PATH}"
-if (( EUID == 0 )); then
-    export GOPATH="/usr/local/go"
-    paths=(
-        "${HOME}/.bin"
-        "/usr/local/go/bin"
-        {/usr/local,/usr,}/{sbin,bin}
-        "/opt/bin"
-        "${paths[@]}"
-    )
-else
-    export GOPATH="/usr/local/go:${HOME}"
-    paths=(
-        "${HOME}/.bin"
-        "/usr/local/go/bin"
-        {/usr/local,/usr,}/bin
-        "/opt/bin"
-        "${paths[@]}"
-    )
-fi
+paths=( "${HOME}/.bin" "${paths[@]}" )
 
 # shellcheck disable=SC2123
 PATH=""
@@ -40,6 +22,18 @@ done
 export PATH
 
 unset ROOTPATH shfile paths path
+
+export GOPATH="${HOME}"
+export GOBIN="${HOME}/.bin"
+
+if [[ "${PREFIX}" == */com.termux/* ]]; then
+    export TERMUX=1
+fi
+
+export ENABLE_ICONS=1
+[[ "${TERM}" == "linux" ]] && unset ENABLE_ICONS
+(( TERMUX )) && unset ENABLE_ICONS
+command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || unset ENABLE_ICONS
 
 # shellcheck disable=SC1090
 [[ $- == *i* && -f ~/.bashrc ]] && source ~/.bashrc

@@ -1,0 +1,24 @@
+#autoload
+
+_prompt() {
+    local _status=${argv[1]:-${status}}
+
+    PROMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
+
+    case ${KEYMAP} in
+        (viins|main) RPROMPT='%F{green}--INSERT--%f' ;;
+        (vicmd)      RPROMPT='%F{red}--NORMAL--%f' ;;
+    esac
+    RPROMPT2=${RPROMPT}
+
+    if (( ${(%)#:-"%F{red}a"} == 1 )) {
+        local width=${(%)#PROMPT}
+        PROMPT2="%F{blue}%$((width-2))<<${(l:width-2:)}%1_%<<>%f "
+    } else {
+        RPROMPT2="%F{blue}>%f "
+    }
+
+    zle reset-prompt
+}
+
+_PROMPT_FUNCTION=_prompt

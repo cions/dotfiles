@@ -72,7 +72,7 @@ if = 'executable("clang")'
 repo = 'fatih/vim-go'
 if = 'executable("go")'
 hook_source = 'call vimrc#vim_go#on_source()'
-hook_post_source = 'GoInstallBinaries'
+# hook_post_source = 'GoInstallBinaries'
 
 [[plugins]]
 repo = 'zchee/deoplete-go'

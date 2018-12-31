@@ -28,16 +28,23 @@ if (( ${+commands[xsel]} )) {
 } elif (( ${+commands[clip]} )) {
     tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'clip'
     tmux bind-key p run "paste | tmux load-buffer -; tmux paste-buffer -r"
+} elif (( ${+commands[termux-clipboard-set]} )) {
+    tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'termux-clipboard-set'
+    tmux bind-key p run "termux-clipboard-get | tmux load-buffer -; tmux paste-buffer -r"
 }
 if (( ${+commands[vivaldi]} )) {
     tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 vivaldi'
 } elif (( ${+commands[chromium]} )) {
     tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 chromium'
-} elif (( ${+commands[chrome]} )) {
-    tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 chrome'
+} elif (( ${+commands[google-chrome-stable]} )) {
+    tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 google-chrome-stable'
+} elif (( ${+commands[termux-open-url]} )) {
+    tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 termux-open-url'
 }
 if (( ${+commands[xdg-open]} )) {
     tmux bind-key -T copy-mode-vi C-o send -X copy-pipe-and-cancel 'cd "#{pane_current_path}"; xargs -0 xdg-open'
 } elif (( ${+commands[start]} )) {
     tmux bind-key -T copy-mode-vi C-o send -X copy-pipe-and-cancel 'cd "#{pane_current_path}"; xargs -0 start'
+} elif (( ${+commands[termux-open]} )) {
+    tmux bind-key -T copy-mode-vi C-o send -X copy-pipe-and-cancel 'cd "#{pane_current_path}"; xargs -0 termux-open'
 }

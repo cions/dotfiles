@@ -1,5 +1,20 @@
 #!/bin/zsh
 
+typeset -A icons
+
+if (( ENABLE_ICONS )) {
+    icons=(
+        [memusage]=""
+        [swapusage]=""
+        [loadavg]=""
+        [freeze_pane]="🄿"
+        [freeze_emerge]="🄴"
+        [freeze_browser]="🅆"
+        [date]=""
+        [time]=""
+    )
+}
+
 memusage() {
     local meminfo total used percentage color
 
@@ -16,13 +31,12 @@ memusage() {
         color="green"
     }
     if [[ $1 != "-s" ]] {
-        print -nf "%s:%4s/%4s (%.2f%%)" \
-            ${color} \
+        print -nf "${color}:${icons[memusage]}%4s/%4s (%.2f%%)" \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
             ${percentage}
     } else {
-        print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
+        print -nr "${color}:${icons[memusage]}$(numfmt --from-unit=Ki --to=iec ${used})"
     }
 }
 
@@ -44,20 +58,19 @@ swapusage() {
         color="green"
     }
     if [[ $1 != "-s" ]] {
-        print -nf "%s:%4s/%4s (%.2f%%)" \
-            ${color} \
+        print -nf "${color}:${icons[swapusage]}%4s/%4s (%.2f%%)" \
             "$(numfmt --from-unit=Ki --to=iec ${used})" \
             "$(numfmt --from-unit=Ki --to=iec ${total})" \
             ${percentage}
     } else {
-        print -nr "${color}:$(numfmt --from-unit=Ki --to=iec ${used})"
+        print -nr "${color}:${icons[swapusage]}$(numfmt --from-unit=Ki --to=iec ${used})"
     }
 }
 
 loadavg() {
     local loadavg nproc color
 
-    loadavg=( "${(s: :)$(</proc/loadavg)[1,(w)3]}" )
+    loadavg=( "${(s: :)$(</proc/loadavg)[1,(w)3]}" ) 2>/dev/null || print -nr 'red:noperm'
     nproc="$(nproc --all)"
 
     if (( loadavg[1] / nproc >= 1.0 )) {
@@ -68,9 +81,9 @@ loadavg() {
         color="green"
     }
     if [[ $1 != "-s" ]] {
-        print -nr "${color}:${(j: :)loadavg}"
+        print -nr "${color}:${icons[loadavg]}${(j: :)loadavg}"
     } else {
-        print -nr "${color}:${loadavg[1]}"
+        print -nr "${color}:${icons[loadavg]}${loadavg[1]}"
     }
 }
 
@@ -80,9 +93,9 @@ case "$1" {
     (left)
         segments+=( "cyan:#S" "cyan:#H" )
         frozen=""
-        frozen+="$(~/.tmux/freezer query pane "🄿" "")"
-        frozen+="$(~/.tmux/freezer query emerge "🄴" "")"
-        frozen+="$(~/.tmux/freezer query www-browser "🅆" "")"
+        frozen+="$(~/.tmux/freezer query pane "${icons[freeze_pane]:-P}" "")"
+        frozen+="$(~/.tmux/freezer query emerge "${icons[freeze_emerge]:-E}" "")"
+        frozen+="$(~/.tmux/freezer query www-browser "${icons[freeze_browser]:-W}" "")"
         if [[ -n ${frozen} ]] segments+=( "orange:${frozen}" )
         powerprompt -f tmux -L -- "${segments[@]}"
         ;;
@@ -103,10 +116,10 @@ case "$1" {
             segments+=( "$(loadavg -s)" )
         }
         if (( width >= 80 )) {
-            segments+=( "cyan:${(%):-"%D{%Y-%m-%d}"}" )
+            segments+=( "cyan:${icons[date]}${(%):-"%D{%Y-%m-%d}"}" )
         }
         if (( width >= 70 )) {
-            segments+=( "cyan:${(%):-"%D{%H:%M}"}" )
+            segments+=( "cyan:${icons[time]}${(%):-"%D{%H:%M}"}" )
         }
         powerprompt -f tmux -R -- "${segments[@]}"
         ;;

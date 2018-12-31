@@ -5,7 +5,7 @@ emulate -L zsh
 typeset -gA gitstate
 local gitdir grevparse gstatus tmp
 
-gitdir="$(git rev-parse --git-dir 2>/dev/null)" || return 1
+gitdir="$(git rev-parse --absolute-git-dir 2>/dev/null)" || return 1
 grevparse=( "${(@f)$(git rev-parse \
     --is-inside-work-tree \
     --is-inside-git-dir \

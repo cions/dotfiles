@@ -76,6 +76,8 @@ if has('win32') && exists('$AppData')
   let g:tempdir = $AppData . '/Local/Temp'
 elseif exists('$TEMP')
   let g:tempdir = printf('%s/vim-%d', $TEMP, g:uid)
+elseif exists('$TMPDIR')
+  let g:tempdir = printf('%s/vim-%d', $TMPDIR, g:uid)
 else
   let g:tempdir = printf('/tmp/vim-%d', g:uid)
 endif
@@ -93,7 +95,6 @@ if has('vim_starting')
   if !isdirectory(s:deinrepo)
     let s:job = job_start(['git', 'clone',
           \ 'https://github.com/Shougo/dein.vim', s:deinrepo], {
-          \   'cwd': g:pyenv,
           \   'out_io': 'null',
           \   'err_io': 'null',
           \   'stoponexit': ''

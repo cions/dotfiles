@@ -2,6 +2,8 @@
 [core]
 	editor = vim
 	excludesFile = ~/.gitignore
+[protocol]
+	version = 2
 [diff]
 	algorithm = histogram
 [merge]

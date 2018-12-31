@@ -8,13 +8,14 @@ IGNORED_TARGETS=(
     'zsh/init.zsh'
 )
 MAKE_DIRECTORY=(
+    'bin'
     'vim/.pyenv'
     'vim/.ndenv'
     'zsh'
 )
 
 usage() {
-    echo "usage: $0 [-af] [DESTDIR]"
+    echo "usage: $(basename "$0") [-af] [DESTDIR]"
     echo
     echo "Options:"
     echo " -a       prompt before install"
@@ -25,21 +26,21 @@ usage() {
 overwrite_prompt() {
     local -l choice
     read -r -n 1 -u 3 -p "$1 already exists. overwrite? [y/N]: " choice
-    echo 1>&2
+    [[ "${choice}" != $'\n' ]] && echo 1>&2
     [[ "${choice}" == y ]]
 }
 
 ask_prompt() {
     local -l choice
     read -r -n 1 -u 3 -p "install $1? [Y/n]: " choice
-    echo 1>&2
+    [[ "${choice}" != $'\n' ]] && echo 1>&2
     [[ "${choice}" != n ]]
 }
 
 list_targets() {
     local makedirs dir target pattern
     readarray -t makedirs < <(printf '%s\n' "${MAKE_DIRECTORY[@]}" \
-        | sed -n -e 'p;:a' -e '/\//{s:/[^/]*$::;p;ta}' | sort -ur)
+        | sed -n -e 'p;:a' -e '/\//{s:/[^/]*$::;p;ta;}' | sort -ur)
     git -C "${DOTFILES}" ls-files -co | while IFS= read -r target; do
         for pattern in "${IGNORED_TARGETS[@]}"; do
             [[ "${target}/" == "${pattern}"/* ]] && continue 2

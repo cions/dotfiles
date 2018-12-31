@@ -4,6 +4,7 @@
 # preamble {{{1
 autoload -Uz add-zsh-hook
 zmodload zsh/complist
+zmodload zsh/mapfile
 zmodload zsh/terminfo
 
 export DOTFILES=${${(%):-%x}:A:h:h}
@@ -58,24 +59,29 @@ setopt rm_star_silent
 ZPLUG_HOME=${ZDOTDIR}/zplug
 ZPLUG_THREADS="$(nproc)"
 
-if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] {
+if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] && (( ${+commands[git]} )) {
     git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
 }
 
-source ${ZPLUG_HOME}/init.zsh
+if [[ -f ${ZPLUG_HOME}/init.zsh ]] && zmodload -s zsh/pcre; then
+    source ${ZPLUG_HOME}/init.zsh
 
-zplug "zplug/zplug", hook-build:'zplug --self-manage'
-zplug "mafredri/zsh-async"
-zplug "zdharma/fast-syntax-highlighting", defer:2, \
-    hook-load:'fast-theme -q ${ZDOTDIR}/theme.ini'
-if [[ -O ${DOTFILES} ]] {
-    zplug "${DOTFILES}/zsh", from:"local"
-} else {
-    zplug "cions/dotfiles", use:"zsh/"
-}
+    zplug "zplug/zplug", hook-build:'zplug --self-manage'
+    zplug "mafredri/zsh-async"
+    zplug "zdharma/fast-syntax-highlighting", defer:2, \
+        hook-load:'fast-theme -q ${ZDOTDIR}/theme.ini'
+    if [[ -O ${DOTFILES} ]] {
+        zplug "${DOTFILES}/zsh", from:"local"
+    } else {
+        zplug "cions/dotfiles", use:"zsh/"
+    }
 
-zplug check || zplug install
-zplug load
+    zplug check || zplug install
+    zplug load
+else
+    source ${DOTFILES}/zsh/init.zsh
+    autoload -Uz compinit && compinit -u
+fi
 
 # dircolors {{{1
 if (( ${+commands[dircolors]} )) {
@@ -100,6 +106,13 @@ mkcd() {
     mkdir -p -- $1 && cd -- $1
 }
 
+rm() {
+    local ans
+    print -r -- rm ${argv}
+    read -r 'ans?execute? '
+    [[ ${ans} == (#i)(y|yes) ]] && command rm ${argv}
+}
+
 bak() {
     local file
     for file; {
@@ -107,15 +120,41 @@ bak() {
     }
 }
 
+if (( ${+commands[sakura]} )) {
+    ssh-tmux() {
+        cmdline=(
+            'GPG_TTY=$TTY' 'gpg-connect-agent' 'UPDATESTARTUPTTY' '/bye' '&&'
+            'exec' 'ssh' '-t' ${(q+)argv} '"tmux new-session -A -s ssh-${HOST//[^[:alnum]-]##/_}"'
+        )
+        sakura -l -m -x "zsh -c ${(j: :q+)cmdline}" &>/dev/null &!
+    }
+    compdef ssh-tmux=ssh
+}
+
+(( ${+commands[pipenv]} )) && pipenv() {
+    local -x PIPENV_VENV_IN_PROJECT=1
+    local -x PIPENV_DONT_LOAD_ENV=1
+    command pipenv ${argv}
+}
+
 # aliases {{{1
-alias ls=' ls -F --color=auto --quoting-style=literal'
-alias la=' ls -aF --color=auto --quoting-style=literal'
-alias lA=' ls -AF --color=auto --quoting-style=literal'
-alias ll=' ls -AlF --color=auto --time-style=long-iso --quoting-style=literal'
-alias grep='grep -E --color=auto'
-alias rm='rm -I'
-alias rr='rm -rI'
-alias rrf='rm -rf'
+if (( ${+commands[dircolors]} )) {
+    alias ls=' ls -F --color=auto --quoting-style=literal'
+    alias la=' ls -aF --color=auto --quoting-style=literal'
+    alias lA=' ls -AF --color=auto --quoting-style=literal'
+    alias ll=' ls -AlF --color=auto --quoting-style=literal --time-style=long-iso'
+} else {
+    alias ls=' ls -F'
+    alias la=' ls -aF'
+    alias lA=' ls -AF'
+    alias ll=' ls -AlF'
+}
+if grep -q --color=auto '^' <<< '' &>/dev/null; then
+    alias grep='grep -E --color=auto'
+else
+    alias grep='grep -E'
+fi
+alias rr='rm -rf'
 alias p='print -rl --'
 alias reload='exec zsh'
 alias rename='noglob zmv -W'
@@ -131,7 +170,7 @@ alias -g S='| sort'
 alias -g SU='| sort -u'
 alias -g NO='1>/dev/null'
 alias -g NE='2>/dev/null'
-alias -g NUL='1>/dev/null 2>&1'
+alias -g NUL='&>/dev/null'
 alias -g EO='2>&1'
 
 # completion {{{1
@@ -193,7 +232,9 @@ zstyle ':zle:*' word-style standard
 # key bindings {{{2
 bindkey -v
 
-bindkey -M viins '.' zle-repeating-dot
+if (( ${+functions[zle-repeating-dot]} )) {
+    bindkey -M viins '.' zle-repeating-dot
+}
 bindkey -M viins '^A' beginning-of-line
 bindkey -M viins '^B' backward-char
 bindkey -M viins '^D' list-choices
@@ -239,10 +280,10 @@ bindkey -M vicmd '^O' zle-cd-recent-dirs
 bindkey -M vicmd '^P' history-beginning-search-backward-end
 bindkey -M vicmd '^Q' push-line-or-edit
 bindkey -M vicmd '^X^E' edit-command-line
-bindkey -M viins '^X^H' run-help
-bindkey -M viins '^X^R' redo
-bindkey -M viins '^X^U' undo
-bindkey -M viins '^X^X' _complete_help
+bindkey -M vicmd '^X^H' run-help
+bindkey -M vicmd '^X^R' redo
+bindkey -M vicmd '^X^U' undo
+bindkey -M vicmd '^X^X' _complete_help
 bindkey -M vicmd '^^' zle-cd-parents
 
 bindkey -M vicmd 'ys' add-surround
@@ -289,7 +330,7 @@ zle-line-init() {
         unset ZLE_LINE_ABORTED
     }
 
-    ${_prompt_func:-:} ${_status}
+    ${_PROMPT_FUNCTION:-:} ${_status}
 }
 zle -N zle-line-init
 
@@ -299,7 +340,7 @@ zle-line-finish() {
 zle -N zle-line-finish
 
 zle-keymap-select() {
-    ${_prompt_func:-:} ${status}
+    ${_PROMPT_FUNCTION:-:} ${status}
 }
 zle -N zle-keymap-select
 
@@ -333,127 +374,7 @@ setopt hist_verify
 setopt share_history
 
 # prompt {{{1
-_powerprompt() {
-    local _status=${argv[1]:-${status}}
-    local segments=()
-
-    if (( _status != 0 )) segments+=( "red:${_status}" )
-    if (( ${(%):-%j} != 0 )) segments+=( "orange:%j" )
-
-    case ${KEYMAP} in
-        (viins|main) segments+=( "cyan:INSERT" ) ;;
-        (vicmd)      segments+=( "red:NORMAL" ) ;;
-    esac
-
-    if (( EUID == 0 )) {
-        segments+=( "magenta:%n" )
-    } else {
-        segments+=( "green:%n" )
-    }
-    if (( ${+SSH_CONNECTION} )) segments+=( "yellow:%M" )
-    segments+=( "gray3:%1~" )
-    PROMPT="$(powerprompt -f zsh -L -- "${segments[@]}") "
-
-    local width=${(%)#PROMPT}
-    segments=()
-    case ${KEYMAP} in
-        (viins|main) segments+=( "cyan:INSERT" ) ;;
-        (vicmd)      segments+=( "red:NORMAL" ) ;;
-    esac
-    segments+=( "gray3:%$((width-13))<<${(l:width-13:)}%1_%<<" )
-    PROMPT2="$(powerprompt -f zsh -L -- "${segments[@]}") "
-
-    zle reset-prompt
-}
-
-_plainprompt() {
-    local _status=${argv[1]:-${status}}
-
-    PROMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
-
-    case ${KEYMAP} in
-        (viins|main) print -v RPROMPT '%F{green}--INSERT--%f' ;;
-        (vicmd)      print -v RPROMPT '%F{red}--NORMAL--%f' ;;
-    esac
-    RPROMPT2=${RPROMPT}
-
-    local width=${(%)#PROMPT}
-    PROMPT2="%F{blue}%$((width-2))<<${(l:width-2:)}%1_%<<>%f "
-
-    zle reset-prompt
-}
-
-_rprompt() {
-    local workdir=${PWD}
-    if [[ ${workdir} == ${HOME} ]] workdir=${DOTFILES}
-    RPROMPT=""
-    async_job rprompt_worker _rprompt-async ${workdir}
-}
-
-_rprompt-async() {
-    local workdir=${argv[1]}
-    local segments=()
-
-    cd -q ${workdir} 2>/dev/null || return 1
-    git-info || return 1
-
-    if (( gitstate[head_detached] )) {
-        segments+=( "yellow:${gitstate[head_name]}" )
-    } else {
-        segments+=( "green:${gitstate[head_name]}" )
-    }
-
-    if [[ -n ${gitstate[state]} ]] {
-        local state="${gitstate[state]}"
-        if (( gitstate[total] > 1 )) {
-            state+=" (${gitstate[step]}/${gitstate[total]})"
-        }
-        segments+=( "orange:${state}" )
-        if [[ -n ${gitstate[target_name]} ]] {
-            segments+=( "orange:${gitstate[target_name]}" )
-        }
-    }
-
-    local _status=()
-    if (( gitstate[ahead]       )) _status+=( "${gitstate[ahead]}" )
-    if (( gitstate[behind]      )) _status+=( "${gitstate[behind]}" )
-    if (( gitstate[unmerged]    )) _status+=( "${gitstate[unmerged]}" )
-    if (( gitstate[staged]      )) _status+=( "${gitstate[staged]}" )
-    if (( gitstate[wt_modified] )) _status+=( "${gitstate[wt_modified]}" )
-    if (( gitstate[wt_deleted]  )) _status+=( "${gitstate[wt_deleted]}" )
-    if (( gitstate[untracked]   )) _status+=( "${gitstate[untracked]}" )
-    if (( gitstate[stash]       )) _status+=( "${gitstate[stash]}" )
-    if (( ${#_status} > 0 )) {
-        segments+=( "yellow:${(j: :)_status}" )
-    }
-
-    powerprompt -f zsh -R -- "${segments[@]}"
-    return 0
-}
-
-_rprompt-callback() {
-    local returncode=${argv[2]}
-    local stdout=${argv[3]}
-
-    if (( returncode != 0 )) return
-    RPROMPT=${stdout}
-    zle reset-prompt
-}
-
-nopowerline() {
-    _prompt_func=_plainprompt
-    async_stop_worker rprompt_worker
-    add-zsh-hook -d precmd _rprompt
-}
-
-if (( ${+commands[powerprompt]} )) {
-    _prompt_func=_powerprompt
-    async_start_worker rprompt_worker -u
-    async_register_callback rprompt_worker _rprompt-callback
-    add-zsh-hook -Uz precmd _rprompt
-} else {
-    nopowerline
-}
+(( ENABLE_ICONS )) && prompt default || prompt simple
 
 # gpg-agent {{{1
 if (( ${+commands[gpgconf]} )) {
@@ -479,6 +400,3 @@ export PAGER=less
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
-
-export PIPENV_VENV_IN_PROJECT=1
-export PIPENV_DONT_LOAD_ENV=1

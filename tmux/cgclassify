@@ -6,6 +6,6 @@ if [[ ! -f /proc/${TMUXPID}/cgroup ]] exit 0
 
 for cgroup in "${(@f)$(</proc/${TMUXPID}/cgroup)}"; {
     cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}
-    if ! [[ -d ${cgpath} && ${cgroup[(ws.:.)3]} == /shell/* ]] continue
+    [[ -d ${cgpath} && ${cgroup[(ws.:.)3]} == /shell/* ]] || continue
     print ${TMUXPID} > ${cgpath}/cgroup.procs
 }

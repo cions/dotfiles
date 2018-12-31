@@ -10,22 +10,21 @@ for shfile in /etc/profile.d/*.sh(N-.); {
 
 unset ROOTPATH shfile
 
-if (( EUID == 0 )) {
-    gopath=( /usr/local/go )
-    path=(
-        ${HOME}/.bin(N-/)
-        ${^gopath}/bin(N-/)
-        {/usr/local,/usr,}/{sbin,bin}(N-/)
-        /opt/bin(N-/)
-        ${^path}(N-/)
-    )
-} else {
-    gopath=( /usr/local/go ${HOME} )
-    path=(
-        ${HOME}/.bin(N-/)
-        ${^gopath}/bin(N-/)
-        {/usr/local,/usr,}/bin(N-/)
-        /opt/bin(N-/)
-        ${^path:#*/sbin}(N-/)
-    )
+path=( ${HOME}/.bin(N-/) ${path} )
+if (( EUID != 0 )) {
+    path=( ${path:#*/sbin} )
+}
+
+gopath=( ${HOME} )
+GOBIN=${HOME}/.bin
+
+if [[ ${PREFIX} == */com.termux/* ]] {
+    export TERMUX=1
+}
+
+() {
+    [[ ${TERM} == "linux" ]] && return
+    (( TERMUX )) && return
+    command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || return
+    export ENABLE_ICONS=1
 }
