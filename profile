@@ -30,10 +30,11 @@ if [[ "${PREFIX}" == */com.termux/* ]]; then
     export TERMUX=1
 fi
 
-export ENABLE_ICONS=1
-[[ "${TERM}" == "linux" ]] && unset ENABLE_ICONS
-(( TERMUX )) && unset ENABLE_ICONS
-command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || unset ENABLE_ICONS
+ENABLE_ICONS=1
+[[ "${TERM}" == "linux" ]] && ENABLE_ICONS=0
+(( TERMUX )) && ENABLE_ICONS=0
+command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || ENABLE_ICONS=0
+export ENABLE_ICONS
 
 # shellcheck disable=SC1090
 [[ $- == *i* && -f ~/.bashrc ]] && source ~/.bashrc

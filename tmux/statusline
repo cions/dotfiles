@@ -70,7 +70,7 @@ swapusage() {
 loadavg() {
     local loadavg nproc color
 
-    loadavg=( "${(s: :)$(</proc/loadavg)[1,(w)3]}" ) 2>/dev/null || print -nr 'red:noperm'
+    loadavg=( "${(s: :)$(</proc/loadavg)[1,(w)3]}" )
     nproc="$(nproc --all)"
 
     if (( loadavg[1] / nproc >= 1.0 )) {
@@ -87,16 +87,18 @@ loadavg() {
     }
 }
 
+position=${argv[1]}
 width="$(tmux display -p "#{client_width}")"
 segments=()
-case "$1" {
+case ${position} {
     (left)
         segments+=( "cyan:#S" "cyan:#H" )
-        frozen=""
-        frozen+="$(~/.tmux/freezer query pane "${icons[freeze_pane]:-P}" "")"
-        frozen+="$(~/.tmux/freezer query emerge "${icons[freeze_emerge]:-E}" "")"
-        frozen+="$(~/.tmux/freezer query www-browser "${icons[freeze_browser]:-W}" "")"
-        if [[ -n ${frozen} ]] segments+=( "orange:${frozen}" )
+        frozen=(
+            "$(~/.tmux/freezer query pane "${icons[freeze_pane]:-P}" "")"
+            "$(~/.tmux/freezer query emerge "${icons[freeze_emerge]:-E}" "")"
+            "$(~/.tmux/freezer query www-browser "${icons[freeze_browser]:-W}" "")"
+        )
+        segments+=( "orange:${(j::)frozen}" )
         powerprompt -f tmux -L -- "${segments[@]}"
         ;;
     (right)
@@ -110,10 +112,12 @@ case "$1" {
         } elif (( width >= 104 )) {
             segments+=( "$(swapusage -s)" )
         }
-        if (( width >= 114 )) {
-            segments+=( "$(loadavg)" )
-        } else {
-            segments+=( "$(loadavg -s)" )
+        if [[ -r /proc/loadavg ]] {
+            if (( width >= 114 )) {
+                segments+=( "$(loadavg)" )
+            } else {
+                segments+=( "$(loadavg -s)" )
+            }
         }
         if (( width >= 80 )) {
             segments+=( "cyan:${icons[date]}${(%):-"%D{%Y-%m-%d}"}" )

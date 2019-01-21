@@ -67,7 +67,7 @@ mkcd() {
 
 rm() (
     shopt -s extglob nocasematch
-    local ans
+    local -l ans
     echo rm "$@"
     read -r -p 'execute? ' ans
     [[ "${ans}" == @(y|yes) ]] && command rm "$@"
@@ -117,9 +117,9 @@ bind C-B:menu-complete-backward
 # PROMPT_COMMAND {{{1
 _PROMPT_COMMANDS=()
 _prompt_command() {
-    local func
+    local status=$? func
     for func in "${_PROMPT_COMMANDS[@]}"; do
-        ${func}
+        ${func} ${status}
     done
 }
 PROMPT_COMMAND=_prompt_command
@@ -130,12 +130,12 @@ _prompt_width() {
 }
 
 _prompt_default() {
-    local exitcode=$?
     local segments=()
+    local status=$1
     local jobnum
 
-    if (( exitcode != 0 )); then
-        segments+=( "red:${exitcode}" )
+    if (( status != 0 )); then
+        segments+=( "red:${status}" )
     fi
     jobnum="$(jobs -p | wc -l)"
     if (( jobnum != 0 )); then
@@ -162,6 +162,7 @@ _prompt_default() {
 _prompt_simple() {
     local RESET
     local -A FG
+    local status=$1
 
     RESET="\e[0m"
     FG=(
@@ -175,7 +176,15 @@ _prompt_simple() {
         [white]="\e[37m"
     )
 
-    PS1="\\[${RESET}${FG[green]}\\]\\u \\[${FG[blue]}\\]\\W \\$\\[${RESET}\\] "
+    PS1="\\[${RESET}\\]"
+    if (( status != 0 )); then
+        PS1+="\\[${FG[red]}\\](${status}) "
+    fi
+    PS1+="\\[${FG[green]}\\]\\u"
+    if [[ -v SSH_CONNECTION ]]; then
+        PS1+="\\[${FG[yellow]}\\]@\\H"
+    fi
+    PS1+="\\[${FG[blue]}\\] \\W \\$\\[${RESET}\\] "
 
     local width padded
     width="$(_prompt_width)"

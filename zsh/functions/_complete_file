@@ -1,6 +1,6 @@
 #autoload
 
-case "${compstate[context]}" {
+case ${compstate[context]} {
     (brace_parameter)
         compset -P '*[-+=?]'
         ;;

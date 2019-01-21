@@ -10,3 +10,4 @@ if ! prompt-${argv[1]:-default} 2>/dev/null; then
     _PROMPT_FUNCTION=:
     return 1
 fi
+return 0

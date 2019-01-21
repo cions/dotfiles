@@ -1,9 +1,9 @@
 #autoload
 
-_prompt() {
+_prompt_function() {
     local _status=${argv[1]:-${status}}
 
-    PROMPT='%F{green}%n%F{blue} %1~ %(!.#.$)%f '
+    PROMPT="${${_status:#0}:+"%F{red}(${_status}) "}%F{green}%n${SSH_CONNECTION+"%F{yellow}@%m"}%F{blue} %1~ %(!.#.$)%f "
 
     case ${KEYMAP} in
         (viins|main) RPROMPT='%F{green}--INSERT--%f' ;;
@@ -21,4 +21,6 @@ _prompt() {
     zle reset-prompt
 }
 
-_PROMPT_FUNCTION=_prompt
+_PROMPT_FUNCTION=_prompt_function
+
+return 0

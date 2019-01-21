@@ -24,13 +24,13 @@ tmux bind-key -n WheelDownPane select-pane -t= "\;" \
 
 if (( ${+commands[xsel]} )) {
     tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'xsel -l /dev/null -ib'
-    tmux bind-key p run "xsel -ob | tmux load-buffer -; tmux paste-buffer -r"
+    tmux bind-key p run 'xsel -ob | tmux load-buffer -; tmux paste-buffer -r'
 } elif (( ${+commands[clip]} )) {
     tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'clip'
-    tmux bind-key p run "paste | tmux load-buffer -; tmux paste-buffer -r"
+    tmux bind-key p run 'paste | tmux load-buffer -; tmux paste-buffer -r'
 } elif (( ${+commands[termux-clipboard-set]} )) {
     tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'termux-clipboard-set'
-    tmux bind-key p run "termux-clipboard-get | tmux load-buffer -; tmux paste-buffer -r"
+    tmux bind-key p run 'termux-clipboard-get | tmux load-buffer -; tmux paste-buffer -r'
 }
 if (( ${+commands[vivaldi]} )) {
     tmux bind-key -T copy-mode-vi o send -X copy-pipe-and-cancel 'xargs -0 vivaldi'

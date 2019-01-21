@@ -3,25 +3,6 @@
 zmodload zsh/terminfo
 zmodload zsh/zutil
 
-usage() {
-    print -u2 <<'EOF'
-usage: powerprompt [-f FORMAT] [-nPLR] color:text ...
-
-options:
- -f FORMAT              character sequence format for styling
-                        (available: ansi, zsh, bash, tmux)
- -n                     do not add spaces at both ends of the field
- -P                     do not use Powerline symbols as separators
- -L                     generate left-side prompt
- -R                     generate right-side prompt
-
-supported colors:
-    red orange yellow green cyan blue purple magenta
-    black gray1 gray2 gray3 gray4 white
-EOF
-    exit 1
-}
-
 typeset -A colorscheme
 if (( terminfo[colors] >= 256 )) {
     colorscheme=(
@@ -59,9 +40,43 @@ if (( terminfo[colors] >= 256 )) {
     )
 }
 
-zparseopts -D -M -A opts -- h=-help -help f: n P L R
+usage() {
+    cat >&2 <<'EOF'
+usage: powerprompt [-f FORMAT] [-nPLR] color:text...
+       powerprompt [-C] -l
+
+options:
+ -f FORMAT              character sequence format for styling
+                        (available: ansi, zsh, bash tmux)
+ -l                     list available colors and exit
+ -n                     do not add spaces at both ends of the field
+ -C                     do not colorize for -l
+ -P                     do not use Powerline symbols as separators
+ -L                     generate left-side prompt
+ -R                     generate right-side prompt
+EOF
+    exit 1
+}
+
+list_colors() {
+    local colors color nocolor
+    nocolor=${argv[1]}
+
+    for color in ${(ko)colorscheme}; {
+        if (( nocolor )) {
+            print -rl -- ${color}
+        } else {
+            colors=( ${(s.:.)colorscheme[${color}]} )
+            print -P "%F{${colors[1]}}%K{${colors[2]}} ${color} %f%k"
+        }
+    }
+    exit 0
+}
+
+zparseopts -D -M -A opts -- h=-help -help f: l n C P L R || exit 1
 
 if (( ${+opts[--help]} )) usage
+if (( ${+opts[-l]} )) list_colors ${+opts[-C]}
 format=${opts[-f]:-ansi}
 nospace=${+opts[-n]}
 direction=${${opts[-R]+right}:-left}
@@ -100,7 +115,7 @@ case ${format} {
 
 color=()
 prev=()
-if [[ ${direction} == "left" ]] {
+if [[ ${direction} == left ]] {
     reset
     for segment; {
         color=( ${(s.:.)colorscheme[${segment%%:*}]} )
