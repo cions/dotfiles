@@ -19,7 +19,7 @@ export DOTFILES=${${(%):-%x}:A:h:h}
         ${ZDOTDIR}/.zshrc
     )
     for file in ${targets}; {
-        if [[ ${file} -nt ${file}.zwc ]] {
+        if [[ ! -f ${file}.zwc || ${file} -nt ${file}.zwc ]] {
             zcompile ${file}
         }
     }
@@ -35,25 +35,6 @@ setopt ignore_eof
 setopt rc_quotes
 setopt re_match_pcre
 setopt rm_star_silent
-
-# cgclassify {{{1
-[[ -f /proc/self/cgroup ]] && () {
-    local cgroup cgpath
-    for cgroup in "${(@f)$(</proc/self/cgroup)}"; {
-        cgpath=/sys/fs/cgroup/${cgroup[(ws.:.)2]#name=}/shell/zsh-$$
-        if ! [[ -d ${cgpath:h} && ${cgroup[(ws.:.)3]} != /shell/* ]] continue
-        mkdir ${cgpath} 2>/dev/null || continue
-        print $$ > ${cgpath}/cgroup.procs
-        print 1 > ${cgpath}/notify_on_release
-        if [[ -f ${cgpath}/freezer.state ]] {
-            chgrp wheel ${cgpath}/freezer.state
-            chmod g+w ${cgpath}/freezer.state
-        }
-        if [[ -f ${cgpath}/pids.max ]] {
-            echo 1024 > ${cgpath}/pids.max
-        }
-    }
-}
 
 # zplug {{{1
 ZPLUG_HOME=${ZDOTDIR}/zplug
@@ -106,11 +87,11 @@ mkcd() {
     mkdir -p -- $1 && cd -- $1
 }
 
-rm() {
+rr() {
     local ans
-    print -r -- rm ${argv}
+    print -r -- rm -rf ${argv}
     read -r 'ans?execute? '
-    [[ ${ans} == (#i)(y|yes) ]] && command rm ${argv}
+    [[ ${ans} == (#i)(y|yes) ]] && command rm -rf ${argv}
 }
 
 bak() {
@@ -118,17 +99,6 @@ bak() {
     for file; {
         mv -i ${file} ${file}.bak
     }
-}
-
-if (( ${+commands[sakura]} )) {
-    ssh-tmux() {
-        cmdline=(
-            'GPG_TTY=$TTY' 'gpg-connect-agent' 'UPDATESTARTUPTTY' '/bye' '&&'
-            'exec' 'ssh' '-t' ${(q+)argv} '"tmux new-session -A -s ssh-${HOST//[^[:alnum]-]##/_}"'
-        )
-        sakura -l -m -x "zsh -c ${(j: :q+)cmdline}" &>/dev/null &!
-    }
-    compdef ssh-tmux=ssh
 }
 
 (( ${+commands[pipenv]} )) && pipenv() {
@@ -154,7 +124,6 @@ if grep -q --color=auto '^' <<< '' &>/dev/null; then
 else
     alias grep='grep -E'
 fi
-alias rr='rm -rf'
 alias p='print -rl --'
 alias reload='exec zsh'
 alias rename='noglob zmv -W'
@@ -345,8 +314,6 @@ zle-keymap-select() {
 zle -N zle-keymap-select
 
 # chdir {{{1
-setopt auto_cd
-
 autoload -Uz chpwd_recent_dirs
 add-zsh-hook -Uz chpwd chpwd_recent_dirs
 

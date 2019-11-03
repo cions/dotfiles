@@ -3,6 +3,7 @@
 typeset -A icons
 
 if (( ENABLE_ICONS )) {
+    POWERPROMPT="$HOME/.bin/powerprompt -f tmux"
     icons=(
         [memusage]=""
         [swapusage]=""
@@ -13,6 +14,8 @@ if (( ENABLE_ICONS )) {
         [date]=""
         [time]=""
     )
+} else {
+    POWERPROMPT="$HOME/.bin/powerprompt -P -f tmux"
 }
 
 memusage() {
@@ -93,13 +96,7 @@ segments=()
 case ${position} {
     (left)
         segments+=( "cyan:#S" "cyan:#H" )
-        frozen=(
-            "$(~/.tmux/freezer query pane "${icons[freeze_pane]:-P}" "")"
-            "$(~/.tmux/freezer query emerge "${icons[freeze_emerge]:-E}" "")"
-            "$(~/.tmux/freezer query www-browser "${icons[freeze_browser]:-W}" "")"
-        )
-        segments+=( "orange:${(j::)frozen}" )
-        powerprompt -f tmux -L -- "${segments[@]}"
+        ${=POWERPROMPT} -L -- "${segments[@]}"
         ;;
     (right)
         if (( width >= 130 )) {
@@ -125,12 +122,12 @@ case ${position} {
         if (( width >= 70 )) {
             segments+=( "cyan:${icons[time]}${(%):-"%D{%H:%M}"}" )
         }
-        powerprompt -f tmux -R -- "${segments[@]}"
+        ${=POWERPROMPT} -R -- "${segments[@]}"
         ;;
     (window)
-        powerprompt -f tmux -n -L -- "gray1:" "gray2: #I:#W#F "
+        ${=POWERPROMPT} -n -L -- "gray1:" "gray2: #I:#W#F "
         ;;
     (cwindow)
-        powerprompt -f tmux -n -L -- "gray1:" "green: #I:#W#F "
+        ${=POWERPROMPT} -n -L -- "gray1:" "green: #I:#W#F "
         ;;
 }

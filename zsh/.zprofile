@@ -15,9 +15,6 @@ if (( EUID != 0 )) {
     path=( ${path:#*/sbin} )
 }
 
-gopath=( ${HOME} )
-GOBIN=${HOME}/.bin
-
 if [[ ${PREFIX} == */com.termux/* ]] {
     export TERMUX=1
 }
@@ -27,3 +24,6 @@ ENABLE_ICONS=1
 (( TERMUX )) && ENABLE_ICONS=0
 command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || ENABLE_ICONS=0
 export ENABLE_ICONS
+
+gopath=( ${HOME}/.cache/go )
+GOBIN=${HOME}/.bin

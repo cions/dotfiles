@@ -21,29 +21,6 @@ HISTCONTROL=ignoreboth
 HISTSIZE=10000
 unset HISTFILE
 
-# cgclassify {{{1
-cgclassify() {
-    local cgroups cgroup cgpath subsys hier
-    [[ -f /proc/self/cgroup ]] || return
-    readarray -t cgroups < /proc/self/cgroup
-    for cgroup in "${cgroups[@]}"; do
-        IFS=":" read -r _ subsys hier <<< "${cgroup}"
-        cgpath="/sys/fs/cgroup/${subsys#name=}/shell/bash-$$"
-        [[ -d "${cgpath%/*}" && "${hier}" != /shell/* ]] || continue
-        mkdir "${cgpath}" 2>/dev/null || continue
-        echo "$$" > "${cgpath}/cgroup.procs"
-        echo 1 > "${cgpath}/notify_on_release"
-        if [[ -f "${cgpath}/freezer.state" ]]; then
-            chgrp wheel "${cgpath}/freezer.state"
-            chmod g+w "${cgpath}/freezer.state"
-        fi
-        if [[ -f "${cgpath}/pids.max" ]]; then
-            echo 1024 > "${cgpath}/pids.max"
-        fi
-    done
-} && cgclassify
-unset -f cgclassify
-
 # dircolors {{{1
 if exists dircolors; then
     if [[ -f ~/.dircolors ]]; then
@@ -65,12 +42,12 @@ mkcd() {
     mkdir -p -- "$1" && cd -- "$1"
 }
 
-rm() (
+rr() (
     shopt -s extglob nocasematch
     local -l ans
-    echo rm "$@"
+    echo rm -rf "$@"
     read -r -p 'execute? ' ans
-    [[ "${ans}" == @(y|yes) ]] && command rm "$@"
+    [[ "${ans}" == @(y|yes) ]] && command rm -rf "$@"
 )
 
 bak() {
@@ -106,7 +83,6 @@ else
     alias grep='grep -E'
 fi
 
-alias rr='rm -rf'
 alias reload='exec bash'
 alias dot='git -C "${DOTFILES}"'
 

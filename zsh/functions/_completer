@@ -3,7 +3,8 @@
 _complete || return 1
 
 if [[ ${QIPREFIX}${IPREFIX}${PREFIX} == ${compstate[unambiguous]} ]] {
-    compstate[insert]=automenu${compstate[exact_string]+:2}
+    # compstate[insert]=automenu${compstate[exact_string]+:2}
+    compstate[insert]=automenu
 } else {
     compstate[insert]=unambiguous
 }

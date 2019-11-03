@@ -23,9 +23,6 @@ export PATH
 
 unset ROOTPATH shfile paths path
 
-export GOPATH="${HOME}"
-export GOBIN="${HOME}/.bin"
-
 if [[ "${PREFIX}" == */com.termux/* ]]; then
     export TERMUX=1
 fi
@@ -35,6 +32,9 @@ ENABLE_ICONS=1
 (( TERMUX )) && ENABLE_ICONS=0
 command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || ENABLE_ICONS=0
 export ENABLE_ICONS
+
+export GOPATH="${HOME}/.cache/go"
+export GOBIN="${HOME}/.bin"
 
 # shellcheck disable=SC1090
 [[ $- == *i* && -f ~/.bashrc ]] && source ~/.bashrc
