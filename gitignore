@@ -5,6 +5,7 @@
 
 ### Binary files ###
 # Object files
+*.class
 *.elf
 *.ko
 *.o
@@ -45,6 +46,7 @@
 *.zip
 
 ### Package formats ###
+*.apk
 *.crx
 *.deb
 *.dmg

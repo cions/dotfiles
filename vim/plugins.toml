@@ -1,16 +1,5 @@
-[ftplugin]
-go = 'setl fdm=syntax'
-javascript = 'setl et sw=2'
-toml = 'setl et sw=2'
-vim = 'setl et sw=2 isk-=#'
-yaml = 'setl et sw=2'
-
 [[plugins]]
 repo = 'Shougo/dein.vim'
-
-[[plugins]]
-repo = 'Shougo/vimproc.vim'
-build = 'make'
 
 [[plugins]]
 repo = 'altercation/vim-colors-solarized'
@@ -40,9 +29,6 @@ repo = 'kana/vim-textobj-user'
 repo = 'kana/vim-textobj-entire'
 
 [[plugins]]
-repo = 'kana/vim-textobj-fold'
-
-[[plugins]]
 repo = 'kana/vim-textobj-indent'
 
 [[plugins]]
@@ -61,7 +47,9 @@ repo = 'kana/vim-operator-replace'
 repo = 'tyru/operator-reverse.vim'
 
 [[plugins]]
-repo = 'rhysd/vim-operator-surround'
+repo = 'machakann/vim-sandwich'
+hook_source = 'call vimrc#sandwich#on_source()'
+hook_post_source = 'call vimrc#sandwich#on_post_source()'
 
 [[plugins]]
 repo = 'haya14busa/vim-edgemotion'
@@ -72,6 +60,7 @@ repo = 'haya14busa/vim-asterisk'
 [[plugins]]
 repo = 'tyru/caw.vim'
 hook_source = '''
+let g:caw_zeropos_skip_blank_line = 1
 let g:caw_dollarpos_sp_left = '  '
 '''
 
@@ -82,10 +71,18 @@ repo = 't9md/vim-textmanip'
 repo = 'deris/vim-rengbang'
 
 [[plugins]]
-repo = 'h1mesuke/vim-alignta'
+repo = 'junegunn/vim-easy-align'
+hook_source = '''
+let g:easy_align_bypass_fold = 1
+
+map ga <Plug>(EasyAlign)
+'''
 
 [[plugins]]
 repo = 'tpope/vim-sleuth'
+
+[[plugins]]
+repo = 'Shougo/context_filetype.vim'
 
 [[plugins]]
 repo = 'roxma/nvim-yarp'
@@ -101,23 +98,19 @@ hook_source = 'call vimrc#deoplete#on_source()'
 hook_post_source = 'call vimrc#deoplete#on_post_source()'
 
 [[plugins]]
-repo = 'Shougo/echodoc.vim'
-hook_source = '''
-let g:echodoc_enable_at_startup = 1
-'''
-
-[[plugins]]
-repo = 'Shougo/neoinclude.vim'
-hook_source = '''
-let g:neoinclude#max_processes = 8
-'''
-
-[[plugins]]
 repo = 'Shougo/neco-syntax'
 
 [[plugins]]
 repo = 'Shougo/neosnippet.vim'
-hook_source = 'call vimrc#neosnippet#on_source()'
+hook_source = '''
+let g:neosnippet#snippets_directory = g:vimfiles .. '/snippets'
+let g:neosnippet#data_directory = g:cachedir .. '/neosnippet'
+let g:neosnippet#disable_runtime_snippets = { '_': 1 }
+
+imap <C-k> <Plug>(neosnippet_expand_or_jump)
+smap <C-k> <Plug>(neosnippet_expand_or_jump)
+xmap <C-k> <Plug>(neosnippet_expand_target)
+'''
 
 [[plugins]]
 repo = 'Shougo/denite.nvim'
@@ -125,30 +118,12 @@ hook_source = 'call vimrc#denite#on_source()'
 hook_post_source = 'call vimrc#denite#on_post_source()'
 
 [[plugins]]
-repo = 'Shougo/unite.vim'
-hook_source = '''
-let g:unite_data_directory = g:cachedir . '/unite.vim'
-let g:unite_force_overwrite_statusline = 0
-'''
+repo = 'Shougo/defx.nvim'
+hook_source = 'call vimrc#defx#on_source()'
+hook_post_source = 'call vimrc#defx#on_post_source()'
 
-[[plugins]]
-repo = 'Shougo/vimfiler.vim'
-hook_source = '''
-let g:vimfiler_data_directory = g:cachedir . '/vimfiler'
-let g:vimfiler_as_default_explorer = 1
-let g:vimfiler_force_overwrite_statusline = 0
-let g:vimfiler_define_wrapper_commands = 1
-let g:vimfiler_time_format = '%FT%R'
+# [[plugins]]
+# repo = 'kristijanhusak/defx-git'
 
-let g:vimfiler_tree_leaf_icon = ' '
-let g:vimfiler_tree_opened_icon = '▾'
-let g:vimfiler_tree_closed_icon = '▸'
-let g:vimfiler_file_icon = '-'
-let g:vimfiler_marked_file_icon = '*'
-
-nnoremap <silent> <Leader>e :VimFiler<CR>
-nnoremap <silent> <Leader>E :VimFilerExplorer<CR>
-'''
-hook_post_source = '''
-call vimfiler#custom#profile('default', 'context', { 'safe': 0 })
-'''
+# [[plugins]]
+# repo = 'kristijanhusak/defx-icons'

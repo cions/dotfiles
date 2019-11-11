@@ -1,4 +1,4 @@
-include c.snip
+extends c
 
 snippet cppheader
 options head
@@ -15,7 +15,7 @@ options head
 		${0:TARGET}
 	} /* namespace $1 */
 
-snippet println
+snippet puts
 abbr    std::cout << expr << std::endl;
 options head
 	std::cout << ${0:TARGET} << std::endl;

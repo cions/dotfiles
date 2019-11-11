@@ -3,14 +3,16 @@
 DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
 
 IGNORED_TARGETS=(
+    '.gitignore'
     'install.sh'
     'zsh/functions'
     'zsh/init.zsh'
 )
 MAKE_DIRECTORY=(
     'bin'
-    'vim/.pyenv'
+    'vim/.goenv'
     'vim/.ndenv'
+    'vim/.pyenv'
     'zsh'
 )
 

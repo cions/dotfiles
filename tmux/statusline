@@ -8,9 +8,6 @@ if (( ENABLE_ICONS )) {
         [memusage]=""
         [swapusage]=""
         [loadavg]=""
-        [freeze_pane]="🄿"
-        [freeze_emerge]="🄴"
-        [freeze_browser]="🅆"
         [date]=""
         [time]=""
     )

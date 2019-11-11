@@ -1,18 +1,25 @@
 [[plugins]]
-repo = 'tyru/open-browser.vim'
-hook_source = '''
-map gx <Plug>(openbrowser-smart-search)
-'''
+repo = 'vim-jp/vital.vim'
+merged = 0
+lazy = 1
+on_cmd = 'Vitalize'
 
 [[plugins]]
 repo = 'thinca/vim-quickrun'
 hook_source = 'call vimrc#quickrun#on_source()'
 
 [[plugins]]
-repo = 'neoclide/vim-easygit'
+repo = 'tyru/open-browser.vim'
 hook_source = '''
-let g:easygit_enable_command = 1
-let g:easygit_auto_lcd = 1
+let g:openbrowser_default_search = 'duckduckgo'
+
+map gx <Plug>(openbrowser-smart-search)
+'''
+
+[[plugins]]
+repo = 'lambdalisue/suda.vim'
+hook_source = '''
+let g:suda#prefix = 'sudo:'
 '''
 
 [[plugins]]
@@ -22,94 +29,29 @@ hook_source = 'call vimrc#gina#on_source()'
 [[plugins]]
 repo = 'rhysd/committia.vim'
 hook_source = '''
-let g:committia_open_only_vim_starting = 0
 let g:committia_use_singlecolumn = 'always'
 '''
 
-[[plugins]]
-repo = 'w0rp/ale'
-hook_source = 'call vimrc#ale#on_source()'
+# [[plugins]]
+# repo = 'prabirshrestha/vim-lsp'
 
-[[plugins]]
-repo = 'Shougo/context_filetype.vim'
+# [[plugins]]
+# repo = 'lighttiger2505/deoplete-vim-lsp'
 
-[[plugins]]
-repo = 'othree/html5.vim'
+# [[plugins]]
+# repo = 'mattn/efm-langserver'
 
-[[plugins]]
-repo = 'hail2u/vim-css3-syntax'
-
-[[plugins]]
-repo = 'othree/yajs.vim'
-
-[[plugins]]
-repo = 'rhysd/vim-wasm'
-
-[[plugins]]
-repo = 'Quramy/vim-js-pretty-template'
-
-[[plugins]]
-repo = 'jason0x43/vim-js-indent'
-
-[[plugins]]
-repo = 'leafgarland/typescript-vim'
-
-[[plugins]]
-repo = 'carlitux/deoplete-ternjs'
-
-[[plugins]]
-repo = 'ternjs/tern_for_vim'
-build = 'npm install'
-
-[[plugins]]
-repo = 'Quramy/tsuquyomi'
-
-[[plugins]]
-repo = 'Shougo/deoplete-clangx'
-if = 'executable("clang")'
-
-[[plugins]]
-repo = 'fatih/vim-go'
-if = 'executable("go")'
-hook_source = 'call vimrc#vim_go#on_source()'
-# hook_post_source = 'GoInstallBinaries'
-
-[[plugins]]
-repo = 'zchee/deoplete-go'
-build = 'go get -u github.com/mdempsky/gocode && make'
-
-[[plugins]]
-repo = 'kana/vim-filetype-haskell'
-
-[[plugins]]
-repo = 'eagletmt/neco-ghc'
-if = 'executable("ghc-mod")'
-
-[[plugins]]
-repo = 'eagletmt/ghcmod-vim'
-if = 'executable("ghc-mod")'
-hook_update = '''
-let g:ghcmod_max_preview_size = 10
-
-nnoremap <buffer><silent> st :<C-u>GhcModType<CR>
-nnoremap <buffer><silent> sT :<C-u>GhcModTypeInsert<CR>
-nnoremap <buffer><silent> sh :<C-u>GhcModClear<CR>
-nnoremap <buffer><silent> si :<C-u>GhcModInfo<CR>
-nnoremap <buffer><silent> sI :<C-u>GhcModInfoPreview<CR>
-'''
-
-[[plugins]]
-repo = 'zchee/deoplete-jedi'
-build = 'git submodule update --init'
+# [[plugins]]
+# repo = 'iamcco/diagnostic-languageserver'
 
 [[plugins]]
 repo = 'Shougo/neco-vim'
 
 [[plugins]]
-repo = 'cespare/vim-toml'
+repo = 'deoplete-plugins/deoplete-zsh'
+hook_source = '''
+let $DEOPLETE_ZSH_CACHE_DIR = g:cachedir .. '/deoplete/zsh'
+'''
 
-[[plugins]]
-repo = 'rhysd/vim-gfm-syntax'
-
-[[plugins]]
-repo = 'ekalinin/Dockerfile.vim'
+# [[plugins]]
+# repo = 'fatih/vim-go'

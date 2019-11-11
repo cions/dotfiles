@@ -1,70 +1,14 @@
 " vim: set foldmethod=marker:
 
+set encoding=utf-8
+scriptencoding utf-8
+scriptversion 3
+
 " prelude {{{1
 let g:vimfiles = expand('<sfile>:p:h')
-let g:isdev = isdirectory(expand('~/src'))
-let g:uid = executable('id') ? str2nr(system('id -u')) : -1
-
-" pyenv {{{2
-if has('vim_starting') && executable('pipenv')
-  let g:pyenv = g:vimfiles . '/.pyenv'
-
-  if !isdirectory(g:pyenv . '/.venv')
-    if g:isdev
-      let s:cmd = ['pipenv', '--site-packages', 'install', '--dev']
-    else
-      let s:cmd = ['pipenv', 'install']
-    endif
-    let s:job = job_start(s:cmd, {
-          \   'cwd': g:pyenv,
-          \   'env': { 'PIPENV_VENV_IN_PROJECT': '1' },
-          \   'out_io': 'null',
-          \   'err_io': 'null',
-          \   'stoponexit': ''
-          \ })
-    while job_status(s:job) ==# 'run'
-      sleep 100m
-    endwhile
-    unlet s:cmd s:job
-  endif
-
-  let $PATH = g:pyenv . '/.venv/bin:' . $PATH
-  let g:python3_host_prog = g:pyenv . '/.venv/bin/python3'
-  let &pythonthreehome = g:pyenv . '/.venv'
-endif
-
-" ndenv {{{2
-if has('vim_starting') && executable('npm') && g:isdev
-  let g:ndenv = g:vimfiles . '/.ndenv'
-
-  if !isdirectory(g:ndenv . '/node_modules')
-    call job_start(['npm', 'install'], {
-          \   'cwd': g:ndenv,
-          \   'out_io': 'null',
-          \   'err_io': 'null',
-          \   'stoponexit': ''
-          \ })
-  endif
-
-  let $PATH = g:ndenv . '/node_modules/.bin:' . $PATH
-endif
-
-" goenv {{{2
-if has('vim_starting') && executable('go') && g:isdev
-  let g:goenv = g:vimfiles . '/.goenv'
-
-  let $GOPATH = g:goenv . ':' . $GOPATH
-  let $PATH = g:goenv . '/bin:' . $PATH
-endif
 
 " cachedir {{{2
-if has('win32') && exists('$AppData')
-  let g:cachedir = $AppData . '/Local/Vim/Cache'
-elseif exists('$XDG_CACHE_HOME')
-  let g:cachedir = $XDG_CACHE_HOME . '/vim'
-else
-  let g:cachedir = g:vimfiles . '/.cache'
-endif
+let g:cachedir = g:vimfiles .. '/.cache'
 if isdirectory(g:cachedir)
   call setfperm(g:cachedir, 'rwx------')
 else
@@ -72,14 +16,10 @@ else
 endif
 
 " tempdir {{{2
-if has('win32') && exists('$AppData')
-  let g:tempdir = $AppData . '/Local/Temp'
-elseif exists('$TEMP')
-  let g:tempdir = printf('%s/vim-%d', $TEMP, g:uid)
-elseif exists('$TMPDIR')
-  let g:tempdir = printf('%s/vim-%d', $TMPDIR, g:uid)
+if exists('$TEMP')
+  let g:tempdir = printf('%s/vim-%d', $TEMP, getpid())
 else
-  let g:tempdir = printf('/tmp/vim-%d', g:uid)
+  let g:tempdir = printf('/tmp/vim-%d', getpid())
 endif
 if isdirectory(g:tempdir)
   call setfperm(g:tempdir, 'rwx------')
@@ -87,43 +27,59 @@ else
   call mkdir(g:tempdir, 'p', 0700)
 endif
 
+" pyenv {{{2
+if has('vim_starting') && executable('python3')
+  let g:pyenv = g:vimfiles .. '/.pyenv'
+  if !isdirectory(g:pyenv .. '/bin')
+    call mkdir(g:pyenv, 'p')
+    call vimrc#setup_pyenv()
+  endif
+  let $PATH = g:pyenv .. '/bin:' .. $PATH
+endif
+
+" ndenv {{{2
+if has('vim_starting') && executable('npm')
+  let g:ndenv = g:vimfiles .. '/.ndenv'
+  if !isdirectory(g:ndenv .. '/node_modules/.bin')
+    call vimrc#setup_ndenv()
+  endif
+  let $PATH = g:ndenv .. '/node_modules/.bin:' .. $PATH
+endif
+
+" goenv {{{2
+if has('vim_starting') && executable('go')
+  let g:goenv = g:vimfiles .. '/.goenv'
+  if !isdirectory(g:goenv .. '/bin')
+    call vimrc#setup_goenv()
+  endif
+  let $PATH = g:goenv .. '/bin:' .. $PATH
+endif
+
 " dein.vim {{{1
-let s:deindir = g:vimfiles . '/dein'
-let s:deinrepo = s:deindir . '/repos/github.com/Shougo/dein.vim'
+let s:deindir = g:vimfiles .. '/dein'
+let s:deinrepo = s:deindir .. '/repos/github.com/Shougo/dein.vim'
 
 if has('vim_starting')
   if !isdirectory(s:deinrepo)
-    let s:job = job_start(['git', 'clone',
-          \ 'https://github.com/Shougo/dein.vim', s:deinrepo], {
-          \   'out_io': 'null',
-          \   'err_io': 'null',
-          \   'stoponexit': ''
-          \ })
-    while job_status(s:job) ==# 'run'
-      sleep 100m
-    endwhile
-    unlet s:job
+    call vimrc#await(vimrc#setup_dein(s:deinrepo))
   endif
-  let &runtimepath = s:deinrepo . ',' . &runtimepath
+  let &runtimepath = s:deinrepo .. ',' .. &runtimepath
 endif
 
+let g:dein#types#git#clone_depth = 1
+let g:dein#types#git#pull_command = 'fetch --depth=1 && git reset --merge "@{upstream}"'
+
 if dein#load_state(s:deindir)
-  let s:plugins = g:vimfiles . '/plugins.toml'
-  let s:devplugins = g:vimfiles . '/devplugins.toml'
-  if g:isdev
-    let s:vimrcs = [$MYVIMRC, s:plugins, s:devplugins]
-  else
-    let s:vimrcs = [$MYVIMRC, s:plugins]
-  endif
-  let s:vimrcs = map(s:vimrcs, { _, x -> resolve(x) })
+  let s:tomls = glob(g:vimfiles .. '/*.toml', 0, 1)
+  let s:vimrcs = [$MYVIMRC] + s:tomls
+
   call dein#begin(s:deindir, s:vimrcs)
-  call dein#load_toml(s:plugins)
-  if g:isdev
-    call dein#load_toml(s:devplugins)
-    for s:dir in glob('~/src/*/cions', 1, 1)
-      call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
-    endfor
-  endif
+  for s:toml in s:tomls
+    call dein#load_toml(s:toml)
+  endfor
+  for s:dir in glob('~/src/*/cions', 0, 1)
+    call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
+  endfor
   call dein#end()
   call dein#save_state()
 endif
@@ -132,13 +88,11 @@ if dein#check_install()
   call dein#install()
 endif
 
-if has('nvim')
-  call dein#remote_plugins()
-endif
-
+call dein#call_hook('source')
 if has('vim_starting')
-  call dein#call_hook('source')
-  autocmd VimEnter * call dein#call_hook('post_source')
+  autocmd VimEnter * ++once call dein#call_hook('post_source')
+else
+  call dein#call_hook('post_source')
 endif
 
 syntax enable
@@ -204,7 +158,7 @@ set noincsearch
 set ignorecase
 set smartcase
 
-let &backupdir = '.,' . g:tempdir
+let &backupdir = '.,' .. g:tempdir
 let &directory = g:cachedir
 set writebackup
 set nobackup
@@ -272,30 +226,25 @@ nnoremap <silent> gN :<C-u>set relativenumber!<CR>
 nnoremap <silent> gw :<C-u>set wrap! wrap?<CR>
 nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
 
-nmap ys <Plug>(operator-surround-append)
-nmap yss <Plug>(operator-surround-append)<Plug>(textobj-line-a)
-nmap cs <Plug>(operator-surround-replace)
-nmap ds <Plug>(operator-surround-delete)
-xmap S <Plug>(operator-surround-append)
 map _ <Plug>(operator-replace)
 map sl <Plug>(operator-reverse-lines)
 map sw <Plug>(operator-reverse-text)
 map gc <Plug>(caw:prefix)
-nmap gci <Plug>(caw:hatpos:comment)
+map gci <Plug>(caw:hatpos:comment)
 nmap gcd <Plug>(textmanip-duplicate-up)<Plug>(caw:hatpos:comment)+
 xmap gcd <Plug>(textmanip-duplicate-up)gv<Plug>(caw:hatpos:comment)'>+
 map [e <Plug>(edgemotion-k)
 map ]e <Plug>(edgemotion-j)
-map * <Plug>(asterisk-*)
-map # <Plug>(asterisk-#)
-map g* <Plug>(asterisk-g*)
-map g# <Plug>(asterisk-g#)
+map * <Plug>(asterisk-z*)
+map # <Plug>(asterisk-z#)
+map g* <Plug>(asterisk-gz*)
+map g# <Plug>(asterisk-gz#)
 nmap <Space>d <Plug>(textmanip-duplicate-down)
 xmap <Space>d <Plug>(textmanip-duplicate-down)<Esc>
 nmap <Space>D <Plug>(textmanip-duplicate-up)
 xmap <Space>D <Plug>(textmanip-duplicate-up)<Esc>
-xmap <Space>h <Plug>(textmanip-duplicate-left)
-xmap <Space>l <Plug>(textmanip-duplicate-right)
+xmap <Space>h <Plug>(textmanip-duplicate-left)<Esc>
+xmap <Space>l <Plug>(textmanip-duplicate-right)<Esc>
 xmap H <Plug>(textmanip-move-left)
 xmap J <Plug>(textmanip-move-down)
 xmap K <Plug>(textmanip-move-up)
@@ -311,87 +260,18 @@ tnoremap <silent> <C-W><C-h> <C-W>:call job_stop(term_getjob(bufnr('%')), 'hup')
 tnoremap <C-W><Esc> <C-W>N
 
 " commands {{{1
-" Update {{{2
-function! s:update() abort
-  call dein#update()
-
-  if executable('pipenv')
-    call job_start(['pipenv', 'update'], {
-          \   'cwd': g:pyenv,
-          \   'env': { 'PIPENV_VENV_IN_PROJECT': '1' },
-          \   'out_io': 'null',
-          \   'err_io': 'null',
-          \   'stoponexit': ''
-          \ })
-  endif
-
-  if executable('npm') && g:isdev
-    call job_start(['npm', 'update'], {
-          \   'cwd': g:ndenv,
-          \   'out_io': 'null',
-          \   'err_io': 'null',
-          \   'stoponexit': ''
-          \ })
-  endif
-
-  if exists(':GoUpdateBinaries') == 2
-    GoUpdateBinaries
-  endif
-
-  if executable('gocode')
-    call job_start(['go', 'get', '-u', 'github.com/mdempsky/gocode'], {
-          \   'cwd': g:goenv,
-          \   'out_io': 'null',
-          \   'err_io': 'null',
-          \   'stoponexit': ''
-          \ })
-  endif
-endfunction
-command! Update call s:update()
-
-" Clean {{{2
-function! s:clean() abort
-  for plugin in dein#check_clean()
-    call delete(plugin, 'rf')
-    call delete(fnamemodify(plugin, ':h'), 'd')
-  endfor
-  call dein#each('git gc')
-  call dein#recache_runtimepath()
-endfunction
-command! Clean call s:clean()
-
-" SynStack {{{2
-function! s:synstack() abort
-  let stack = synstack(line('.'), col('.'))
-  let names = map(stack, { _, x -> synIDattr(x, 'name') })
-  echomsg join(names, ' / ')
-endfunction
-command! SynStack call s:synstack()
-
-" Highlight {{{2
-function! s:highlight() abort
-  let synid = synIDtrans(synID(line('.'), col('.'), 1))
-  echomsg synIDattr(synid, 'name')
-endfunction
-command! Highlight call s:highlight()
+command! Update call vimrc#update()
+command! Clean call vimrc#clean()
+command! SynStack call vimrc#synstack()
+command! Highlight call vimrc#highlight()
 
 " autocmd {{{1
-function! s:auto_mkdir(dir, force) abort " {{{2
-  if isdirectory(a:dir)
-    return
-  endif
-  let prompt = '"%s" does not exists. Create? [y/N] '
-  if a:force || input(prompt, a:dir) =~? '^y\%[es]$'
-    call mkdir(iconv(a:dir, &encoding, &termencoding), 'p')
-  endif
-endfunction " }}}2
-
 augroup vimrc
   autocmd!
-
-  autocmd BufWritePre * call s:auto_mkdir(expand('<afile>:p:h'), v:cmdbang)
-
-  autocmd BufWritePost,BufFilePost * nested filetype detect
-  autocmd BufWritePost vimrc nested source $MYVIMRC | let &l:ft = &l:ft
-  autocmd BufWritePost *.toml nested source $MYVIMRC | let &l:ft = &l:ft
+  autocmd VimLeave * call delete(g:tempdir, 'rf')
+  autocmd BufEnter ?* call vimrc#lcd_to_project_dir(expand('<afile>:p'))
+  autocmd BufWritePre * call vimrc#auto_mkdir(expand('<afile>:p:h'), v:cmdbang)
+  autocmd BufWritePost,BufFilePost * ++nested filetype detect
+  autocmd BufWritePost vimrc,.vimrc,*.vim,*.toml ++nested source $MYVIMRC
 augroup END
+
