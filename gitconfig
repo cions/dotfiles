@@ -17,7 +17,8 @@
 [status]
 	relativePaths = false
 [alias]
-	b = branch
+	b = switch
+	nb = switch --create
 	co = checkout
 	cob = checkout -b
 	s = status
@@ -40,7 +41,7 @@
 	cam = !git add --all && git commit -m
 	cu = !git add --update && git commit
 	cum = !git add --update && git commit -m
-	amend = commit --amend --reuse-message=HEAD
+	amend = commit --amend --reuse-message=HEAD --reset-author
 	wip = stash save --include-untracked
 	l = log --pretty=simple --no-merges
 	la = log --pretty=simple --no-merges --all
@@ -53,9 +54,9 @@
 	ld = log --pretty=detail --graph --patch
 	lda = log --pretty=detail --graph --patch --all
 	ls-unmerged = diff --diff-filter=U --name-only
-	resolve = !git ls-unmerged -z | xargs -0r sh -c '</dev/tty "${VISUAL:-${EDITOR:-vi}}" -- "$@" && git add -- "$@"' -
-	ours = !sh -c 'git checkout --ours -- "$@" && git add -- "$@"' -
-	theirs = !sh -c 'git checkout --theirs -- "$@" && git add -- "$@"' -
+	resolve = !git ls-unmerged -z | xargs --null --open-tty --no-run-if-empty ${EDITOR:-vi} --
+	ours = restore --ours
+	theirs = restore --theirs
 [format]
 	pretty = detail
 [pretty]
@@ -79,9 +80,9 @@
 	selected = bold normal
 	separator = cyan
 [pager]
-	diff = diff-highlight | less
-	log = diff-highlight | less
-	show = diff-highlight | less
+	diff = $(command -v diff-highlight cat | head -1) | less
+	log = $(command -v diff-highlight cat | head -1) | less
+	show = $(command -v diff-highlight cat | head -1) | less
 [user]
 	name = cions
 	email = gh.cions@gmail.com

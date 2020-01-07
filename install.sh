@@ -13,6 +13,8 @@ MAKE_DIRECTORY=(
     'vim/.goenv'
     'vim/.ndenv'
     'vim/.pyenv'
+    'vim/.rbenv'
+    'vim/.rsenv'
     'zsh'
 )
 
@@ -44,6 +46,9 @@ list_targets() {
     readarray -t makedirs < <(printf '%s\n' "${MAKE_DIRECTORY[@]}" \
         | sed -n -e 'p;:a' -e '/\//{s:/[^/]*$::;p;ta;}' | sort -ur)
     git -C "${DOTFILES}" ls-files -co | while IFS= read -r target; do
+        if [[ ! -f "${DOTFILES}/${target}" ]]; then
+            continue
+        fi
         for pattern in "${IGNORED_TARGETS[@]}"; do
             [[ "${target}/" == "${pattern}"/* ]] && continue 2
         done

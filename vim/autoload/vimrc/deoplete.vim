@@ -12,7 +12,7 @@ function vimrc#deoplete#on_post_source() abort
         \   'auto_complete_delay': 10,
         \   'smart_case': v:true,
         \   'ignore_sources': {
-        \     '_': ['around', 'dictionary', 'member', 'omni'],
+        \     '_': ['around', 'dictionary', 'member'],
         \   },
         \ })
 

@@ -56,83 +56,160 @@ function vimrc#await(promise) abort
 endfunction
 
 function vimrc#setup_dein(deinrepo) abort
-  call s:echow('cloning dein repository...')
+  call s:echow('Downloading dein...')
   let repourl = 'https://github.com/Shougo/dein.vim'
   return vimrc#exec(['git', 'clone', '--depth=1', repourl, a:deinrepo], {})
-        \.then({-> s:echow('cloning dein repository... Done')}, s:onerror)
+        \.then({-> s:echow('Downloading dein... Done')}, s:onerror)
 endfunction
 
-function vimrc#setup_pyenv() abort
-  call s:echow('Setup python environment...')
-  let options = { 'cwd': g:pyenv }
-  let p = vimrc#exec(['python3', '-mvenv', '--system-site-packages', g:pyenv], options)
-  let options.env = { 'PATH': g:pyenv .. '/bin:' .. $PATH, 'VIRTUAL_ENV': g:pyenv }
-  let p = p.then({-> vimrc#exec(['pip', 'install', '-U', 'pip'], options)})
-  if filereadable(g:pyenv .. '/requirements.txt')
-    let p = p.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], options)})
-  else
-    let p = p.then({-> vimrc#exec(['pip', 'install', 'pynvim'], options)})
+function vimrc#setup_goenv(goenv) abort
+  if !executable('go')
+    return s:Promise.reject('go not found').catch(s:onerror)
   endif
-  return p.then({-> s:echow('Setup python environment... Done')}, s:onerror)
-endfunction
+  if !filereadable(a:goenv .. '/tools.txt')
+    return s:Promise.reject('tools.txt not found').catch(s:onerror)
+  endif
+  let g:goenv = a:goenv
+  let $PATH = g:goenv .. '/bin:' .. $PATH
+  if isdirectory(g:goenv .. '/bin')
+    return s:Promise.resolve()
+  endif
 
-function vimrc#setup_ndenv() abort
-  if !filereadable(g:ndenv .. '/package.json')
-    return s:Promise.reject('No package.json')
-  endif
-  call s:echow('Setup node environment...')
-  return vimrc#exec(['npm', 'install'], { 'cwd': g:ndenv })
-        \.then({-> s:echow('Setup node environment... Done')}, s:onerror)
-endfunction
-
-function vimrc#setup_goenv() abort
-  if !filereadable(g:goenv .. '/tools.txt')
-    return s:Promise.reject('No tools.txt')
-  endif
   call s:echow('Setup go environment...')
-  let pkgs = filter(readfile(g:goenv .. '/tools.txt'), {_,x -> x !~# '^#\|^\s*$'})
-  let options = {
-        \   'cwd': g:goenv,
-        \   'env': { 'GOBIN': g:goenv .. '/bin' }
-        \ }
+  let pkgs = readfile(g:goenv .. '/tools.txt')
+  let opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
   if filereadable(g:goenv .. '/go.mod')
     let p = s:Promise.resolve()
   else
-    let p = vimrc#exec(['go', 'mod', 'init', 'vim-goenv'], options)
+    let p = vimrc#exec(['go', 'mod', 'init', 'vim-goenv'], opts)
   endif
-  return p.then({-> vimrc#exec(['go', 'get'] + pkgs, options)})
-        \.then({-> s:echow('Setup go environment... Done')}, s:onerror)
+  return p.then({-> vimrc#exec(['go', 'get'] + pkgs, opts)})
+         \.then({-> s:echow('Setup go environment... Done')}, s:onerror)
+         \.catch({-> rmdir(g:goenv .. '/bin', 'r')})
+endfunction
+
+function vimrc#setup_ndenv(ndenv) abort
+  if !executable('npm')
+    return s:Promise.reject('npm not found').catch(s:onerror)
+  endif
+  if !filereadable(a:ndenv .. '/package.json')
+    return s:Promise.reject('package.json not found').catch(s:onerror)
+  endif
+  let g:ndenv = a:ndenv
+  let $PATH = g:ndenv .. '/node_modules/.bin:' .. $PATH
+  if isdirectory(g:ndenv .. '/node_modules/.bin')
+    return s:Promise.resolve()
+  endif
+
+  call s:echow('Setup node environment...')
+  return vimrc#exec(['npm', 'install'], { 'cwd': g:ndenv })
+        \.then({-> s:echow('Setup node environment... Done')}, s:onerror)
+        \.catch({-> rmdir(g:ndenv .. '/node_modules/.bin', 'r')})
+endfunction
+
+function vimrc#setup_pyenv(pyenv) abort
+  if !executable('python3')
+    return s:Promise.reject('python3 not found').catch(s:onerror)
+  endif
+  let g:pyenv = a:pyenv
+  let $PATH = g:pyenv .. '/bin:' .. $PATH
+  if isdirectory(g:pyenv .. '/bin')
+    return s:Promise.resolve()
+  endif
+
+  call s:echow('Setup python environment...')
+  let opts = { 'cwd': g:pyenv }
+  let p = vimrc#exec(['python3', '-mvenv', '--system-site-packages', g:pyenv], opts)
+  let opts.env = { 'VIRTUAL_ENV': g:pyenv }
+  let p = p.then({-> vimrc#exec(['pip', 'install', '-U', 'pip'], opts)})
+  if filereadable(g:pyenv .. '/requirements.txt')
+    let p = p.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], opts)})
+  else
+    let p = p.then({-> vimrc#exec(['pip', 'install', 'pynvim'], opts)})
+  endif
+  return p.then({-> s:echow('Setup python environment... Done')}, s:onerror)
+         \.catch({-> rmdir(g:pyenv .. '/bin', 'r')})
+endfunction
+
+function vimrc#setup_rbenv(rbenv) abort
+  if !executable('bundle')
+    return s:Promise.reject('bundle not found').catch(s:onerror)
+  endif
+  if !filereadable(a:rbenv .. '/Gemfile')
+    return s:Promise.reject('Gemfile not found').catch(s:onerror)
+  endif
+  let g:rbenv = a:rbenv
+  let $PATH = g:rbenv .. '/bin:' .. $PATH
+  if isdirectory(g:rbenv .. '/bin')
+    return s:Promise.resolve()
+  endif
+
+  call s:echow('Setup ruby environment...')
+  let opts = { 'cwd': g:rbenv }
+  return vimrc#exec(['bundle', 'install', '--path', 'vendor/bundle'], opts)
+        \.then({-> vimrc#exec(['bundle', 'binstubs', '--all'], opts)})
+        \.then({-> s:echow('Setup ruby environment... Done')}, s:onerror)
+        \.catch({-> rmdir(g:rbenv .. '/bin', 'r')})
+endfunction
+
+function vimrc#setup_rsenv(rsenv) abort
+  if !executable('cargo')
+    return s:Promise.reject('cargo not found').catch(s:onerror)
+  endif
+  if !filereadable(a:rsenv .. '/tools.txt')
+    return s:Promise.reject('tools.txt not found').catch(s:onerror)
+  endif
+  let g:rsenv = a:rsenv
+  let $PATH = g:rsenv .. '/bin:' .. $PATH
+  if isdirectory(g:rsenv .. '/bin')
+    return s:Promise.resolve()
+  endif
+
+  call s:echow('Setup rust environment...')
+  let pkgs = readfile(g:rsenv .. '/tools.txt')
+  let opts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
+  return vimrc#exec(['cargo', 'install', '--force'] + pkgs, opts)
+        \.then({-> s:echow('Setup rust environment... Done')}, s:onerror)
+        \.catch({-> rmdir(g:rsenv .. '/bin', 'r')})
 endfunction
 
 function vimrc#update() abort
   call dein#update()
 
-  if exists('g:pyenv')
-    let options = {
-          \   'cwd': g:pyenv,
-          \   'env': { 'PATH': g:pyenv .. '/bin:' .. $PATH, 'VIRTUAL_ENV': g:pyenv },
-          \ }
-    let p = vimrc#exec(['pip', 'list', '--local', '--format=json'], options)
-          \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
-          \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, options)})
-          \.then({-> vimrc#exec(['pip', 'freeze', '--local'], options)})
-          \.then({out -> writefile(out, g:pyenv .. '/requirements.txt')})
-          \.then({-> s:echow('python environment updated')}, s:onerror)
+  if exists('g:goenv')
+    let pkgs = readfile(g:goenv .. '/tools.txt')
+    let opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
+    call vimrc#exec(['go', 'get', '-u'] + pkgs, opts)
+        \.then({-> s:echow('go environment updated')}, s:onerror)
   endif
 
   if exists('g:ndenv')
-    let p = vimrc#exec(['npm', 'update'], { 'cwd': g:ndenv })
-          \.then({-> s:echow('node environment updated')}, s:onerror)
+    call vimrc#exec(['npm', 'update'], { 'cwd': g:ndenv })
+        \.then({-> s:echow('node environment updated')}, s:onerror)
   endif
 
-  if exists('g:goenv')
-    let pkgs = filter(readfile(g:goenv .. '/tools.txt'), {_,x -> x !~# '^#\|^\s*$'})
-    let options = {
-          \   'cwd': g:goenv,
-          \   'env': { 'GOBIN': g:goenv .. '/bin' },
-          \ }
-    let p = vimrc#exec(['go', 'get', '-u'] + pkgs, options)
-          \.then({-> s:echow('go environment updated')}, s:onerror)
+  if exists('g:pyenv')
+    let opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
+    call vimrc#exec(['pip', 'list', '--local', '--format=json'], opts)
+        \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
+        \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, opts)})
+        \.then({-> vimrc#exec(['pip', 'freeze', '--local'], opts)})
+        \.then({out -> writefile(out, g:pyenv .. '/requirements.txt')})
+        \.then({-> s:echow('python environment updated')}, s:onerror)
+  endif
+
+  if exists('g:rbenv')
+    let opts = { 'cwd': g:rbenv }
+    call vimrc#exec(['bundle', 'update'], opts)
+        \.then({-> vimrc#exec(['bundle', 'binstubs', '--all'], opts)})
+        \.then({-> s:echow('ruby environment updated')})
+  endif
+
+  if exists('g:rsenv')
+    let pkgs = readfile(g:rsenv .. '/tools.txt')
+    let opts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
+    call vimrc#exec(['cargo', 'install', '--force'] + pkgs, opts)
+        \.then({-> s:echow('rust environment updated')})
   endif
 endfunction
 
@@ -183,6 +260,7 @@ function vimrc#lcd_to_project_dir(file) abort
         \   'go.mod',
         \   'Gemfile',
         \   'Rakefile',
+        \   'Cargo.toml',
         \   'CMakeLists.txt',
         \   'meson.build',
         \   'configure.ac',

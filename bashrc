@@ -42,26 +42,20 @@ mkcd() {
     mkdir -p -- "$1" && cd -- "$1"
 }
 
-rr() (
-    shopt -s extglob nocasematch
+rr() {
     local -l ans
     echo rm -rf "$@"
     read -r -p 'execute? ' ans
-    [[ "${ans}" == @(y|yes) ]] && command rm -rf "$@"
-)
+    case "${ans}" in
+        y|yes) command rm -rf "$@" ;;
+    esac
+}
 
 bak() {
     local file
     for file; do
         mv -i "${file}" "${file}.bak"
     done
-}
-
-# shellcheck disable=SC2034
-exists pipenv && pipenv() {
-    local -x PIPENV_VENV_IN_PROJECT=1
-    local -x PIPENV_DONT_LOAD_ENV=1
-    command pipenv "$@"
 }
 
 # aliases {{{1
@@ -177,10 +171,10 @@ prompt() {
     fi
 
     case "${style}" in
-        (default)
+        default)
             _PROMPT_COMMANDS=( "${_PROMPT_COMMANDS[@]/_prompt_*/_prompt_default}" )
             ;;
-        (*)
+        *)
             _PROMPT_COMMANDS=( "${_PROMPT_COMMANDS[@]/_prompt_*/_prompt_simple}" )
             ;;
     esac

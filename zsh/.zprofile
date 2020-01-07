@@ -26,4 +26,4 @@ command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || ENABLE_ICONS=0
 export ENABLE_ICONS
 
 gopath=( ${HOME}/.cache/go )
-GOBIN=${HOME}/.bin
+export GOBIN=${HOME}/.bin

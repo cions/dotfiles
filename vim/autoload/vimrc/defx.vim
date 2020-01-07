@@ -15,9 +15,6 @@ function s:on_BufEnter(afile) abort
 endfunction
 
 function vimrc#defx#on_source() abort
-  let g:loaded_netrw = 1
-  let g:loaded_netrwPlugin = 1
-
   augroup vimrc-defx
     autocmd!
     autocmd FileType defx call vimrc#defx#on_defx_buffer()

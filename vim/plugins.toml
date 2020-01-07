@@ -93,12 +93,56 @@ repo = 'roxma/vim-hug-neovim-rpc'
 if = '!has("nvim")'
 
 [[plugins]]
-repo = 'Shougo/deoplete.nvim'
-hook_source = 'call vimrc#deoplete#on_source()'
-hook_post_source = 'call vimrc#deoplete#on_post_source()'
+repo = 'prabirshrestha/async.vim'
+
+# [[plugins]]
+# repo = 'Shougo/deoplete.nvim'
+# hook_source = 'call vimrc#deoplete#on_source()'
+# hook_post_source = 'call vimrc#deoplete#on_post_source()'
+
+# [[plugins]]
+# repo = 'Shougo/neco-syntax'
 
 [[plugins]]
-repo = 'Shougo/neco-syntax'
+repo = 'prabirshrestha/asyncomplete.vim'
+hook_source = '''
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+let g:asyncomplete_preprocessor = [function('asyncomplete#preprocessor#preprocess')]
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-file.vim'
+hook_source = '''
+autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
+  \   'name': 'file',
+  \   'whitelist': ['*'],
+  \   'priority': 5,
+  \   'completor': function('asyncomplete#sources#file#completor')
+  \ }))
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-neosnippet.vim'
+hook_source = '''
+autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#neosnippet#get_source_options({
+  \   'name': 'neosnippet',
+  \   'whitelist': ['*'],
+  \   'priority': 8,
+  \   'completor': function('asyncomplete#sources#neosnippet#completor')
+  \ }))
+'''
+
+# [[plugins]]
+# repo = 'machakann/asyncomplete-ezfilter.vim'
+# hook_source = '''
+# let g:asyncomplete_preprocessor = [function('asyncomplete#preprocessor#ezfilter#filter')]
+#
+# let g:asyncomplete#preprocessor#ezfilter#config = {}
+# let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+#   \ {ctx, items -> ctx.osa_filter(items, 1)}
+# '''
 
 [[plugins]]
 repo = 'Shougo/neosnippet.vim'

@@ -7,53 +7,40 @@ scriptversion 3
 " prelude {{{1
 let g:vimfiles = expand('<sfile>:p:h')
 
-" cachedir {{{2
 let g:cachedir = g:vimfiles .. '/.cache'
-if isdirectory(g:cachedir)
-  call setfperm(g:cachedir, 'rwx------')
-else
-  call mkdir(g:cachedir, 'p', 0700)
-endif
+call mkdir(g:cachedir, 'p', 0700)
 
-" tempdir {{{2
 if exists('$TEMP')
   let g:tempdir = printf('%s/vim-%d', $TEMP, getpid())
 else
   let g:tempdir = printf('/tmp/vim-%d', getpid())
 endif
-if isdirectory(g:tempdir)
-  call setfperm(g:tempdir, 'rwx------')
-else
-  call mkdir(g:tempdir, 'p', 0700)
+call mkdir(g:tempdir, 'p', 0700)
+
+if has('vim_starting')
+  call vimrc#setup_goenv(g:vimfiles .. '/.goenv')
+  call vimrc#setup_ndenv(g:vimfiles .. '/.ndenv')
+  call vimrc#setup_pyenv(g:vimfiles .. '/.pyenv')
+  call vimrc#setup_rbenv(g:vimfiles .. '/.rbenv')
+  call vimrc#setup_rsenv(g:vimfiles .. '/.rsenv')
 endif
 
-" pyenv {{{2
-if has('vim_starting') && executable('python3')
-  let g:pyenv = g:vimfiles .. '/.pyenv'
-  if !isdirectory(g:pyenv .. '/bin')
-    call mkdir(g:pyenv, 'p')
-    call vimrc#setup_pyenv()
-  endif
-  let $PATH = g:pyenv .. '/bin:' .. $PATH
-endif
-
-" ndenv {{{2
-if has('vim_starting') && executable('npm')
-  let g:ndenv = g:vimfiles .. '/.ndenv'
-  if !isdirectory(g:ndenv .. '/node_modules/.bin')
-    call vimrc#setup_ndenv()
-  endif
-  let $PATH = g:ndenv .. '/node_modules/.bin:' .. $PATH
-endif
-
-" goenv {{{2
-if has('vim_starting') && executable('go')
-  let g:goenv = g:vimfiles .. '/.goenv'
-  if !isdirectory(g:goenv .. '/bin')
-    call vimrc#setup_goenv()
-  endif
-  let $PATH = g:goenv .. '/bin:' .. $PATH
-endif
+" disable default plugins {{{1
+let g:loaded_2html_plugin = 1
+let g:loaded_getscript = 1
+let g:loaded_getscriptPlugin = 1
+let g:loaded_gzip = 1
+let g:loaded_netrw = 1
+let g:loaded_netrwFileHandlers = 1
+let g:loaded_netrwPlugin = 1
+let g:loaded_netrwSettings = 1
+let g:loaded_rrhelper = 1
+let g:loaded_tar = 1
+let g:loaded_tarPlugin = 1
+let g:loaded_vimball = 1
+let g:loaded_vimballPlugin = 1
+let g:loaded_zip = 1
+let g:loaded_zipPlugin = 1
 
 " dein.vim {{{1
 let s:deindir = g:vimfiles .. '/dein'
@@ -147,8 +134,7 @@ set showbreak=>\
 set list
 set listchars=tab:>-,trail:-,extends:>,precedes:<
 set display=truncate,uhex
-set concealcursor=nc
-set conceallevel=2
+set conceallevel=0
 set lazyredraw
 set hlsearch
 set highlight& highlight+=@:SpecialKey
@@ -220,10 +206,30 @@ nnoremap g^ ^
 xnoremap < <gv
 xnoremap > >gv
 
+inoremap <C-a> <C-o>^
+inoremap <C-f> <C-o>w
+inoremap <C-b> <C-o>b
+inoremap <expr> <C-e> pumvisible() ? asyncomplete#cancel_popup() : "\<C-o>$"
+inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
+
+map <MiddleMouse> <Nop>
+map <2-MiddleMouse> <Nop>
+map <3-MiddleMouse> <Nop>
+map <4-MiddleMouse> <Nop>
+imap <MiddleMouse> <Nop>
+imap <2-MiddleMouse> <Nop>
+imap <3-MiddleMouse> <Nop>
+imap <4-MiddleMouse> <Nop>
+
+nnoremap <S-Left> <C-w><LT><CR>
+nnoremap <S-Right> <C-w>><CR>
+nnoremap <S-Up> <C-w>+<CR>
+nnoremap <S-Down> <C-w>-<CR>
+
 nnoremap <silent> gh :<C-u>nohlsearch<CR>
-nnoremap <silent> gn :<C-u>set number!<CR>
-nnoremap <silent> gN :<C-u>set relativenumber!<CR>
-nnoremap <silent> gw :<C-u>set wrap! wrap?<CR>
+nnoremap <silent> <Leader>n :<C-u>set number!<CR>
+nnoremap <silent> <Leader>N :<C-u>set relativenumber!<CR>
+nnoremap <silent> <Leader>w :<C-u>set wrap! wrap?<CR>
 nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
 
 map _ <Plug>(operator-replace)

@@ -156,7 +156,7 @@ EXEC 01;38;5;64                           # executable files
 .gz             01;38;5;160
 .iso            01;38;5;160
 .jar            01;38;5;160
-.lz             01;38;5;160
+.lz4            01;38;5;160
 .lzh            01;38;5;160
 .lzma           01;38;5;160
 .rar            01;38;5;160
@@ -167,8 +167,10 @@ EXEC 01;38;5;64                           # executable files
 .tgz            01;38;5;160
 .tlz            01;38;5;160
 .txz            01;38;5;160
+.tzst           01;38;5;160
 .xz             01;38;5;160
 .zip            01;38;5;160
+.zst            01;38;5;160
 
 # "unimportant" files as logs and backups (base01)
 *#              00;38;5;240

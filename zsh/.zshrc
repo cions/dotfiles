@@ -101,12 +101,6 @@ bak() {
     }
 }
 
-(( ${+commands[pipenv]} )) && pipenv() {
-    local -x PIPENV_VENV_IN_PROJECT=1
-    local -x PIPENV_DONT_LOAD_ENV=1
-    command pipenv ${argv}
-}
-
 # aliases {{{1
 if (( ${+commands[dircolors]} )) {
     alias ls=' ls -F --color=auto --quoting-style=literal'
@@ -255,10 +249,10 @@ bindkey -M vicmd '^X^U' undo
 bindkey -M vicmd '^X^X' _complete_help
 bindkey -M vicmd '^^' zle-cd-parents
 
-bindkey -M vicmd 'ys' add-surround
-bindkey -M vicmd 'cs' change-surround
-bindkey -M vicmd 'ds' delete-surround
-bindkey -M visual 'S' add-surround
+bindkey -M vicmd 'sa' add-surround
+bindkey -M vicmd 'sr' change-surround
+bindkey -M vicmd 'sd' delete-surround
+bindkey -M visual 'sa' add-surround
 
 () {
     local m c

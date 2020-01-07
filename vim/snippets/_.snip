@@ -6,13 +6,17 @@ snippet filename
 options word
 	`expand('%:p:t')`${0}
 
-snippet datetime
+snippet timestamp
 options word
 	`strftime('%F %T')`${0}
 
-snippet isodatetime
+snippet isotimestamp
 options word
 	`strftime('%FT%T')`${0}
+
+snippet gmttimestamp
+options word
+	`strftime('%a, %d %b %Y %T %z')`${0}
 
 snippet date
 options word

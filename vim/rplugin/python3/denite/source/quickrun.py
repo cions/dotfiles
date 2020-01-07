@@ -5,7 +5,6 @@ from denite.util import Nvim, UserContext, Candidates
 
 
 class Source(Base):
-
     def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
@@ -15,7 +14,7 @@ class Source(Base):
         self.default_keys = set(self.vim.eval('keys(g:quickrun#default_config)'))
 
     def gather_candidates(self, context: UserContext) -> Candidates:
-        context['is_interactive']
+        context['is_interactive'] = True
 
         user_keys = set(self.vim.eval('keys(get(g:, "quickrun_config", {}))'))
         keys = (user_keys | self.default_keys) - {'_'}
