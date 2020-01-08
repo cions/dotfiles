@@ -109,7 +109,10 @@ endfunction
 
 function vimrc#denite#on_denite_filter() abort
   let b:lexima_disabled = 1
-  call deoplete#custom#buffer_option('auto_complete', v:false)
+  let b:asyncomplete_enable = 0
+  if dein#is_sourced('deoplete.nvim')
+    call deoplete#custom#buffer_option('auto_complete', v:false)
+  endif
 
   inoremap <silent><buffer> <Plug>(denite-filter-up)
         \ <C-o>:call vimrc#denite#move_cursor('up')<CR>

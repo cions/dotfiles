@@ -24,7 +24,7 @@ function vimrc#lsp#on_lsp_buffer_enabled() abort
   nmap <buffer> gn <Plug>(lsp-next-diagnostic)
   nmap <buffer> gp <Plug>(lsp-previous-diagnostic)
   nmap <buffer> gF <Plug>(lsp-document-format)
-  xmap <buffer> gF <Plug>(lsp-document-format-range)
+  xmap <buffer> gF <Plug>(lsp-document-range-format)
   nmap <buffer> g! <Plug>(lsp-code-action)
   nmap <buffer> <F2> <Plug>(lsp-rename)
 

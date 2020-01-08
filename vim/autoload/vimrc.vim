@@ -23,7 +23,7 @@ function s:_onerror(err) abort
   endif
   return s:Promise.reject(a:err)
 endfunction
-let s:onerror = funcref('s:_onerror')
+let s:onerror = function('s:_onerror')
 
 function s:echow(msg) abort
   echohl WarningMsg
@@ -64,10 +64,10 @@ endfunction
 
 function vimrc#setup_goenv(goenv) abort
   if !executable('go')
-    return s:Promise.reject('go not found').catch(s:onerror)
+    return s:Promise.reject('go not found')
   endif
   if !filereadable(a:goenv .. '/tools.txt')
-    return s:Promise.reject('tools.txt not found').catch(s:onerror)
+    return s:Promise.reject('tools.txt not found')
   endif
   let g:goenv = a:goenv
   let $PATH = g:goenv .. '/bin:' .. $PATH
@@ -90,10 +90,10 @@ endfunction
 
 function vimrc#setup_ndenv(ndenv) abort
   if !executable('npm')
-    return s:Promise.reject('npm not found').catch(s:onerror)
+    return s:Promise.reject('npm not found')
   endif
   if !filereadable(a:ndenv .. '/package.json')
-    return s:Promise.reject('package.json not found').catch(s:onerror)
+    return s:Promise.reject('package.json not found')
   endif
   let g:ndenv = a:ndenv
   let $PATH = g:ndenv .. '/node_modules/.bin:' .. $PATH
@@ -109,7 +109,7 @@ endfunction
 
 function vimrc#setup_pyenv(pyenv) abort
   if !executable('python3')
-    return s:Promise.reject('python3 not found').catch(s:onerror)
+    return s:Promise.reject('python3 not found')
   endif
   let g:pyenv = a:pyenv
   let $PATH = g:pyenv .. '/bin:' .. $PATH
@@ -118,9 +118,8 @@ function vimrc#setup_pyenv(pyenv) abort
   endif
 
   call s:echow('Setup python environment...')
-  let opts = { 'cwd': g:pyenv }
-  let p = vimrc#exec(['python3', '-mvenv', '--system-site-packages', g:pyenv], opts)
-  let opts.env = { 'VIRTUAL_ENV': g:pyenv }
+  let p = vimrc#exec(['python3', '-mvenv', '--system-site-packages', g:pyenv], {})
+  let opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
   let p = p.then({-> vimrc#exec(['pip', 'install', '-U', 'pip'], opts)})
   if filereadable(g:pyenv .. '/requirements.txt')
     let p = p.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], opts)})
@@ -133,10 +132,10 @@ endfunction
 
 function vimrc#setup_rbenv(rbenv) abort
   if !executable('bundle')
-    return s:Promise.reject('bundle not found').catch(s:onerror)
+    return s:Promise.reject('bundle not found')
   endif
   if !filereadable(a:rbenv .. '/Gemfile')
-    return s:Promise.reject('Gemfile not found').catch(s:onerror)
+    return s:Promise.reject('Gemfile not found')
   endif
   let g:rbenv = a:rbenv
   let $PATH = g:rbenv .. '/bin:' .. $PATH
@@ -154,10 +153,10 @@ endfunction
 
 function vimrc#setup_rsenv(rsenv) abort
   if !executable('cargo')
-    return s:Promise.reject('cargo not found').catch(s:onerror)
+    return s:Promise.reject('cargo not found')
   endif
   if !filereadable(a:rsenv .. '/tools.txt')
-    return s:Promise.reject('tools.txt not found').catch(s:onerror)
+    return s:Promise.reject('tools.txt not found')
   endif
   let g:rsenv = a:rsenv
   let $PATH = g:rsenv .. '/bin:' .. $PATH
