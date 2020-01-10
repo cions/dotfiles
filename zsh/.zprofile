@@ -2,13 +2,10 @@
 
 umask 022
 
-if [[ -f /etc/profile.env ]] source /etc/profile.env
-
-for shfile in /etc/profile.d/*.sh(N-.); {
-    source ${shfile}
+for i in /etc/profile.env(N-.) /etc/profile.d/*.sh(N-.); {
+    source ${i}
 }
-
-unset ROOTPATH shfile
+unset ROOTPATH i
 
 path=( ${HOME}/.bin(N-/) ${path} )
 if (( EUID != 0 )) {
@@ -24,6 +21,3 @@ ENABLE_ICONS=1
 (( TERMUX )) && ENABLE_ICONS=0
 command locale -m 2>/dev/null | command grep -qxF UTF-8-MIG || ENABLE_ICONS=0
 export ENABLE_ICONS
-
-gopath=( ${HOME}/.cache/go )
-export GOBIN=${HOME}/.bin

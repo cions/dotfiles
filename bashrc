@@ -210,3 +210,6 @@ export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
+
+export GOPATH="${HOME}/.cache/go"
+export GOBIN="${HOME}/.bin"
