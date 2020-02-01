@@ -1,7 +1,7 @@
 # vim:
 
 from denite.base.source import Base
-from denite.util import Nvim, UserContext, Candidates
+from denite.util import Candidates, Nvim, UserContext
 
 
 class Source(Base):
@@ -11,7 +11,8 @@ class Source(Base):
         self.name = 'quickrun'
         self.kind = 'command'
 
-        self.default_keys = set(self.vim.eval('keys(g:quickrun#default_config)'))
+        self.default_keys = set(self.vim.eval(
+            'keys(g:quickrun#default_config)'))
 
     def gather_candidates(self, context: UserContext) -> Candidates:
         context['is_interactive'] = True
@@ -20,4 +21,7 @@ class Source(Base):
         keys = (user_keys | self.default_keys) - {'_'}
         keys = sorted(x for x in keys if x.startswith(context['input']))
 
-        return [{'action__command': f'QuickRun -type {x}', 'word': x} for x in keys]
+        return [{
+            'action__command': f'QuickRun -type {x}',
+            'word': x,
+        } for x in keys]

@@ -167,7 +167,9 @@ if has('gui_running')
 else
   set background=dark
 endif
-colorscheme solarized
+if dein#is_sourced('vim-colors-solarized')
+  colorscheme solarized
+endif
 
 language messages en_US.UTF-8
 set helplang=en,ja
@@ -266,7 +268,7 @@ tnoremap <silent> <C-W><C-h> <C-W>:call job_stop(term_getjob(bufnr('%')), 'hup')
 tnoremap <C-W><Esc> <C-W>N
 
 " commands {{{1
-command! Update call vimrc#update()
+command! -bang Update call vimrc#update(<bang>0)
 command! Clean call vimrc#clean()
 command! SynStack call vimrc#synstack()
 command! Highlight call vimrc#highlight()

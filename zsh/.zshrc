@@ -102,6 +102,7 @@ bak() {
 }
 
 # aliases {{{1
+alias cd=' cd'
 if (( ${+commands[dircolors]} )) {
     alias ls=' ls -F --color=auto --quoting-style=literal'
     alias la=' ls -aF --color=auto --quoting-style=literal'

@@ -1,0 +1,18 @@
+languages:
+  sh:
+    lint-command: 'shellcheck -x --format=gcc -'
+    lint-stdin: true
+
+  vim:
+    lint-command: 'vint -'
+    lint-stdin: true
+
+  javascript:
+    lint-command: 'eslint -f unix --stdin'
+    lint-stdin: true
+    lint-ignore-exit-code: true
+
+  typescript:
+    lint-command: 'eslint -f unix --stdin'
+    lint-stdin: true
+    lint-ignore-exit-code: true

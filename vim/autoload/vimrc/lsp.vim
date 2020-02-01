@@ -21,23 +21,10 @@ function vimrc#lsp#on_lsp_buffer_enabled() abort
   nmap <buffer> gi <Plug>(lsp-hover)
   nmap <buffer> gs <Plug>(lsp-document-symbol)
   nmap <buffer> ge <Plug>(lsp-document-diagnostics)
-  nmap <buffer> gn <Plug>(lsp-next-diagnostic)
-  nmap <buffer> gp <Plug>(lsp-previous-diagnostic)
-  nmap <buffer> gF <Plug>(lsp-document-format)
-  xmap <buffer> gF <Plug>(lsp-document-range-format)
-  nmap <buffer> g! <Plug>(lsp-code-action)
-  nmap <buffer> <F2> <Plug>(lsp-rename)
-
-  if s:has_formatting_support()
-    autocmd BufWritePre <buffer> LspDocumentFormatSync
-  endif
-endfunction
-
-function s:has_formatting_support() abort
-  for name in lsp#get_server_names()
-    if lsp#capabilities#has_document_formatting_provider(name)
-      return v:true
-    endif
-  endfor
-  return v:false
+  nmap <buffer> g, <Plug>(lsp-next-diagnostic)
+  nmap <buffer> g; <Plug>(lsp-previous-diagnostic)
+  nmap <buffer> sf <Plug>(lsp-document-format)
+  xmap <buffer> sf <Plug>(lsp-document-range-format)
+  nmap <buffer> sx <Plug>(lsp-code-action)
+  nmap <buffer> sn <Plug>(lsp-rename)
 endfunction
