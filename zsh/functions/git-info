@@ -10,6 +10,7 @@ grevparse=( "${(@f)$(git rev-parse \
     --is-inside-work-tree \
     --is-inside-git-dir \
     --is-bare-repository \
+    --is-shallow-repository \
     --show-prefix \
     --show-toplevel)}" )
 gstatus=( "${(@f)$(git status --porcelain=v1 2>/dev/null)}" )
@@ -18,9 +19,10 @@ gitstate[gitdir]=${gitdir}
 gitstate[inworktree]=${${${grevparse[1]:#true}:+0}:-1}
 gitstate[ingitdir]=${${${grevparse[2]:#true}:+0}:-1}
 gitstate[isbare]=${${${grevparse[3]:#true}:+0}:-1}
-gitstate[prefix]=${grevparse[4]}
-gitstate[root]=${grevparse[5]}
-gitstate[name]=${grevparse[5]:t}
+gitstate[isshallow]=${${${grevparse[4]:#true}:+0}:-1}
+gitstate[prefix]=${grevparse[5]}
+gitstate[root]=${grevparse[6]}
+gitstate[name]=${grevparse[6]:t}
 
 if [[ -f ${gitdir}/MERGE_HEAD ]] {
     gitstate[state]="merge"

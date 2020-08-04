@@ -1,95 +1,15 @@
-### Miscellaneous files ###
 *.bak
-*.log
 *.tmp
 
-### Binary files ###
-# Object files
-*.class
-*.elf
-*.ko
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.a
-*.dll
-*.dylib
-*.la
-*.lai
-*.lib
-*.lo
-*.slo
-*.so
-*.so.*
-
-# Executables
-*.app
-*.exe
-*.out
-
-### Archives ###
-*.7z
-*.bz2
-*.cab
-*.gz
-*.iso
-*.jar
-*.lzma
-*.rar
-*.tar
-*.xz
-*.zip
-
-### Package formats ###
-*.apk
-*.crx
-*.deb
-*.dmg
-*.msi
-*.msm
-*.msp
-*.rpm
-*.xpi
-
-### Windows ###
+# Windows
 $RECYCLE.BIN/
 *.lnk
 Desktop.ini
 Thumbs.db
 ehthumbs.db
 
-### Vim ###
+# Vim
 *~
 .*.un~
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
-
-### Autotools ###
-Makefile.in
-/aclocal.m4
-/autom4te.cache/
-/autoscan-*.log
-/autoscan.log
-/compile
-/config.h.in
-/configure
-/configure.scan
-/depcomp
-/install-sh
-/libtool
-/ltmain.sh
-/m4/
-/missing
-/stamp-h?
-
-### CMake ###
-/CMakeCache.txt
-/CMakeFiles
-/CMakeScripts
-/cmake_install.cmake
-/install_manifest.txt

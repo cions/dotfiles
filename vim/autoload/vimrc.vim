@@ -194,9 +194,13 @@ function vimrc#update(thawed) abort
 
   if exists('g:ndenv')
     let opts = { 'cwd': g:ndenv }
-    if a:thawed
-      let p = vimrc#exec(['npm', 'update', '--depth=9999'], opts)
+    if a:thawed && executable('npx')
+      let p = vimrc#exec(['npx', 'npm-check-updates', '-u'], opts)
+             \.then({-> vimrc#exec(['npm', 'install', opts])})
     else
+      if a:thawed
+        call s:echow('npx not found')
+      endif
       let p = vimrc#exec(['npm', 'ci'], opts)
     endif
     call p.then({-> s:echow('node environment updated')}, s:onerror)
@@ -204,8 +208,8 @@ function vimrc#update(thawed) abort
 
   if exists('g:pyenv')
     let opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
-    if a:thawed
-      let p = vimrc#exec(['pip', 'list', '--local', '--format=json'], opts)
+    if a:thawed && filereadable(g:pyenv .. '/requirements.txt')
+      let p = vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], opts)
              \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
              \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, opts)})
              \.then({-> vimrc#exec(['pip', 'freeze', '--local'], opts)})

@@ -10,7 +10,7 @@ unset ROOTPATH i
 
 PATH="${HOME}/.bin:${PATH}"
 if [ "$(id -u)" -ne 0 ]; then
-    PATH="$(echo "${PATH}:" | sed 's@[^:]*/sbin:@@g')"
+    PATH="$(awk 'BEGIN { RS=":"; ORS=":" } !/\/sbin$/')"
     PATH="${PATH%:}"
 fi
 export PATH
@@ -19,11 +19,13 @@ case "${PREFIX}" in
     */com.termux/*) export TERMUX=1 ;;
 esac
 
-ENABLE_ICONS=1
-[ "${TERM}" = "linux" ] && ENABLE_ICONS=0
-[ -n "${TERMUX+set}" ] && ENABLE_ICONS=0
-locale -m 2>/dev/null | grep -qxF UTF-8-MIG || ENABLE_ICONS=0
-export ENABLE_ICONS
+if [ -z "${ENABLE_ICONS+set}" ]; then
+    ENABLE_ICONS=1
+    [ "${TERM}" = "linux" ] && ENABLE_ICONS=0
+    [ -n "${TERMUX+set}" ] && ENABLE_ICONS=0
+    locale -m 2>/dev/null | grep -qxF UTF-8-MIG || ENABLE_ICONS=0
+    export ENABLE_ICONS
+fi
 
 # shellcheck disable=SC1090
 case "${BASH+set}:$-" in

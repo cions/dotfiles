@@ -1,59 +1,30 @@
 # 256 color solarized theme for the color GNU ls utility.
 
 # Term Section
-TERM Apple_Terminal
-TERM Eterm-256color
-TERM dvtm-256color
-TERM fbterm
-TERM gnome-256color
-TERM iTerm.app
-TERM iTerm2.app
-TERM iterm
-TERM iterm2
-TERM iterm2-direct
-TERM konsole-256color
-TERM konsole-direct
-TERM mlterm-256color
-TERM mlterm-direct
-TERM mrxvt-256color
-TERM nsterm
-TERM nsterm-256color
-TERM nsterm-build326
-TERM nsterm-build343
-TERM nsterm-build361
-TERM nsterm-build400
-TERM putty-256color
-TERM rxvt-256color
-TERM rxvt-unicode-256color
-TERM screen-256color
-TERM screen-256color-bce
-TERM screen-256color-bce-s
-TERM screen-256color-s
-TERM screen.konsole-256color
-TERM screen.mlterm-256color
-TERM screen.putty-256color
-TERM screen.vte-256color
-TERM screen.xterm-256color
-TERM st-256color
-TERM st-direct
-TERM stterm-256color
-TERM teraterm-256color
+TERM Eterm
+TERM ansi
+TERM *color*
+TERM con[0-9]*x[0-9]*
+TERM cons25
+TERM console
+TERM cygwin
+TERM dtterm
+TERM gnome
+TERM hurd
+TERM jfbterm
+TERM konsole
+TERM kterm
+TERM linux
+TERM linux-c
+TERM mlterm
+TERM putty
+TERM rxvt*
+TERM screen*
+TERM st
 TERM terminator
-TERM terminology
-TERM terminology-0.6.1
-TERM terminology-1.0.0
-TERM termite
-TERM tmux-256color
-TERM vte-256color
-TERM vte-direct
-TERM xterm+256color
-TERM xterm+256setaf
-TERM xterm+direct
-TERM xterm+direct2
-TERM xterm+indirect
-TERM xterm-256color
-TERM xterm-direct
-TERM xterm-direct2
+TERM tmux*
+TERM vt100
+TERM xterm*
 
 ## Documentation
 #
@@ -118,6 +89,7 @@ EXEC 01;38;5;64                           # executable files
 .doc            00;38;5;64
 .docx           00;38;5;64
 .exe            00;38;5;64
+.htm            00;38;5;64
 .html           00;38;5;64
 .ini            00;38;5;64
 .ipynb          00;38;5;64
@@ -131,9 +103,11 @@ EXEC 01;38;5;64                           # executable files
 .pdf            00;38;5;64
 .ppt            00;38;5;64
 .pptx           00;38;5;64
+.ps             00;38;5;64
 .rdf            00;38;5;64
 .rst            00;38;5;64
 .tex            00;38;5;64
+.toml           00;38;5;64
 .txt            00;38;5;64
 .xls            00;38;5;64
 .xlsx           00;38;5;64
@@ -143,7 +117,6 @@ EXEC 01;38;5;64                           # executable files
 
 # Archives and compressed files (red + bold)
 .7z             01;38;5;160
-.Z              01;38;5;160
 .apk            01;38;5;160
 .asc            01;38;5;160
 .bz2            01;38;5;160
@@ -151,6 +124,7 @@ EXEC 01;38;5;64                           # executable files
 .cpio           01;38;5;160
 .crx            01;38;5;160
 .deb            01;38;5;160
+.enc            01;38;5;160
 .gem            01;38;5;160
 .gpg            01;38;5;160
 .gz             01;38;5;160
@@ -162,10 +136,8 @@ EXEC 01;38;5;64                           # executable files
 .rar            01;38;5;160
 .rpm            01;38;5;160
 .tar            01;38;5;160
-.taz            01;38;5;160
 .tbz2           01;38;5;160
 .tgz            01;38;5;160
-.tlz            01;38;5;160
 .txz            01;38;5;160
 .tzst           01;38;5;160
 .xz             01;38;5;160
@@ -195,16 +167,17 @@ EXEC 01;38;5;64                           # executable files
 .toc            00;38;5;240
 
 # Image formats (yellow)
+.avif           00;38;5;136
+.avifs          00;38;5;136
 .bmp            00;38;5;136
 .eps            00;38;5;136
 .gif            00;38;5;136
+.heic           00;38;5;136
+.heif           00;38;5;136
 .ico            00;38;5;136
 .jpeg           00;38;5;136
 .jpg            00;38;5;136
-.pbm            00;38;5;136
-.pgm            00;38;5;136
 .png            00;38;5;136
-.ppm            00;38;5;136
 .svg            00;38;5;136
 .svgz           00;38;5;136
 .tif            00;38;5;136
@@ -221,7 +194,6 @@ EXEC 01;38;5;64                           # executable files
 .mka            00;38;5;166
 .mp3            00;38;5;166
 .oga            00;38;5;166
-.ogg            00;38;5;166
 .opus           00;38;5;166
 .spx            00;38;5;166
 .tak            00;38;5;166
@@ -237,13 +209,11 @@ EXEC 01;38;5;64                           # executable files
 .m4p            00;38;5;166
 .m4v            00;38;5;166
 .mkv            00;38;5;166
-.mov            00;38;5;166
 .mp4            00;38;5;166
 .mpeg           00;38;5;166
 .mpg            00;38;5;166
 .mpv            00;38;5;166
 .ogg            00;38;5;166
 .ogv            00;38;5;166
-.rm             00;38;5;166
 .webm           00;38;5;166
 .wmv            00;38;5;166

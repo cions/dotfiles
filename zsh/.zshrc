@@ -47,7 +47,7 @@ if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] && (( ${+commands[git]} )) {
 if [[ -f ${ZPLUG_HOME}/init.zsh ]] && zmodload -s zsh/pcre; then
     source ${ZPLUG_HOME}/init.zsh
 
-    zplug "zplug/zplug", hook-build:'zplug --self-manage'
+    zplug "zplug/zplug", hook-build:"zplug --self-manage"
     zplug "mafredri/zsh-async"
     zplug "zdharma/fast-syntax-highlighting", defer:2, \
         hook-load:'fast-theme -q ${ZDOTDIR}/theme.ini'
@@ -103,6 +103,10 @@ bak() {
 
 # aliases {{{1
 alias cd=' cd'
+alias man=' man'
+alias rm=' rm'
+alias rr=' rr'
+alias vi=' vim'
 if (( ${+commands[dircolors]} )) {
     alias ls=' ls -F --color=auto --quoting-style=literal'
     alias la=' ls -aF --color=auto --quoting-style=literal'
@@ -122,7 +126,7 @@ fi
 alias p='print -rl --'
 alias reload='exec zsh'
 alias rename='noglob zmv -W'
-alias run-help=' man'
+alias run-help='man'
 alias dot='git -C ${DOTFILES}'
 
 alias -g G='| grep -E'
@@ -318,7 +322,7 @@ add-zsh-hook -Uz chpwd chpwd-hook-ls
 zstyle ':completion:*' recent-dirs-insert both
 zstyle ':chpwd:*' recent-dirs-max 1000
 zstyle ':chpwd:*' recent-dirs-default yes
-zstyle ':chpwd:*' recent-dirs-file ${ZDOTDIR}/.recent-dirs-file
+zstyle ':chpwd:*' recent-dirs-file ${ZDOTDIR}/.recent-dirs
 zstyle ':chpwd:*' recent-dirs-pushd yes
 
 # history {{{1
@@ -329,11 +333,12 @@ SAVEHIST=100000
 setopt extended_history
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
-setopt hist_no_functions
 setopt hist_no_store
 setopt hist_reduce_blanks
 setopt hist_verify
 setopt share_history
+
+add-zsh-hook -Uz zshaddhistory ignore-history
 
 # prompt {{{1
 (( ENABLE_ICONS )) && prompt default || prompt simple
@@ -362,6 +367,8 @@ export PAGER=less
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
+
+export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"
 
 export GOPATH=${HOME}/.cache/go
 export GOBIN=${HOME}/.bin

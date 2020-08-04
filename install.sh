@@ -19,13 +19,17 @@ MAKE_DIRECTORY=(
 )
 
 usage() {
-    echo "usage: $(basename "$0") [-af] [DESTDIR]"
-    echo
-    echo "Options:"
-    echo " -a       prompt before install"
-    echo " -f       force to overwrite an existing destination files"
+    cat >&2 <<'EOF'
+usage: install.sh [-af] [-d DESTDIR] [-t {all | dev,tmux,x11}]
+
+Options:
+    -a         prompt before install
+    -f         force to overwrite an existing destination files
+    -d         destination directory (defaults to $HOME)
+    -t         install targets
+EOF
     exit 1
-} 1>&2
+}
 
 overwrite_prompt() {
     local -l choice
@@ -65,16 +69,35 @@ list_targets() {
 OPT_ASK=0
 OPT_FORCE=0
 DESTDIR="${HOME}"
-while getopts :af opt; do
+TARGETS=""
+while getopts :afd:t: opt; do
     case "${opt}" in
         a) OPT_ASK=1 ;;
         f) OPT_FORCE=1 ;;
+        d) DESTDIR="${OPTARG}" ;;
+        t)
+            if [[ "${OPTARG}" == all ]]; then
+                TARGETS="dev,tmux,x11"
+            else
+                TARGETS="${OPTARG}"
+            fi
+            ;;
         *) usage ;;
     esac
 done
-shift $(( OPTIND - 1 ))
-(( $# > 0 )) && DESTDIR="$1"
 (( OPT_FORCE )) && OPT_ASK=0
+
+if [[ ",${TARGETS}," != *,dev,* ]]; then
+    IGNORED_TARGETS+=( gitconfig gitignore )
+    IGNORED_TARGETS+=( vim/.goenv vim/.ndenv vim/.pyenv vim/.rbenv vim/.rsenv )
+    IGNORED_TARGETS+=( vim/devplugins.toml vim/efm-langserver.yaml )
+fi
+if [[ ",${TARGETS}," != *,tmux,* ]]; then
+    IGNORED_TARGETS+=( tmux tmux.conf )
+fi
+if [[ ",${TARGETS}," != *,x11,* ]]; then
+    IGNORED_TARGETS+=( xprofile )
+fi
 
 exec 3<&0
 list_targets | while IFS= read -r target; do

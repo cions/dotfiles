@@ -3,7 +3,7 @@
 typeset -A icons
 
 if (( ENABLE_ICONS )) {
-    POWERPROMPT="$HOME/.bin/powerprompt -f tmux"
+    POWERPROMPT="${HOME}/.bin/powerprompt -f tmux"
     icons=(
         [memusage]=""
         [swapusage]=""
@@ -12,7 +12,7 @@ if (( ENABLE_ICONS )) {
         [time]=""
     )
 } else {
-    POWERPROMPT="$HOME/.bin/powerprompt -P -f tmux"
+    POWERPROMPT="${HOME}/.bin/powerprompt -P -f tmux"
 }
 
 memusage() {
@@ -21,7 +21,7 @@ memusage() {
     meminfo=( "${(@f)$(</proc/meminfo)}" )
     (( total = ${meminfo[(r)MemTotal:*][(w)2]:-0} ))
     (( used = total - ${meminfo[(r)MemAvailable:*][(w)2]:-0} ))
-    (( percentage = used * 100.0 / total ))
+    (( percentage = 100.0 * used / total ))
 
     if (( percentage >= 80.0 )) {
         color="red"
@@ -46,7 +46,7 @@ swapusage() {
     meminfo=( "${(@f)$(</proc/meminfo)}" )
     (( total = ${meminfo[(r)SwapTotal:*][(w)2]:-0} ))
     (( used = total - ${meminfo[(r)SwapFree:*][(w)2]:-0} ))
-    (( percentage = used * 100.0 / total ))
+    (( percentage = 100.0 * used / total ))
 
     if (( total == 0 )) {
         color="gray2"
@@ -88,7 +88,6 @@ loadavg() {
 }
 
 position=${argv[1]}
-width="$(tmux display -p "#{client_width}")"
 segments=()
 case ${position} {
     (left)
@@ -96,27 +95,39 @@ case ${position} {
         ${=POWERPROMPT} -L -- "${segments[@]}"
         ;;
     (right)
-        if (( width >= 130 )) {
+        width="$(tmux display -p "#{client_width}")"
+        (( maxwidth = width - $(tmux display -p " #S   #H  #{W:#{?#{<=:#I,3},  #I:#W#F  ,}}" | wc -c) ))
+        (( maxwidth = (maxwidth > 0.6 * width) ? 0.6 * width : maxwidth ))
+        (( curwidth = 90 ))
+        typeset -A style=( [memusage]="full" [swapusage]="full" [loadavg]="full" [date]="full" [time]="full" )
+        if [[ ! -r /proc/loadavg ]] { style[loadavg]="hidden"; (( curwidth -= 19 )) }
+        if (( curwidth > maxwidth )) { style[swapusage]="short"; (( curwidth -= 14 )) }
+        if (( curwidth > maxwidth )) { style[memusage]="short"; (( curwidth -= 14 )) }
+        if [[ -r /proc/loadavg ]] && (( curwidth > maxwidth )) { style[loadavg]="short"; (( curwidth -= 10 )) }
+        if (( curwidth > maxwidth )) { style[date]="hidden"; (( curwidth -= 15 )) }
+        if (( curwidth > maxwidth )) { style[swapusage]="hidden"; (( curwidth -= 9 )) }
+        if (( curwidth > maxwidth )) { style[memusage]="hidden"; (( curwidth -= 9 )) }
+        if (( curwidth > maxwidth )) { style[time]="hidden"; (( curwidth -= 10 )) }
+
+        if [[ ${style[memusage]} == "full" ]] {
             segments+=( "$(memusage)" )
-        } elif (( width >= 96 )) {
+        } elif [[ ${style[memusage]} == "short" ]] {
             segments+=( "$(memusage -s)" )
         }
-        if (( width >= 145 )) {
+        if [[ ${style[swapusage]} == "full" ]] {
             segments+=( "$(swapusage)" )
-        } elif (( width >= 104 )) {
+        } elif [[ ${style[swapusage]} == "short" ]] {
             segments+=( "$(swapusage -s)" )
         }
-        if [[ -r /proc/loadavg ]] {
-            if (( width >= 114 )) {
-                segments+=( "$(loadavg)" )
-            } else {
-                segments+=( "$(loadavg -s)" )
-            }
+        if [[ ${style[loadavg]} == "full" ]] {
+            segments+=( "$(loadavg)" )
+        } elif [[ ${style[loadavg]} == "short" ]] {
+            segments+=( "$(loadavg -s)" )
         }
-        if (( width >= 80 )) {
+        if [[ ${style[date]} == "full" ]] {
             segments+=( "cyan:${icons[date]}${(%):-"%D{%Y-%m-%d}"}" )
         }
-        if (( width >= 70 )) {
+        if [[ ${style[time]} == "full" ]] {
             segments+=( "cyan:${icons[time]}${(%):-"%D{%H:%M}"}" )
         }
         ${=POWERPROMPT} -R -- "${segments[@]}"

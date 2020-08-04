@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    copy)
+        if command -v xsel >/dev/null; then
+            xsel -l /dev/null -ib
+        elif command -v clip >/dev/null; then
+            clip
+        elif command -v termux-clipboard-set >/dev/null; then
+            termux-clipboard-set
+        fi
+        ;;
+    paste)
+        if command -v xsel >/dev/null; then
+            xsel -ob
+        elif command -v clip >/dev/null; then
+            paste
+        elif command -v termux-clipboard-get >/dev/null; then
+            termux-clipboard-get
+        fi
+        ;;
+    openbrowser)
+        if command -v vivaldi >/dev/null; then
+            vivaldi "$(cat)"
+        elif command -v chromium >/dev/null; then
+            chromium "$(cat)"
+        elif command -v google-chrome-stable >/dev/null; then
+            google-chrome-stable "$(cat)"
+        elif command -v termux-open-url >/dev/null; then
+            termux-open-url "$(cat)"
+        fi
+        ;;
+    open)
+        cd -- "${2:-.}" || true
+        if command -v xdg-open >/dev/null; then
+            xdg-open "$(cat)"
+        elif command -v start >/dev/null; then
+            start "$(cat)"
+        elif command -v termux-open >/dev/null; then
+            termux-open "$(cat)"
+        fi
+        ;;
+esac

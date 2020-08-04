@@ -100,8 +100,9 @@ _prompt_destroy() {
 
 _PROMPT_FUNCTION=_prompt_function
 _PROMPT_DESTROY=_prompt_destroy
-async_start_worker rprompt_worker -u
-async_register_callback rprompt_worker _rprompt_callback
-add-zsh-hook -Uz precmd _rprompt
+
+async_start_worker rprompt_worker -u || return 1
+async_register_callback rprompt_worker _rprompt_callback || return 1
+add-zsh-hook -Uz precmd _rprompt || return 1
 
 return 0

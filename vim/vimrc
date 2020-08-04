@@ -12,6 +12,8 @@ call mkdir(g:cachedir, 'p', 0700)
 
 if exists('$TEMP')
   let g:tempdir = printf('%s/vim-%d', $TEMP, getpid())
+elseif exists('$TMPDIR')
+  let g:tempdir = printf('%s/vim-%d', $TMPDIR, getpid())
 else
   let g:tempdir = printf('/tmp/vim-%d', getpid())
 endif
@@ -179,7 +181,6 @@ if &term ==# 'win32'
 else
   set termencoding=utf-8
 endif
-set encoding=utf-8
 set fileencodings=ucs-bom,utf-8,euc-jisx0213,cp932
 set fileformats=unix,dos
 
