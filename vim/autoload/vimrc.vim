@@ -209,7 +209,8 @@ function vimrc#update(thawed) abort
   if exists('g:pyenv')
     let opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
     if a:thawed && filereadable(g:pyenv .. '/requirements.txt')
-      let p = vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], opts)
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip'])
+             \.then({-> vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], opts)})
              \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
              \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, opts)})
              \.then({-> vimrc#exec(['pip', 'freeze', '--local'], opts)})
@@ -256,7 +257,8 @@ function vimrc#clean() abort
     call delete(plugin, 'rf')
     call delete(fnamemodify(plugin, ':h'), 'd')
   endfor
-  call dein#each('git gc')
+  call dein#each('git reflog expire --all')
+  call dein#each('git gc --aggressive --prune=now')
   call dein#recache_runtimepath()
 endfunction
 

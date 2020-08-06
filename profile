@@ -10,7 +10,7 @@ unset ROOTPATH i
 
 PATH="${HOME}/.bin:${PATH}"
 if [ "$(id -u)" -ne 0 ]; then
-    PATH="$(awk 'BEGIN { RS=":"; ORS=":" } !/\/sbin$/')"
+    PATH="$(echo -n "${PATH}" | awk 'BEGIN { RS=":"; ORS=":" } !/\/sbin$/')"
     PATH="${PATH%:}"
 fi
 export PATH
