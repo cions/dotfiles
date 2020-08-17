@@ -54,6 +54,7 @@ function vimrc#exec(command, ...) abort
   return s:Promise.new({resolve, reject -> job_start(a:command, extend(options, {
         \   'drop': 'never',
         \   'stoponexit': '',
+        \   'in_io': 'null',
         \   'close_cb': {-> v:null},
         \   'exit_cb': {ch, code ->
         \     code ? reject(s:readall(ch, 'err')) : resolve(s:readall(ch, 'out'))
@@ -196,7 +197,7 @@ function vimrc#update(thawed) abort
     let opts = { 'cwd': g:ndenv }
     if a:thawed && executable('npx')
       let p = vimrc#exec(['npx', 'npm-check-updates', '-u'], opts)
-             \.then({-> vimrc#exec(['npm', 'install', opts])})
+             \.then({-> vimrc#exec(['npm', 'install'], opts)})
     else
       if a:thawed
         call s:echow('npx not found')
@@ -209,17 +210,17 @@ function vimrc#update(thawed) abort
   if exists('g:pyenv')
     let opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
     if a:thawed && filereadable(g:pyenv .. '/requirements.txt')
-      let p = vimrc#exec(['pip', 'install', '-U', 'pip'])
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip'], opts)
              \.then({-> vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], opts)})
              \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
              \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, opts)})
              \.then({-> vimrc#exec(['pip', 'freeze', '--local'], opts)})
              \.then({out -> writefile(out, g:pyenv .. '/requirements.txt')})
     elseif filereadable(g:pyenv .. '/requirements.txt')
-      let p = vimrc#exec(['pip', 'install', '-U', 'pip'])
-             \.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'])})
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip'], opts)
+             \.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], opts)})
     else
-      let p = vimrc#exec(['pip', 'install', '-U', 'pip', 'pynvim'])
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip', 'pynvim'], opts)
     endif
     call p.then({-> s:echow('python environment updated')}, s:onerror)
   endif

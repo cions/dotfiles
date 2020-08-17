@@ -184,7 +184,10 @@ endif
 set fileencodings=ucs-bom,utf-8,euc-jisx0213,cp932
 set fileformats=unix,dos
 
-if executable('ag')
+if executable('rg')
+  set grepprg=rg\ --vimgrep
+  set grepformat=%f:%l:%c:%m
+elseif executable('ag')
   set grepprg=ag\ --nocolor\ --nogroup\ --column\ --follow
   set grepformat=%f:%l:%c:%m
 else
@@ -282,5 +285,7 @@ augroup vimrc
   autocmd BufWritePre * call vimrc#auto_mkdir(expand('<afile>:p:h'), v:cmdbang)
   autocmd BufWritePost,BufFilePost * ++nested filetype detect
   autocmd BufWritePost vimrc,.vimrc,*.vim,*.toml ++nested source $MYVIMRC
+  autocmd BufNewFile,BufRead $DOTFILES/* execute 'doautocmd filetypedetect BufRead'
+        \ fnameescape(substitute(expand('<afile>:p'), '\V'..escape($DOTFILES, '\')..'/', $HOME..'/.', ''))
 augroup END
 

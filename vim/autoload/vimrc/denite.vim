@@ -40,7 +40,9 @@ function vimrc#denite#on_post_source() abort
         \   'statusline': v:false,
         \ })
 
-  if has('win32')
+  if executable('rg')
+    call denite#custom#var('file/rec', 'command', ['rg', '--files'])
+  elseif has('win32')
     call denite#custom#var('file/rec', 'command',
          \ ['scantree.py',
          \  '--ignore', '.git,node_modules',
@@ -67,7 +69,15 @@ function vimrc#denite#on_post_source() abort
   call denite#custom#var('buffer', 'date_format', '%F %T')
   call denite#custom#option('buffers', 'matchers', 'matcher/fuzzy')
 
-  if executable('ag')
+  if executable('rg')
+    call denite#custom#var('grep', 'command', ['rg'])
+    call denite#custom#var('grep', 'default_opts', [
+          \ '--vimgrep', '--hidden', '--glob', '!.git/'])
+    call denite#custom#var('grep', 'recursive_opts', [])
+    call denite#custom#var('grep', 'pattern_opt', [])
+    call denite#custom#var('grep', 'separator', ['--'])
+    call denite#custom#var('grep', 'final_opts', [])
+  elseif executable('ag')
     call denite#custom#var('grep', 'command', ['ag'])
     call denite#custom#var('grep', 'default_opts', [
           \ '--vimgrep', '--hidden',

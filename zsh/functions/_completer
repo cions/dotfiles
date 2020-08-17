@@ -1,4 +1,4 @@
-#autoload
+#!/bin/zsh
 
 _complete || return 1
 

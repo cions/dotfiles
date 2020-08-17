@@ -2,8 +2,13 @@
 [core]
 	editor = vim
 	excludesFile = ~/.gitignore
+	pager = git-delta
+[pager]
+	log = less
 [protocol]
 	version = 2
+[interactive]
+	diffFilter = git-delta --color-only
 [diff]
 	algorithm = histogram
 [merge]
@@ -19,21 +24,22 @@
 [alias]
 	b = switch
 	nb = switch --create
-	co = checkout
-	cob = checkout -b
 	s = status
 	ss = status --short
 	d = diff
-	ds = diff --stat
-	dn = diff --name-only
+	ds = -c core.pager=less diff --stat
+	dn = -c core.pager=less diff --name-only
 	dc = diff --cached
-	dcs = diff --cached --stat
-	dcn = diff --cached --name-only
+	dcs = -c core.pager=less diff --cached --stat
+	dcn = -c core.pager=less diff --cached --name-only
+	d2 = -c core.pager=\"git-delta -s\" diff
+	dc2 = -c core.pager=\"git-delta -s\" diff --cached
 	a = add
 	aa = add --all
 	au = add --update
 	ae = add --edit
 	ap = add --patch
+	track = add --intent-to-add --
 	untrack = rm --cached --
 	c = commit
 	cm = commit -m
@@ -51,12 +57,9 @@
 	lla = log --pretty=detail --graph --all
 	ls = log --pretty=detail --graph --stat
 	lsa = log --pretty=detail --graph --stat --all
-	ld = log --pretty=detail --graph --patch
-	lda = log --pretty=detail --graph --patch --all
-	ls-unmerged = diff --diff-filter=U --name-only
-	resolve = !git ls-unmerged -z | xargs --null --open-tty --no-run-if-empty ${EDITOR:-vi} --
-	ours = restore --ours
-	theirs = restore --theirs
+	ld = -c core.pager=git-delta log --pretty=detail --patch
+	lda = -c core.pager=git-delta log --pretty=detail --patch --all
+	resolve = !git diff --diff-filter=U --name-only -z | xargs --null --open-tty --no-run-if-empty ${EDITOR:-vi} --
 [format]
 	pretty = detail
 [pretty]
@@ -79,10 +82,28 @@
 	match = bold red
 	selected = bold normal
 	separator = cyan
-[pager]
-	diff = $(command -v diff-highlight cat | head -1) | less
-	log = $(command -v diff-highlight cat | head -1) | less
-	show = $(command -v diff-highlight cat | head -1) | less
 [user]
 	name = cions
 	email = gh.cions@gmail.com
+[delta]
+	commit-style = raw
+	commit-decoration-style = yellow box
+	file-style = blue
+	file-decoration-style = blue ul ol
+	hunk-header-style = raw
+	hunk-header-decoration-style =
+	minus-style = syntax "#882222"
+	minus-non-emph-style = syntax "#882222"
+	minus-emph-style = "#ffffff" "#cc0000"
+	minus-empty-line-marker-style = syntax "#882222"
+	zero-style = syntax normal
+	plus-style = syntax "#004400"
+	plus-non-emph-style = syntax "#004400"
+	plus-emph-style = "#000000" "#00cc00"
+	plus-empty-line-marker-style = syntax "#004400"
+	whitespace-error-style = reverse red
+	file-modified-label = "​​"# U+200B U+200B
+	line-numbers = true
+	navigate = true
+	syntax-theme = Nord
+	tabs = 0

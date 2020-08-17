@@ -1,0 +1,5 @@
+--theme="Nord"
+--tabs=8
+--map-syntax="*.ebuild:Bourne Again Shell (bash)"
+--map-syntax="*.s:Assembly (x86_64)"
+--map-syntax="vimrc:VimL"

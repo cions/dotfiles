@@ -59,14 +59,20 @@ bak() {
 }
 
 # aliases {{{1
-if exists dircolors; then
+if exists exa; then
+    alias ls='exa --classify --sort=Name'
+    alias la='exa --classify --sort=Name --all'
+    alias lA='exa --classify --sort=Name --all'
+    alias lt='exa --classify --sort=Name --all --tree'
+    alias ll='exa --classify --sort=Name --all --long --binary --time-style=long-iso'
+elif exists dircolors; then
     alias ls='ls -F --color=auto --quoting-style=literal'
-    alias la='ls -aF --color=auto --quoting-style=literal'
+    alias la='ls -AF --color=auto --quoting-style=literal'
     alias lA='ls -AF --color=auto --quoting-style=literal'
     alias ll='ls -AlF --color=auto --quoting-style=literal --time-style=long-iso'
 else
     alias ls='ls -F'
-    alias la='ls -aF'
+    alias la='ls -AF'
     alias lA='ls -AF'
     alias ll='ls -AlF'
 fi

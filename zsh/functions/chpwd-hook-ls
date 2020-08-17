@@ -1,4 +1,4 @@
-#autoload
+#!/bin/zsh
 
 if (( ZSH_SUBSHELL )) return 0
 

@@ -102,21 +102,25 @@ bak() {
 }
 
 # aliases {{{1
-alias cd=' cd'
-alias man=' man'
-alias rm=' rm'
-alias rr=' rr'
-alias vi=' vim'
-if (( ${+commands[dircolors]} )) {
-    alias ls=' ls -F --color=auto --quoting-style=literal'
-    alias la=' ls -aF --color=auto --quoting-style=literal'
-    alias lA=' ls -AF --color=auto --quoting-style=literal'
-    alias ll=' ls -AlF --color=auto --quoting-style=literal --time-style=long-iso'
+if (( ${+commands[exa]} )) {
+    alias ls='exa --classify --sort=Name'
+    alias la='exa --classify --sort=Name --all'
+    alias lA='exa --classify --sort=Name --all'
+    alias lt='exa --classify --sort=Name --all --tree'
+    alias ll='exa --classify --sort=Name --all --long --binary --time-style=long-iso'
+} elif (( ${+commands[dircolors]} )) {
+    alias ls='ls -F --color=auto --quoting-style=literal'
+    alias la='ls -AF --color=auto --quoting-style=literal'
+    alias lA='ls -AF --color=auto --quoting-style=literal'
+    alias ll='ls -AlF --color=auto --quoting-style=literal --time-style=long-iso'
 } else {
-    alias ls=' ls -F'
-    alias la=' ls -aF'
-    alias lA=' ls -AF'
-    alias ll=' ls -AlF'
+    alias ls='ls -F'
+    alias la='ls -AF'
+    alias lA='ls -AF'
+    alias ll='ls -AlF'
+}
+if (( ${+commands[bat]} )) {
+    alias cat='bat'
 }
 if grep -q --color=auto '^' <<< '' &>/dev/null; then
     alias grep='grep -E --color=auto'
@@ -128,6 +132,7 @@ alias reload='exec zsh'
 alias rename='noglob zmv -W'
 alias run-help='man'
 alias dot='git -C ${DOTFILES}'
+alias gdiff='git diff --no-index'
 
 alias -g G='| grep -E'
 alias -g GV='| grep -E -v'
@@ -326,19 +331,19 @@ zstyle ':chpwd:*' recent-dirs-file ${ZDOTDIR}/.recent-dirs
 zstyle ':chpwd:*' recent-dirs-pushd yes
 
 # history {{{1
+add-zsh-hook -Uz zshaddhistory ignore-history
+
 HISTFILE=${ZDOTDIR}/.zsh_history
 HISTSIZE=100000
 SAVEHIST=100000
 
 setopt extended_history
 setopt hist_ignore_all_dups
-setopt hist_ignore_space
+setopt no_hist_ignore_space
 setopt hist_no_store
-setopt hist_reduce_blanks
+setopt no_hist_reduce_blanks
 setopt hist_verify
 setopt share_history
-
-add-zsh-hook -Uz zshaddhistory ignore-history
 
 # prompt {{{1
 (( ENABLE_ICONS )) && prompt default || prompt simple
@@ -364,6 +369,11 @@ export LANGUAGE=en_US
 export EDITOR=vim
 export VISUAL=vim
 export PAGER=less
+
+if (( ${+commands[bat]} )) {
+    export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+    export PAGER=bat
+}
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"

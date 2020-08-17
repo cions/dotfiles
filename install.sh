@@ -10,6 +10,7 @@ IGNORED_TARGETS=(
 )
 MAKE_DIRECTORY=(
     'bin'
+    'config'
     'vim/.goenv'
     'vim/.ndenv'
     'vim/.pyenv'
@@ -88,7 +89,7 @@ done
 (( OPT_FORCE )) && OPT_ASK=0
 
 if [[ ",${TARGETS}," != *,dev,* ]]; then
-    IGNORED_TARGETS+=( gitconfig gitignore )
+    IGNORED_TARGETS+=( bin/git-delta gitconfig gitignore )
     IGNORED_TARGETS+=( vim/.goenv vim/.ndenv vim/.pyenv vim/.rbenv vim/.rsenv )
     IGNORED_TARGETS+=( vim/devplugins.toml vim/efm-langserver.yaml )
 fi

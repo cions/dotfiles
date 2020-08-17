@@ -1,4 +1,4 @@
-#autoload
+#!/bin/zsh
 
 (( ${+commands[powerprompt]} )) || return 1
 (( ${+functions[async_start_worker]} )) || return 1

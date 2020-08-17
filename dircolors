@@ -1,29 +1,17 @@
-# 256 color solarized theme for the color GNU ls utility.
+# Configuration file for dircolors, a utility to help you set the
+# LS_COLORS environment variable used by GNU ls with the --color option.
 
-# Term Section
-TERM Eterm
-TERM ansi
+# Below are TERM entries, which can be a glob patterns, to match
+# against the TERM environment variable to determine if it is colorizable.
 TERM *color*
-TERM con[0-9]*x[0-9]*
-TERM cons25
+TERM alacritty*
+TERM ansi
 TERM console
-TERM cygwin
-TERM dtterm
 TERM gnome
-TERM hurd
-TERM jfbterm
-TERM konsole
-TERM kterm
 TERM linux
-TERM linux-c
-TERM mlterm
-TERM putty
 TERM rxvt*
 TERM screen*
-TERM st
-TERM terminator
 TERM tmux*
-TERM vt100
 TERM xterm*
 
 ## Documentation
