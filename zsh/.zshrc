@@ -127,6 +127,7 @@ if grep -q --color=auto '^' <<< '' &>/dev/null; then
 else
     alias grep='grep -E'
 fi
+alias rga="rg --hidden --glob='!.git/'"
 alias p='print -rl --'
 alias reload='exec zsh'
 alias rename='noglob zmv -W'

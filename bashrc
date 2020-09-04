@@ -82,6 +82,7 @@ if grep -q --color=auto '^' <<< '' &>/dev/null; then
 else
     alias grep='grep -E'
 fi
+alias rga="rg --hidden --glob='!.git/'"
 
 alias reload='exec bash'
 alias dot='git -C "${DOTFILES}"'
