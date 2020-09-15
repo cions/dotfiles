@@ -15,8 +15,8 @@ pluggy==0.13.1
 pycodestyle==2.6.0
 pyflakes==2.2.0
 pylint==2.6.0
-pyls-isort==0.1.1
-pynvim==0.4.1
+pyls-isort==0.2.0
+pynvim==0.4.2
 python-jsonrpc-server==0.3.4
 python-language-server==0.31.10
 PyYAML==5.3.1
