@@ -373,7 +373,7 @@ export PAGER=less
 
 if (( ${+commands[bat]} )) {
     export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-    export PAGER=bat
+    export PAGER="bat -p"
 }
 
 export LESS="-FMRSgi -j.5 -z-4"
