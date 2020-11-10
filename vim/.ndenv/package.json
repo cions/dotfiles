@@ -5,7 +5,7 @@
   "dependencies": {
     "bash-language-server": "^1.17.0",
     "dockerfile-language-server-nodejs": "0.1.1",
-    "eslint": "^7.10.0",
+    "eslint": "^7.13.0",
     "prettier": "^2.1.2",
     "stylelint": "^13.7.2",
     "typescript-language-server": "^0.4.0",
@@ -13,6 +13,6 @@
     "vscode-css-languageserver-bin": "^1.4.0",
     "vscode-html-languageserver-bin": "^1.4.0",
     "vscode-json-languageserver-bin": "^1.0.1",
-    "yaml-language-server": "^0.11.1"
+    "yaml-language-server": "^0.12.0"
   }
 }
