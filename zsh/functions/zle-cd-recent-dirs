@@ -4,18 +4,17 @@ emulate -L zsh
 
 local file selected
 
-if (( ! ${+commands[fzy]} )) return 1
+(( ${+commands[fzy]} )) || return 1
 zstyle -s ':chpwd:' recent-dirs-file file || return 1
-if [[ ! -f ${file} ]] return 1
+[[ -f ${file} ]] || return 1
 
 echoti cud1
 selected="$(print -rl -- "${(@fQ)$(<${file})}" | fzy)"
 echoti cuu1
 zle reset-prompt
 
-if [[ -z ${selected} ]] return 1
-
-if [[ -n ${BUFFER} ]] zle push-line
+[[ -n ${selected} ]] || return 1
+[[ -n ${BUFFER} ]] && zle push-line
 BUFFER="cd ${(q)selected}"
 CURSOR=${#BUFFER}
 zle accept-line

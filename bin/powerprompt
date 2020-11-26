@@ -4,7 +4,7 @@ zmodload zsh/terminfo
 zmodload zsh/zutil
 
 typeset -A colorscheme
-if (( terminfo[colors] >= 256 )) {
+if (( terminfo[colors] >= 256 )); then
     colorscheme=(
         red     235:203
         orange  235:216
@@ -21,7 +21,7 @@ if (( terminfo[colors] >= 256 )) {
         gray4   238:248
         white   235:252
     )
-} else {
+else
     colorscheme=(
         red     0:1
         orange  0:1
@@ -38,7 +38,7 @@ if (( terminfo[colors] >= 256 )) {
         gray4   0:7
         white   0:7
     )
-}
+fi
 
 usage() {
     cat >&2 <<'EOF'
@@ -62,31 +62,32 @@ list_colors() {
     local colors color nocolor
     nocolor=${argv[1]}
 
-    for color in ${(ko)colorscheme}; {
-        if (( nocolor )) {
+    for color in ${(ko)colorscheme}; do
+        if (( nocolor )); then
             print -rl -- ${color}
-        } else {
+        else
             colors=( ${(s.:.)colorscheme[${color}]} )
             print -P "%F{${colors[1]}}%K{${colors[2]}} ${color} %f%k"
-        }
-    }
+        fi
+    done
     exit 0
 }
 
 zparseopts -D -M -A opts -- h=-help -help f: l n C P L R || exit 1
 
-if (( ${+opts[--help]} )) usage
-if (( ${+opts[-l]} )) list_colors ${+opts[-C]}
+(( ${+opts[--help]} )) && usage
+(( ${+opts[-l]} )) && list_colors ${+opts[-C]}
+
 format=${opts[-f]:-ansi}
 nospace=${+opts[-n]}
 direction=${${opts[-R]+right}:-left}
-if (( ! ${+opts[-P]} )) {
-    separators=($'\uE0B0' $'\uE0B1' $'\uE0B2' $'\uE0B3')
-} else {
+if (( ${+opts[-P]} )); then
     separators=("" "" "" "")
-}
+else
+    separators=($'\uE0B0' $'\uE0B1' $'\uE0B2' $'\uE0B3')
+fi
 
-case ${format} {
+case ${format} in
     (ansi)
         setaf() { print -nrP "%F{$1}" }
         setab() { print -nrP "%K{$1}" }
@@ -111,62 +112,62 @@ case ${format} {
         print -u2 "powerprompt: invalid -f: ${format}"
         exit 1
         ;;
-}
+esac
 
 color=()
 prev=()
-if [[ ${direction} == left ]] {
+if [[ ${direction} == left ]]; then
     reset
-    for segment; {
+    for segment; do
         color=( ${(s.:.)colorscheme[${segment%%:*}]} )
         text=${segment#*:}
-        if (( nospace == 0 )) && [[ -z ${text} ]] continue
-        if (( ${#prev} == 0 )) {
+        (( nospace == 0 )) && [[ -z ${text} ]] && continue
+        if (( ${#prev} == 0 )); then
             setaf ${color[1]}
             setab ${color[2]}
-        } elif [[ ${color[2]} == ${prev[2]} ]] {
+        elif [[ ${color[2]} == ${prev[2]} ]]; then
             setaf ${color[1]}
             setab ${color[2]}
             print -nr -- ${separators[2]}
-        } else {
+        else
             setaf ${prev[2]}
             setab ${color[2]}
             print -nr -- ${separators[1]}
             setaf ${color[1]}
-        }
-        if (( nospace )) {
+        fi
+        if (( nospace )); then
             print -nr -- "${text}"
-        } else {
+        else
             print -nr -- " ${text} "
-        }
+        fi
         prev=( ${color} )
-    }
+    done
     reset
     setaf ${prev[2]}
     print -nr -- ${separators[1]}
     reset
-} else {
+else
     reset
-    for segment; {
+    for segment; do
         color=( ${(s.:.)colorscheme[${segment%%:*}]} )
         text=${segment#*:}
-        if (( nospace == 0 )) && [[ -z ${text} ]] continue
-        if [[ ${color[2]} == ${prev[2]} ]] {
+        (( nospace == 0 )) && [[ -z ${text} ]] && continue
+        if [[ ${color[2]} == ${prev[2]} ]]; then
             setaf ${color[1]}
             setab ${color[2]}
             print -nr -- ${separators[4]}
-        } else {
+        else
             setaf ${color[2]}
             print -nr -- ${separators[3]}
             setaf ${color[1]}
             setab ${color[2]}
-        }
-        if (( nospace )) {
+        fi
+        if (( nospace )); then
             print -nr -- "${text}"
-        } else {
+        else
             print -nr -- " ${text} "
-        }
+        fi
         prev=( ${color} )
-    }
+    done
     reset
-}
+fi

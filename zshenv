@@ -1,4 +1,4 @@
 #!/bin/zsh
 
 ZDOTDIR=${HOME}/.zsh
-if [[ -f ${ZDOTDIR}/.zshenv ]] source ${ZDOTDIR}/.zshenv
+[[ -f ${ZDOTDIR}/.zshenv ]] && source ${ZDOTDIR}/.zshenv

@@ -5,21 +5,19 @@ setopt extended_glob
 
 local rootdir candidates selected
 
+(( ${+commands[fzy]} )) || return 1
 zstyle -s ':zle:cd-repository' root rootdir || rootdir=${HOME}/src
-if [[ ! -d ${rootdir} ]] return 1
-if (( ! ${+commands[fzy]} )) return 1
-
+[[ -d ${rootdir} ]] || return 1
 candidates="$(cd -q ${rootdir}; print -rl -- */*/*(N-/))"
-if [[ -z ${candidates} ]] return 1
+[[ -n ${candidates} ]] || return 1
 
 echoti cud1
 selected="$(print -r -- ${candidates} | fzy)"
 echoti cuu1
 zle reset-prompt
 
-if [[ -z ${selected} ]] return 1
-
-if [[ -n ${BUFFER} ]] zle push-line
+[[ -n ${selected} ]] || return 1
+[[ -n ${BUFFER} ]] && zle push-line
 BUFFER="cd ${(q)rootdir}/${(q)selected}"
 CURSOR=${#BUFFER}
 zle accept-line

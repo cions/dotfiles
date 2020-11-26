@@ -18,11 +18,11 @@ export DOTFILES=${${(%):-%x}:A:h:h}
         ${ZDOTDIR}/.zshenv
         ${ZDOTDIR}/.zshrc
     )
-    for file in ${targets}; {
-        if [[ ! -f ${file}.zwc || ${file} -nt ${file}.zwc ]] {
+    for file in ${targets}; do
+        if [[ ! -f ${file}.zwc || ${file} -nt ${file}.zwc ]]; then
             zcompile ${file}
-        }
-    }
+        fi
+    done
 }
 
 # options {{{1
@@ -40,9 +40,9 @@ setopt rm_star_silent
 ZPLUG_HOME=${ZDOTDIR}/zplug
 ZPLUG_THREADS="$(nproc)"
 
-if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] && (( ${+commands[git]} )) {
+if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] && (( ${+commands[git]} )); then
     git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
-}
+fi
 
 if [[ -f ${ZPLUG_HOME}/init.zsh ]] && zmodload -s zsh/pcre; then
     source ${ZPLUG_HOME}/init.zsh
@@ -51,11 +51,11 @@ if [[ -f ${ZPLUG_HOME}/init.zsh ]] && zmodload -s zsh/pcre; then
     zplug "mafredri/zsh-async"
     zplug "zdharma/fast-syntax-highlighting", defer:2, \
         hook-load:'fast-theme -q ${ZDOTDIR}/theme.ini'
-    if [[ -O ${DOTFILES} ]] {
+    if [[ -O ${DOTFILES} ]]; then
         zplug "${DOTFILES}/zsh", from:"local"
-    } else {
+    else
         zplug "cions/dotfiles", use:"zsh/"
-    }
+    fi
 
     zplug check || zplug install
     zplug load
@@ -65,15 +65,15 @@ else
 fi
 
 # dircolors {{{1
-if (( ${+commands[dircolors]} )) {
-    if [[ -f ~/.dircolors ]] {
+if (( ${+commands[dircolors]} )); then
+    if [[ -f ~/.dircolors ]]; then
         eval "$(dircolors -b ~/.dircolors)"
-    } elif [[ -f /etc/DIR_COLORS ]] {
+    elif [[ -f /etc/DIR_COLORS ]]; then
         eval "$(dircolors -b /etc/DIR_COLORS)"
-    } else {
+    else
         eval "$(dircolors -b)"
-    }
-}
+    fi
+fi
 
 # commands {{{1
 autoload -Uz zargs
@@ -96,39 +96,33 @@ rr() {
 
 bak() {
     local file
-    for file; {
+    for file; do
         mv -i ${file} ${file}.bak
-    }
+    done
 }
 
 # aliases {{{1
-if (( ${+commands[exa]} )) {
+if (( ${+commands[exa]} )); then
     alias ls='exa --classify --sort=Name'
     alias la='exa --classify --sort=Name --all'
     alias lA='exa --classify --sort=Name --all'
     alias lt='exa --classify --sort=Name --all --tree'
     alias ll='exa --classify --sort=Name --all --long --binary --time-style=long-iso'
-} elif (( ${+commands[dircolors]} )) {
+elif (( ${+commands[dircolors]} )); then
     alias ls='ls -F --color=auto --quoting-style=literal'
     alias la='ls -AF --color=auto --quoting-style=literal'
     alias lA='ls -AF --color=auto --quoting-style=literal'
     alias ll='ls -AlF --color=auto --quoting-style=literal --time-style=long-iso'
-} else {
+else
     alias ls='ls -F'
     alias la='ls -AF'
     alias lA='ls -AF'
     alias ll='ls -AlF'
-}
-if (( ${+commands[bat]} )) {
-    alias cat='bat'
-}
-if grep -q --color=auto '^' <<< '' &>/dev/null; then
-    alias grep='grep -E --color=auto'
-else
-    alias grep='grep -E'
 fi
+(( ${+commands[bat]} )) && alias cat='bat'
+alias grep='grep -E --color=auto'
 alias rga="rg --hidden --glob='!.git/'"
-alias p='print -rl --'
+alias p='print -rC1 --'
 alias reload='exec zsh'
 alias rename='noglob zmv -W'
 alias run-help='man'
@@ -151,11 +145,11 @@ alias -g EO='2>&1'
 setopt always_to_end
 setopt magic_equal_subst
 
-if (( ${+functions[_completer]} )) {
+if (( ${+functions[_completer]} )); then
     zstyle ':completion:*' completer _expand _completer:complete
-} else {
+else
     zstyle ':completion:*' completer _expand _complete
-}
+fi
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' list-prompt '%F{black}%K{white}%l %p%f%k'
@@ -206,9 +200,9 @@ zstyle ':zle:*' word-style standard
 # key bindings {{{2
 bindkey -v
 
-if (( ${+functions[zle-repeating-dot]} )) {
+if (( ${+functions[zle-repeating-dot]} )); then
     bindkey -M viins '.' zle-repeating-dot
-}
+fi
 bindkey -M viins '^A' beginning-of-line
 bindkey -M viins '^B' backward-char
 bindkey -M viins '^D' list-choices
@@ -267,14 +261,14 @@ bindkey -M visual 'sa' add-surround
 
 () {
     local m c
-    for m in visual viopp; {
-        for c in {a,i}${(s::)^:-'()[]{}<>bB'}; {
+    for m in visual viopp; do
+        for c in {a,i}${(s::)^:-'()[]{}<>bB'}; do
             bindkey -M $m $c select-bracketed
-        }
-        for c in {a,i}{\',\",\`}; {
+        done
+        for c in {a,i}{\',\",\`}; do
             bindkey -M $m $c select-quoted
-        }
-    }
+        done
+    done
 }
 
 bindkey -M menuselect '^B' vi-backward-char
@@ -295,14 +289,14 @@ zle-line-init() {
     local _status=${status}
 
     if [[ ${CONTEXT} == start && -z ${BUFFER} && -n ${ZLE_LINE_ABORTED}
-            && ${ZLE_LINE_ABORTED} != ${history[$((HISTCMD-1))]} ]] {
+            && ${ZLE_LINE_ABORTED} != ${history[$((HISTCMD-1))]} ]]; then
         BUFFER=${ZLE_LINE_ABORTED}
         CURSOR=${#BUFFER}
         zle split-undo
         BUFFER=""
         CURSOR=0
         unset ZLE_LINE_ABORTED
-    }
+    fi
 
     ${_PROMPT_FUNCTION:-:} ${_status}
 }
@@ -350,7 +344,7 @@ setopt share_history
 (( ENABLE_ICONS )) && prompt default || prompt simple
 
 # gpg-agent {{{1
-if (( ${+commands[gpgconf]} )) {
+if (( ${+commands[gpgconf]} )); then
     unset SSH_AGENT_PID
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
     export GPG_TTY=${TTY}
@@ -359,7 +353,7 @@ if (( ${+commands[gpgconf]} )) {
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
     add-zsh-hook -Uz preexec _gpg-agent-updatestartuptty
-}
+fi
 
 # environment variables {{{1
 export LANG=ja_JP.UTF-8
@@ -370,11 +364,6 @@ export LANGUAGE=en_US
 export EDITOR=vim
 export VISUAL=vim
 export PAGER=less
-
-if (( ${+commands[bat]} )) {
-    export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-    export PAGER="bat -p"
-}
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"

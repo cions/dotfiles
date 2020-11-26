@@ -8,9 +8,9 @@ endfunction
 
 function s:on_BufEnter(afile) abort
   if isdirectory(a:afile)
-    let curbufnr = bufnr('%')
+    let l:curbufnr = bufnr('%')
     call defx#start([a:afile], { 'new': v:true })
-    execute 'silent!' printf('%dbwipeout', curbufnr)
+    execute 'silent!' printf('%dbwipeout', l:curbufnr)
   endif
 endfunction
 
@@ -22,9 +22,9 @@ function vimrc#defx#on_source() abort
     autocmd BufEnter * call s:on_BufEnter(expand('<afile>:p'))
   augroup END
 
-  nnoremap <silent> <Leader>e :Defx -search=`expand('%:p')`<CR>
+  nnoremap <silent> <Leader>e :<C-u>Defx -search=`expand('%:p')`<CR>
   nnoremap <silent> <Leader>E
-        \ :Defx -buffer-name=explorer%`t:defx_tabid`
+        \ :<C-u>Defx -buffer-name=explorer%`t:defx_tabid`
         \ -search=`expand('%:p')`<CR>
 endfunction
 
@@ -121,8 +121,8 @@ function vimrc#defx#on_defx_buffer() abort
 endfunction
 
 function vimrc#defx#under_opened_tree() abort
-  let candidate = defx#get_candidate()
-  return get(candidate, 'is_opened_tree', 0) || get(candidate, 'level', 0)
+  let l:candidate = defx#get_candidate()
+  return get(l:candidate, 'is_opened_tree', 0) || get(l:candidate, 'level', 0)
 endfunction
 
 function vimrc#defx#smart_open(context) abort
@@ -130,17 +130,17 @@ function vimrc#defx#smart_open(context) abort
     call defx#call_action('open', a:context.args[1:])
     call defx#call_action('quit')
   else
-    let command = get(a:context.args, 1, 'edit')
-    let winnr = win_id2win(a:context.prev_winid)
-    if winnr == 0
-      let winnr = winnr('#')
+    let l:command = get(a:context.args, 1, 'edit')
+    let l:winnr = win_id2win(a:context.prev_winid)
+    if l:winnr == 0
+      let l:winnr = winnr('#')
     endif
     call win_gotoid(win_getid(winnr))
-    for target in a:context.targets
-      if isdirectory(target)
+    for l:target in a:context.targets
+      if isdirectory(l:target)
         continue
       endif
-      call defx#util#execute_path(command, target)
+      call defx#util#execute_path(l:command, l:target)
     endfor
   endif
 endfunction

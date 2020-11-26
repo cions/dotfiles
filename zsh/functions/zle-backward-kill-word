@@ -10,15 +10,15 @@ local -a matched_words
 
 match-words-by-style
 
-if [[ ${matched_words[3]} == [[:space:]]##[^[:space:]]* ]] {
+if [[ ${matched_words[3]} == [[:space:]]##[^[:space:]]* ]]; then
     match-words-by-style -w space
-}
+fi
 
 word="${matched_words[2]}${matched_words[3]}"
-if [[ -n ${word} ]] {
+if [[ -n ${word} ]]; then
     zle copy-region-as-kill -- "${word}"
     LBUFFER="${matched_words[1]}"
     return 0
-} else {
+else
     return 1
-}
+fi

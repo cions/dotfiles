@@ -28,7 +28,7 @@ function vimrc#deoplete#on_post_source() abort
 endfunction
 
 function vimrc#deoplete#tab() abort
-  let common_string = deoplete#complete_common_string()
-  return common_string !=# '' ? common_string :
+  let l:common_string = deoplete#complete_common_string()
+  return l:common_string !=# '' ? l:common_string :
        \ pumvisible() ? "\<C-n>" : "\<TAB>"
 endfunction

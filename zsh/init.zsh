@@ -2,11 +2,11 @@
     local zshdir dir func
 
     zshdir=${${(%):-%x}:A:h}
-    for dir in ${zshdir}/*(N-/); {
+    for dir in ${zshdir}/*(N-/); do
         fpath=( ${dir} ${fpath} )
-        for func in ${dir}/*(N-.:t); {
+        for func in ${dir}/*(N-.:t); do
             autoload -Uz ${func}
-            if [[ ${func} == zle-* ]] zle -N ${func}
-        }
-    }
+            [[ ${func} == zle-* ]] && zle -N ${func}
+        done
+    done
 }

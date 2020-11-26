@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-case ${compstate[context]} {
+case ${compstate[context]} in
     (brace_parameter)
         compset -P '*[-+=?]'
         ;;
@@ -11,12 +11,12 @@ case ${compstate[context]} {
         compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
         ;;
     (value)
-        if compset -P '*[[:space:]]' || [[ ${PREFIX} == -* ]] {
+        if compset -P '*[[:space:]]' || [[ ${PREFIX} == -* ]]; then
             compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
-        } else {
+        else
             compset -P '*:'
-        }
+        fi
         ;;
-}
+esac
 
 _files

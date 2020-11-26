@@ -11,12 +11,12 @@ _prompt_function() {
     esac
     RPROMPT2=${RPROMPT}
 
-    if (( ${(%)#:-"%F{red}a"} == 1 )) {
+    if (( ${(%)#:-"%F{red}a"} == 1 )); then
         local width=${(%)#PROMPT}
         PROMPT2="%F{blue}%$((width-2))<<${(l:width-2:)}%1_%<<>%f "
-    } else {
+    else
         RPROMPT2="%F{blue}>%f "
-    }
+    fi
 
     zle reset-prompt
 }

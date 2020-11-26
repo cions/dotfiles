@@ -38,6 +38,9 @@ repo = 'kana/vim-textobj-line'
 repo = 'sgur/vim-textobj-parameter'
 
 [[plugins]]
+repo = 'wellle/targets.vim'
+
+[[plugins]]
 repo = 'kana/vim-operator-user'
 
 [[plugins]]

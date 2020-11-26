@@ -1,16 +1,11 @@
 #!/bin/zsh
 
-if (( ZSH_SUBSHELL )) return 0
+(( ZSH_SUBSHELL )) && return 0
 
-local files max
-local -x QUOTING_STYLE=literal
-
-zstyle -s ':chpwd:ls' max-files max || max=50
-files=( *(DN) )
-if (( ${#files} > max )) {
-    command ls -dACF --color -- "${(@)files[1,max]}"
-    print "${#files} files exist"
-} else {
-    command ls -ACF --color
-}
+if (( ${+commands[exa]} )); then
+    command exa --classify --sort=Name --all
+else
+    local -x QUOTING_STYLE=literal
+    command ls -ACF --color=auto
+fi
 return 0

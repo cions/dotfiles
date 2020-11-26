@@ -44,33 +44,33 @@ function vimrc#quickrun#on_source() abort
     \   'cpp/g++': {
     \     'exec': ['%c %o %s -o %s:r', '%s:p:r %a'],
     \     'command': 'g++',
-    \     'cmdopt': '-std=gnu++17 -O2 -march=native -pipe -Wextra',
+    \     'cmdopt': '-std=gnu++20 -O2 -march=native -pipe -Wextra',
     \     'tempfile': '%{tempname()}.cpp',
     \     'hook/sweep/files': '%S:p:r',
     \   },
     \   'cpp/clang++': {
     \     'exec': ['%c %o %s -o %s:r', '%s:p:r %a'],
     \     'command': 'clang++',
-    \     'cmdopt': '-std=gnu++17 -O2 -march=native -pipe -Wextra',
+    \     'cmdopt': '-std=gnu++20 -O2 -march=native -pipe -Wextra',
     \     'tempfile': '%{tempname()}.cpp',
     \     'hook/sweep/files': '%S:p:r',
     \   },
     \   'cpp/g++-asm': {
     \     'exec': '%c -S %o %s -o -',
     \     'command': 'g++',
-    \     'cmdopt': '-std=gnu++17 -O2 -march=native -pipe -Wextra',
+    \     'cmdopt': '-std=gnu++20 -O2 -march=native -pipe -Wextra',
     \     'tempfile': '%{tempname()}.cpp',
     \   },
     \   'cpp/clang++-asm': {
     \     'exec': '%c -S %o %s -o -',
     \     'command': 'clang++',
-    \     'cmdopt': '-std=gnu++17 -O2 -march=native -pipe -Wextra',
+    \     'cmdopt': '-std=gnu++20 -O2 -march=native -pipe -Wextra',
     \     'tempfile': '%{tempname()}.cpp',
     \   },
     \   'cpp/clang++-llvm': {
     \     'exec': '%c -S -emit-llvm %o %s -o -',
     \     'command': 'clang++',
-    \     'cmdopt': '-std=gnu++17 -O2 -march=native -pipe -Wextra',
+    \     'cmdopt': '-std=gnu++20 -O2 -march=native -pipe -Wextra',
     \     'tempfile': '%{tempname()}.cpp',
     \   },
     \   'vim/vimscript': {

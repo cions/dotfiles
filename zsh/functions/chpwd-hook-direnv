@@ -7,9 +7,9 @@ typeset -ag _direnv _direnv_path
 local env
 
 # initialize {{{1
-for env in ${_direnv}; {
+for env in ${_direnv}; do
     unset ${env}
-}
+done
 path=( ${path:|_direnv_path} )
 
 _direnv=()
@@ -17,17 +17,17 @@ _direnv_path=()
 
 # npm {{{1
 set -- (../)#node_modules/.bin(N-/od:a)
-if (( $# > 0 )) {
+if (( $# > 0 )); then
     _direnv_path+=( $1 )
-}
+fi
 
 # python {{{1
 set -- (../)#pyvenv.cfg(N-.od:a:h)
-if (( $# > 0 )) {
+if (( $# > 0 )); then
     export VIRTUAL_ENV=$1
     _direnv+=( VIRTUAL_ENV )
     _direnv_path+=( $1/bin(N-/) )
-}
+fi
 
 # finalize {{{1
 path=( ${_direnv_path} ${path} )

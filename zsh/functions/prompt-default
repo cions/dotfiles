@@ -7,20 +7,20 @@ _prompt_function() {
     local _status=${argv[1]:-${status}}
     local segments=()
 
-    if (( _status != 0 )) segments+=( "red:${_status}" )
-    if (( ${(%):-%j} != 0 )) segments+=( "orange:%j" )
+    (( _status != 0 )) && segments+=( "red:${_status}" )
+    (( ${(%):-%j} != 0 )) && segments+=( "orange:%j" )
 
     case ${KEYMAP} in
         (viins|main) segments+=( "cyan:INSERT" ) ;;
         (vicmd)      segments+=( "red:NORMAL" ) ;;
     esac
 
-    if (( EUID == 0 )) {
+    if (( EUID == 0 )); then
         segments+=( "magenta:%n" )
-    } else {
+    else
         segments+=( "green:%n" )
-    }
-    if (( ${+SSH_CONNECTION} )) segments+=( "yellow:%M" )
+    fi
+    (( ${+SSH_CONNECTION} )) && segments+=( "yellow:%M" )
     segments+=( "gray3:%1~" )
     PROMPT="$(powerprompt -f zsh -L -- "${segments[@]}") "
 
@@ -38,7 +38,7 @@ _prompt_function() {
 
 _rprompt() {
     local workdir=${PWD}
-    if [[ ${workdir} == ${HOME} ]] workdir=${DOTFILES}
+    [[ ${workdir} == ${HOME} ]] && workdir=${DOTFILES}
     RPROMPT=""
     async_job rprompt_worker _rprompt_async ${workdir}
 }
@@ -50,35 +50,35 @@ _rprompt_async() {
     cd -q ${workdir} 2>/dev/null || return 1
     git-info || return 1
 
-    if (( gitstate[head_detached] )) {
+    if (( gitstate[head_detached] )); then
         segments+=( "yellow:${gitstate[head_name]}" )
-    } else {
+    else
         segments+=( "green:${gitstate[head_name]}" )
-    }
+    fi
 
-    if [[ -n ${gitstate[state]} ]] {
+    if [[ -n ${gitstate[state]} ]]; then
         local state="${gitstate[state]}"
-        if (( gitstate[total] > 1 )) {
+        if (( gitstate[total] > 1 )); then
             state+=" (${gitstate[step]}/${gitstate[total]})"
-        }
+        fi
         segments+=( "orange:${state}" )
-        if [[ -n ${gitstate[target_name]} ]] {
+        if [[ -n ${gitstate[target_name]} ]]; then
             segments+=( "orange:${gitstate[target_name]}" )
-        }
-    }
+        fi
+    fi
 
     local _status=()
-    if (( gitstate[ahead]       )) _status+=( "${gitstate[ahead]}" )
-    if (( gitstate[behind]      )) _status+=( "${gitstate[behind]}" )
-    if (( gitstate[unmerged]    )) _status+=( "${gitstate[unmerged]}" )
-    if (( gitstate[staged]      )) _status+=( "${gitstate[staged]}" )
-    if (( gitstate[wt_modified] )) _status+=( "${gitstate[wt_modified]}" )
-    if (( gitstate[wt_deleted]  )) _status+=( "${gitstate[wt_deleted]}" )
-    if (( gitstate[untracked]   )) _status+=( "${gitstate[untracked]}" )
-    if (( gitstate[stash]       )) _status+=( "${gitstate[stash]}" )
-    if (( ${#_status} > 0 )) {
+    (( gitstate[ahead]       )) && _status+=( "${gitstate[ahead]}" )
+    (( gitstate[behind]      )) && _status+=( "${gitstate[behind]}" )
+    (( gitstate[unmerged]    )) && _status+=( "${gitstate[unmerged]}" )
+    (( gitstate[staged]      )) && _status+=( "${gitstate[staged]}" )
+    (( gitstate[wt_modified] )) && _status+=( "${gitstate[wt_modified]}" )
+    (( gitstate[wt_deleted]  )) && _status+=( "${gitstate[wt_deleted]}" )
+    (( gitstate[untracked]   )) && _status+=( "${gitstate[untracked]}" )
+    (( gitstate[stash]       )) && _status+=( "${gitstate[stash]}" )
+    if (( ${#_status} > 0 )); then
         segments+=( "yellow:${(j: :)_status}" )
-    }
+    fi
 
     powerprompt -f zsh -R -- "${segments[@]}"
     return 0
@@ -88,7 +88,7 @@ _rprompt_callback() {
     local returncode=${argv[2]}
     local stdout=${argv[3]}
 
-    if (( returncode != 0 )) return
+    (( returncode != 0 )) && return ${returncode}
     RPROMPT=${stdout}
     zle reset-prompt
 }

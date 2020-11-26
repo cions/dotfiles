@@ -77,25 +77,14 @@ function vimrc#denite#on_post_source() abort
     call denite#custom#var('grep', 'pattern_opt', [])
     call denite#custom#var('grep', 'separator', ['--'])
     call denite#custom#var('grep', 'final_opts', [])
-  elseif executable('ag')
-    call denite#custom#var('grep', 'command', ['ag'])
-    call denite#custom#var('grep', 'default_opts', [
-          \ '--vimgrep', '--hidden',
-          \ '--ignore', '.git',
-          \ '--ignore', 'node_modules'])
-    call denite#custom#var('grep', 'recursive_opts', [])
-    call denite#custom#var('grep', 'pattern_opt', [])
-    call denite#custom#var('grep', 'separator', ['--'])
-    call denite#custom#var('grep', 'final_opts', [])
   endif
 endfunction
 
 function vimrc#denite#on_denite_buffer() abort
+  nnoremap <buffer> <Esc>[ <Esc>[
   nnoremap <silent><buffer><expr> <CR> denite#do_map('do_action')
   nnoremap <silent><buffer><expr> <Tab> denite#do_map('choose_action')
-  nnoremap <silent><buffer><expr><nowait> <Space>
-        \ denite#do_map('toggle_select')..'j'
-  nnoremap <buffer> <Esc>[ <Esc>[
+  nnoremap <silent><buffer><expr><nowait> <Space> denite#do_map('toggle_select')..'j'
   nnoremap <silent><buffer><expr><nowait> <Esc> denite#do_map('quit')
   nnoremap <silent><buffer><expr> <C-^> denite#do_map('move_up_path')
   nnoremap <silent><buffer><expr> <C-c> denite#do_map('quit')
@@ -149,10 +138,10 @@ function vimrc#denite#on_denite_filter() abort
 endfunction
 
 function vimrc#denite#move_cursor(direction) abort
-  let winid = bufwinid(g:denite#_filter_parent)
+  let l:winid = bufwinid(g:denite#_filter_parent)
   if a:direction ==# 'up'
-    call win_execute(winid, 'normal! k')
+    call win_execute(l:winid, 'normal! k')
   else
-    call win_execute(winid, 'normal! j')
+    call win_execute(l:winid, 'normal! j')
   endif
 endfunction

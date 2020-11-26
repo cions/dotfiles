@@ -76,16 +76,11 @@ else
     alias lA='ls -AF'
     alias ll='ls -AlF'
 fi
-
-if grep -q --color=auto '^' <<< '' &>/dev/null; then
-    alias grep='grep -E --color=auto'
-else
-    alias grep='grep -E'
-fi
+alias grep='grep -E --color=auto'
 alias rga="rg --hidden --glob='!.git/'"
-
 alias reload='exec bash'
 alias dot='git -C "${DOTFILES}"'
+alias gdiff='git diff --no-index'
 
 # key bindings {{{1
 bind C-F:menu-complete
@@ -217,6 +212,8 @@ export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
+
+export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"
 
 export GOPATH="${HOME}/.cache/go"
 export GOBIN="${HOME}/.bin"

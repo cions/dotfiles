@@ -4,15 +4,14 @@ emulate -L zsh
 
 local selected
 
-if (( ! ${+commands[fzy]} )) return 1
+(( ${+commands[fzy]} )) || return 1
 
 echoti cud1
 selected="$(fc -lr 1 | fzy --query="${BUFFER}")"
 echoti cuu1
 zle reset-prompt
 
-if [[ -z ${selected} ]] return 1
-
+[[ -n ${selected} ]] || return 1
 BUFFER=${history[${selected[(w)1]%\*}]}
 CURSOR=${#BUFFER}
 return 0
