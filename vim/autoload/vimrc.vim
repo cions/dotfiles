@@ -149,15 +149,11 @@ function vimrc#setup_rbenv(rbenv) abort
   endif
 
   call s:echow('Setup ruby environment...')
-  let l:opts = {
-        \   'cwd': g:rbenv,
-        \   'env': {
-        \     'BUNDLE_DEPLOYMENT': 'true',
-        \     'BUNDLE_PATH': 'vendor/bundle',
-        \     'BUNDLE_BIN': 'bin',
-        \   }
-        \ }
-  return vimrc#exec(['bundle', 'install'], l:opts)
+  let l:opts = { 'cwd': g:rbenv }
+  return vimrc#exec(['bundle', 'config', 'set', '--local', 'deployment', 'true'], l:opts)
+        \.then({-> vimrc#exec(['bundle', 'config', 'set', '--local', 'path', 'vendor/bundle'], l:opts)})
+        \.then({-> vimrc#exec(['bundle', 'config', 'set', '--local', 'bin', 'bin'], l:opts)})
+        \.then({-> vimrc#exec(['bundle', 'install'], l:opts)})
         \.then({-> s:echow('Setup ruby environment... Done')}, s:onerror)
         \.catch({-> rmdir(g:rbenv .. '/bin', 'r')})
 endfunction
@@ -229,17 +225,13 @@ function vimrc#update(thawed) abort
     let l:opts = {
           \   'cwd': g:rbenv,
           \   'env': {
-          \     'BUNDLE_PATH': 'vendor/bundle',
-          \     'BUNDLE_BIN': 'bin',
           \     'PATH': s:removepath(g:rbenv .. '/bin'),
           \   }
           \ }
     if a:thawed
-      let l:p = vimrc#exec(['bundle', 'config', '--delete', 'frozen'], l:opts)
-               \.then({-> vimrc#exec(['bundle', 'config', '--delete', 'deployment'], l:opts)})
+      let l:p = vimrc#exec(['bundle', 'config', 'unset', '--local', 'deployment'], l:opts)
                \.then({-> vimrc#exec(['bundle', 'update', '--all'], l:opts)})
     else
-      let l:opts['env']['BUNDLE_DEPLOYMENT'] = 'true'
       let l:p = vimrc#exec(['bundle', 'install'], l:opts)
     endif
     call l:p.then({-> s:echow('ruby environment updated')}, s:onerror)

@@ -20,7 +20,7 @@ python-jsonrpc-server==0.3.4
 python-language-server==0.31.10
 rope==0.18.0
 toml==0.10.1
-typed-ast==1.4.1
+typed-ast==1.4.2
 ujson==1.35
 vim-vint==0.4a3
 wrapt==1.11.2
