@@ -5,10 +5,10 @@
   "dependencies": {
     "bash-language-server": "^1.17.0",
     "dockerfile-language-server-nodejs": "0.2.2",
-    "eslint": "^7.17.0",
+    "eslint": "^7.18.0",
     "prettier": "^2.2.1",
     "stylelint": "^13.8.0",
-    "typescript-language-server": "^0.4.0",
+    "typescript-language-server": "^0.5.1",
     "vim-language-server": "^2.1.2",
     "vscode-css-languageserver-bin": "^1.4.0",
     "vscode-html-languageserver-bin": "^1.4.0",
