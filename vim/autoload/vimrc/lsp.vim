@@ -4,8 +4,6 @@ function vimrc#lsp#on_source() abort
   augroup vimrc-lsp
     autocmd!
     autocmd User lsp_buffer_enabled call vimrc#lsp#on_lsp_buffer_enabled()
-    autocmd User lsp_float_opened nmap <buffer><silent> <Esc> <Plug>(lsp-preview-close)
-    autocmd User lsp_float_closed nunmap <buffer> <Esc>
   augroup END
 endfunction
 
