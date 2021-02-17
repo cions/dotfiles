@@ -1,6 +1,6 @@
 ansicolor==0.2.6
 astroid==2.4.0
-autopep8==1.5.4
+autopep8==1.5.5
 flake8==3.8.4
 greenlet==0.4.15
 importlib-metadata==3.4.0
@@ -13,7 +13,7 @@ parso==0.8.0
 pluggy==0.13.1
 pycodestyle==2.6.0
 pyflakes==2.2.0
-pylint==2.6.0
+pylint==2.6.2
 pyls-isort==0.2.0
 pynvim==0.4.2
 python-jsonrpc-server==0.3.4

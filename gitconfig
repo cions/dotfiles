@@ -29,11 +29,11 @@
 	s = status
 	ss = status --short
 	d = diff
-	ds = -c pager.diff=less diff --stat
-	dn = -c pager.diff=less diff --name-only
+	ds = --paginate diff --stat
+	dn = --paginate diff --name-only
 	dc = diff --cached
-	dcs = -c pager.diff=less diff --cached --stat
-	dcn = -c pager.diff=less diff --cached --name-only
+	dcs = --paginate diff --cached --stat
+	dcn = --paginate diff --cached --name-only
 	d2 = -c pager.diff=\"git-delta -s\" diff
 	dc2 = -c pager.diff=\"git-delta -s\" diff --cached
 	a = add

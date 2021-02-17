@@ -87,9 +87,9 @@ function vimrc#setup_goenv(goenv) abort
   endif
 
   call s:echow('Setup go environment...')
-  let pkgs = readfile(g:goenv .. '/tools.txt')
-  let opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
-  return vimrc#exec(['go', 'get'] + pkgs, opts)
+  let l:pkgs = readfile(g:goenv .. '/tools.txt')
+  let l:opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
+  return s:Promise.all(map(l:pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], l:opts)}))
         \.then({-> s:echow('Setup go environment... Done')}, s:onerror)
         \.catch({-> rmdir(g:goenv .. '/bin', 'r')})
 endfunction
@@ -185,19 +185,17 @@ function vimrc#update(thawed) abort
   if exists('g:goenv')
     let l:pkgs = readfile(g:goenv .. '/tools.txt')
     let l:opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
-    call vimrc#exec(['go', 'get', '-u'] + l:pkgs, l:opts)
+    call s:Promise.all(map(l:pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], l:opts)}))
         \.then({-> s:echow('go environment updated')}, s:onerror)
   endif
 
   if exists('g:ndenv')
     let l:opts = { 'cwd': g:ndenv }
-    if a:thawed && executable('npx')
-      let l:p = vimrc#exec(['npx', 'npm-check-updates', '-u'], l:opts)
+    if a:thawed
+      let l:p = vimrc#exec(['npm', 'exec', '--yes', '--', 'npm-check-updates', '--upgrade'], l:opts)
+               \.then({-> vimrc#exec(['npm', 'audit', 'fix'], l:opts)})
                \.then({-> vimrc#exec(['npm', 'install'], l:opts)})
     else
-      if a:thawed
-        call s:echow('npx not found')
-      endif
       let l:p = vimrc#exec(['npm', 'ci'], l:opts)
     endif
     call l:p.then({-> s:echow('node environment updated')}, s:onerror)
