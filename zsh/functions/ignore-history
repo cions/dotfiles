@@ -10,7 +10,7 @@ case ${tokens[1]} in
     (bat|cat)
         (( ${#tokens} == 2 )) && return 2
         ;;
-    (cd|l[Aatls]|less|r[mr])
+    (cd|l[Aatls]|llt|less|r[mr])
         return 1
         ;;
     (man|vi|vim)

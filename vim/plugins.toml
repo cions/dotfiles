@@ -55,6 +55,9 @@ hook_source = 'call vimrc#sandwich#on_source()'
 hook_post_source = 'call vimrc#sandwich#on_post_source()'
 
 [[plugins]]
+repo = 'machakann/vim-swap'
+
+[[plugins]]
 repo = 'haya14busa/vim-edgemotion'
 
 [[plugins]]

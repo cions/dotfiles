@@ -3,7 +3,6 @@
 
 # preamble {{{1
 DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
-export DOTFILES
 
 exists() {
     command -v -- "$1" >/dev/null 2>&1
@@ -20,17 +19,6 @@ shopt -s nullglob
 HISTCONTROL=ignoreboth
 HISTSIZE=10000
 unset HISTFILE
-
-# dircolors {{{1
-if exists dircolors; then
-    if [[ -f ~/.dircolors ]]; then
-        eval "$(dircolors -b ~/.dircolors)"
-    elif [[ -f /etc/DIR_COLORS ]]; then
-        eval "$(dircolors -b /etc/DIR_COLORS)"
-    else
-        eval "$(dircolors -b)"
-    fi
-fi
 
 # commands {{{1
 args() {
@@ -64,7 +52,8 @@ if exists exa; then
     alias la='exa --classify --sort=Name --all'
     alias lA='exa --classify --sort=Name --all'
     alias lt='exa --classify --sort=Name --all --tree'
-    alias ll='exa --classify --sort=Name --all --long --binary --time-style=long-iso'
+    alias ll='exa --classify --sort=Name --all --long --binary --group --time-style=long-iso'
+    alias llt='exa --classify --sort=Name --all --long --tree --binary --group --time-style=long-iso'
 elif exists dircolors; then
     alias ls='ls -F --color=auto --quoting-style=literal'
     alias la='ls -AF --color=auto --quoting-style=literal'
@@ -198,6 +187,17 @@ if exists gpgconf; then
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
     _PROMPT_COMMANDS+=( _gpg_agent_updatestartuptty )
+fi
+
+# dircolors {{{1
+if exists dircolors; then
+    if [[ -f ~/.dircolors ]]; then
+        eval "$(dircolors -b ~/.dircolors)"
+    elif [[ -f /etc/DIR_COLORS ]]; then
+        eval "$(dircolors -b /etc/DIR_COLORS)"
+    else
+        eval "$(dircolors -b)"
+    fi
 fi
 
 # environment variables {{{1

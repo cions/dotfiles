@@ -261,6 +261,10 @@ xmap H <Plug>(textmanip-move-left)
 xmap J <Plug>(textmanip-move-down)
 xmap K <Plug>(textmanip-move-up)
 xmap L <Plug>(textmanip-move-right)
+omap i, <Plug>(swap-textobject-i)
+xmap i, <Plug>(swap-textobject-i)
+omap a, <Plug>(swap-textobject-a)
+xmap a, <Plug>(swap-textobject-a)
 
 cnoremap <C-A> <Home>
 cnoremap <C-B> <Left>

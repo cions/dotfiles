@@ -7,23 +7,7 @@ zmodload zsh/complist
 zmodload zsh/mapfile
 zmodload zsh/terminfo
 
-export DOTFILES=${${(%):-%x}:A:h:h}
-
-# zrecompile {{{1
-() {
-    local targets file
-
-    targets=(
-        ${ZDOTDIR}/.zprofile
-        ${ZDOTDIR}/.zshenv
-        ${ZDOTDIR}/.zshrc
-    )
-    for file in ${targets}; do
-        if [[ ! -f ${file}.zwc || ${file} -nt ${file}.zwc ]]; then
-            zcompile ${file}
-        fi
-    done
-}
+DOTFILES=${${(%):-%x}:A:h:h}
 
 # options {{{1
 setopt no_beep
@@ -36,43 +20,21 @@ setopt rc_quotes
 setopt re_match_pcre
 setopt rm_star_silent
 
-# zplug {{{1
-ZPLUG_HOME=${ZDOTDIR}/zplug
-ZPLUG_THREADS="$(nproc)"
-
-if [[ ! -f ${ZPLUG_HOME}/init.zsh ]] && (( ${+commands[git]} )); then
-    git clone https://github.com/zplug/zplug.git ${ZPLUG_HOME}
-fi
-
-if [[ -f ${ZPLUG_HOME}/init.zsh ]] && zmodload -s zsh/pcre; then
-    source ${ZPLUG_HOME}/init.zsh
-
-    zplug "zplug/zplug", hook-build:"zplug --self-manage"
-    zplug "mafredri/zsh-async"
-    zplug "zdharma/fast-syntax-highlighting", defer:2, \
-        hook-load:'fast-theme -q ${ZDOTDIR}/theme.ini'
-    if [[ -O ${DOTFILES} ]]; then
-        zplug "${DOTFILES}/zsh", from:"local"
-    else
-        zplug "cions/dotfiles", use:"zsh/"
+# plugins {{{1
+loadplugin() {
+    if [[ ! -d ${ZDOTDIR}/.plugins/${argv[1]:t} ]]; then
+        mkdir -p ${ZDOTDIR}/.plugins || return 1
+        git clone --depth=1 https://github.com/${argv[1]}.git ${ZDOTDIR}/.plugins/${argv[1]:t} || return 1
     fi
+    source ${ZDOTDIR}/.plugins/${argv[1]:t}/${argv[2]:-*.plugin.zsh}
+}
 
-    zplug check || zplug install
-    zplug load
-else
+loadplugin mafredri/zsh-async
+loadplugin zdharma/fast-syntax-highlighting && fast-theme -q ${ZDOTDIR}/theme.ini
+if [[ -O ${DOTFILES} ]]; then
     source ${DOTFILES}/zsh/init.zsh
-    autoload -Uz compinit && compinit -u
-fi
-
-# dircolors {{{1
-if (( ${+commands[dircolors]} )); then
-    if [[ -f ~/.dircolors ]]; then
-        eval "$(dircolors -b ~/.dircolors)"
-    elif [[ -f /etc/DIR_COLORS ]]; then
-        eval "$(dircolors -b /etc/DIR_COLORS)"
-    else
-        eval "$(dircolors -b)"
-    fi
+else
+    loadplugin cions/dotfiles zsh/init.zsh
 fi
 
 # commands {{{1
@@ -107,7 +69,8 @@ if (( ${+commands[exa]} )); then
     alias la='exa --classify --sort=Name --all'
     alias lA='exa --classify --sort=Name --all'
     alias lt='exa --classify --sort=Name --all --tree'
-    alias ll='exa --classify --sort=Name --all --long --binary --time-style=long-iso'
+    alias ll='exa --classify --sort=Name --all --long --binary --group --time-style=long-iso'
+    alias llt='exa --classify --sort=Name --all --long --tree --binary --group --time-style=long-iso'
 elif (( ${+commands[dircolors]} )); then
     alias ls='ls -F --color=auto --quoting-style=literal'
     alias la='ls -AF --color=auto --quoting-style=literal'
@@ -172,6 +135,8 @@ zstyle ':completion:expand:*' accept-exact yes
 
 zle -C complete-file menu-complete _generic
 zstyle ':completion:complete-file:*' completer _complete_file
+
+autoload -Uz compinit && compinit -u
 
 # zle {{{1
 # autoload {{{2
@@ -343,6 +308,22 @@ setopt share_history
 # prompt {{{1
 (( ENABLE_ICONS )) && prompt default || prompt simple
 
+# zrecompile {{{1
+() {
+    local targets file
+
+    targets=(
+        ${ZDOTDIR}/.zprofile
+        ${ZDOTDIR}/.zshenv
+        ${ZDOTDIR}/.zshrc
+    )
+    for file in ${targets}; do
+        if [[ ! -f ${file}.zwc || ${file} -nt ${file}.zwc ]]; then
+            zcompile ${file}
+        fi
+    done
+}
+
 # gpg-agent {{{1
 if (( ${+commands[gpgconf]} )); then
     unset SSH_AGENT_PID
@@ -353,6 +334,17 @@ if (( ${+commands[gpgconf]} )); then
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
     add-zsh-hook -Uz preexec _gpg-agent-updatestartuptty
+fi
+
+# dircolors {{{1
+if (( ${+commands[dircolors]} )); then
+    if [[ -f ~/.dircolors ]]; then
+        eval "$(dircolors -b ~/.dircolors)"
+    elif [[ -f /etc/DIR_COLORS ]]; then
+        eval "$(dircolors -b /etc/DIR_COLORS)"
+    else
+        eval "$(dircolors -b)"
+    fi
 fi
 
 # environment variables {{{1
