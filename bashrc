@@ -42,7 +42,7 @@ rr() {
     for target in "$@"; do
         [[ -e "${target}" ]] || continue
         if [[ "$(stat --file-system --format='%T' "${target}")" == "tmpfs" ]]; then
-            rm -ri -- "${target}"
+            command rm -r -- "${target}"
             continue
         fi
         if [[ "$(stat --format='%D' "${target}")" != "$(stat --format='%D' "${trashdir}")" ]]; then
