@@ -179,17 +179,24 @@ function vimrc#setup_rsenv(rsenv) abort
         \.catch({-> rmdir(g:rsenv .. '/bin', 'r')})
 endfunction
 
-function vimrc#update(thawed) abort
-  call dein#update()
+function vimrc#update(thawed, ...) abort
+  let l:targets = a:000
+  if len(l:targets) == 0
+    let l:targets = ['dein', 'go', 'node', 'python', 'ruby', 'rust']
+  endif
 
-  if exists('g:goenv')
+  if count(l:targets, 'dein') > 0
+    call dein#update()
+  endif
+
+  if exists('g:goenv') && count(l:targets, 'go') > 0
     let l:pkgs = readfile(g:goenv .. '/tools.txt')
     let l:opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
     call s:Promise.all(map(l:pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], l:opts)}))
         \.then({-> s:echow('go environment updated')}, s:onerror)
   endif
 
-  if exists('g:ndenv')
+  if exists('g:ndenv') && count(l:targets, 'node') > 0
     let l:opts = { 'cwd': g:ndenv }
     if a:thawed
       let l:p = vimrc#exec(['npm', 'exec', '--yes', '--', 'npm-check-updates', '--upgrade'], l:opts)
@@ -201,7 +208,7 @@ function vimrc#update(thawed) abort
     call l:p.then({-> s:echow('node environment updated')}, s:onerror)
   endif
 
-  if exists('g:pyenv')
+  if exists('g:pyenv') && count(l:targets, 'python') > 0
     let l:opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
     if a:thawed && filereadable(g:pyenv .. '/requirements.txt')
       let l:p = vimrc#exec(['pip', 'install', '-U', 'pip'], l:opts)
@@ -219,7 +226,7 @@ function vimrc#update(thawed) abort
     call l:p.then({-> s:echow('python environment updated')}, s:onerror)
   endif
 
-  if exists('g:rbenv')
+  if exists('g:rbenv') && count(l:targets, 'ruby') > 0
     let l:opts = {
           \   'cwd': g:rbenv,
           \   'env': {
@@ -235,7 +242,7 @@ function vimrc#update(thawed) abort
     call l:p.then({-> s:echow('ruby environment updated')}, s:onerror)
   endif
 
-  if exists('g:rsenv')
+  if exists('g:rsenv') && count(l:targets, 'rust') > 0
     let l:pkgs = readfile(g:rsenv .. '/tools.txt')
     let l:opts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
     call vimrc#exec(['cargo', 'install', '--force'] + l:pkgs, l:opts)

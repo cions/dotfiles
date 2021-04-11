@@ -6,26 +6,26 @@ GEM
     benchmark (0.1.1)
     e2mmap (0.1.0)
     jaro_winkler (1.5.4)
-    kramdown (2.3.0)
+    kramdown (2.3.1)
       rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
     mini_portile2 (2.5.0)
-    nokogiri (1.11.2)
+    nokogiri (1.11.3)
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
-    nokogiri (1.11.2-x86_64-linux)
+    nokogiri (1.11.3-x86_64-linux)
       racc (~> 1.4)
     parallel (1.20.1)
-    parser (3.0.0.0)
+    parser (3.0.1.0)
       ast (~> 2.4.1)
     racc (1.5.2)
     rainbow (3.0.0)
     regexp_parser (2.1.1)
     reverse_markdown (2.0.0)
       nokogiri
-    rexml (3.2.4)
-    rubocop (1.11.0)
+    rexml (3.2.5)
+    rubocop (1.12.1)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
       rainbow (>= 2.2.2, < 4.0)
@@ -64,4 +64,4 @@ DEPENDENCIES
   solargraph
 
 BUNDLED WITH
-   2.2.14
+   2.2.16
