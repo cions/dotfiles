@@ -31,18 +31,39 @@ mkcd() {
 }
 
 rr() {
-    local -l ans
-    echo rm -rf "$@"
-    read -r -p 'execute? ' ans
-    case "${ans}" in
-        y|yes) command rm -rf "$@" ;;
-    esac
+    local trashdir="${HOME}/.trash"
+    if [[ -w "/var/trash" ]]; then
+        trashdir="/var/trash"
+    else
+        mkdir -p -- "${trashdir}"
+    fi
+    local target timestamp
+    timestamp="$(date '+%s')"
+    for target in "$@"; do
+        [[ -e "${target}" ]] || continue
+        if [[ "$(stat --file-system --format='%T' "${target}")" == "tmpfs" ]]; then
+            rm -ri -- "${target}"
+            continue
+        fi
+        if [[ "$(stat --format='%D' "${target}")" != "$(stat --format='%D' "${trashdir}")" ]]; then
+            echo "bash: error: ${target} is not on the same filesystem as ${trashdir}. skipped." >&2
+            continue
+        fi
+        mv -n -- "${target}" "${trashdir}/${timestamp}-$(stat --format='%i' "${target}")-$(basename "${target}")"
+    done
 }
 
 bak() {
-    local file
-    for file; do
-        mv -i "${file}" "${file}.bak"
+    local target
+    for target in "$@"; do
+        mv -i -- "${target}" "${target}.bak"
+    done
+}
+
+unbak() {
+    local target
+    for target in "$@"; do
+        [[ "${target}" == *.bak ]] && mv -i -- "${target}" "${target%.bak}"
     done
 }
 
@@ -65,6 +86,7 @@ else
     alias lA='ls -AF'
     alias ll='ls -AlF'
 fi
+alias rm='echo "bash: error: rm command is disabled. use rr or \\\\rm instead." >&2; false'
 alias grep='grep -E --color=auto'
 alias rga="rg --hidden --glob='!.git/'"
 alias reload='exec bash'

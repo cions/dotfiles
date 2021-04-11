@@ -13,7 +13,7 @@ case ${tokens[1]} in
     (cd|l[Aatls]|llt|less|r[mr])
         return 1
         ;;
-    (man|vi|vim)
+    (man|run-help|vi|vim)
         return 2
         ;;
 esac

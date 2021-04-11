@@ -29,6 +29,13 @@ loadplugin() {
     source ${ZDOTDIR}/.plugins/${argv[1]:t}/${argv[2]:-*.plugin.zsh}
 }
 
+zupdate() {
+    local repo
+    for repo in ${ZDOTDIR}/.plugins/*; do
+        git -C ${repo} fetch --depth=1 && git -C ${repo} reset --merge FETCH_HEAD
+    done
+}
+
 loadplugin mafredri/zsh-async
 loadplugin zdharma/fast-syntax-highlighting && fast-theme -q ${ZDOTDIR}/theme.ini
 if [[ -O ${DOTFILES} ]]; then
@@ -50,16 +57,39 @@ mkcd() {
 }
 
 rr() {
-    local ans
-    print -r -- rm -rf ${argv}
-    read -r 'ans?execute? '
-    [[ ${ans} == (#i)(y|yes) ]] && command rm -rf ${argv}
+    local trashdir=${HOME}/.trash
+    if [[ -w /var/trash ]]; then
+        trashdir=/var/trash
+    else
+        mkdir -p -- ${trashdir}
+    fi
+    local timestamp="$(date '+%s')"
+    local target
+    for target in ${argv}; do
+        [[ -e ${target} ]] || continue
+        if [[ "$(stat --file-system --format='%T' ${target})" == "tmpfs" ]]; then
+            rm -ri -- ${target}
+            continue
+        fi
+        if [[ "$(stat --format='%D' ${target})" != "$(stat --format='%D' ${trashdir})" ]]; then
+            print -u2 "zsh: error: ${target} is not on the same filesystem as ${trashdir}. skipped."
+            continue
+        fi
+        mv -n -- ${target} "${trashdir}/${timestamp}-$(stat --format='%i' ${target})-${target:t}"
+    done
 }
 
 bak() {
-    local file
-    for file; do
-        mv -i ${file} ${file}.bak
+    local target
+    for target in ${argv}; do
+        mv -i -- ${target} ${target}.bak
+    done
+}
+
+unbak() {
+    local target
+    for target in ${argv}; do
+        [[ ${target} == *.bak ]] && mv -i -- ${target} ${target%.bak}
     done
 }
 
@@ -83,6 +113,7 @@ else
     alias ll='ls -AlF'
 fi
 (( ${+commands[bat]} )) && alias cat='bat'
+alias rm='print -u2 "zsh: error: rm command is disabled. use rr or \\\\rm instead."; false'
 alias grep='grep -E --color=auto'
 alias rga="rg --hidden --glob='!.git/'"
 alias p='print -rC1 --'
