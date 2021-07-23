@@ -1,5 +1,5 @@
 greenlet==1.1.0
-isort==5.9.1
+isort==5.9.2
 jedi==0.17.2
 lazy-object-proxy==1.6.0
 mccabe==0.6.1
@@ -15,4 +15,4 @@ python-lsp-server==1.1.0
 toml==0.10.2
 ujson==4.0.2
 wrapt==1.12.1
-zipp==3.4.1
+zipp==3.5.0
