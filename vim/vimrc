@@ -1,10 +1,8 @@
-" vim: set foldmethod=marker:
-
 set encoding=utf-8
 scriptencoding utf-8
 scriptversion 3
 
-" prelude {{{1
+" prelude
 let g:vimfiles = expand('<sfile>:p:h')
 
 let g:cachedir = g:vimfiles .. '/.cache'
@@ -27,7 +25,7 @@ if has('vim_starting')
   call vimrc#setup_rsenv(g:vimfiles .. '/.rsenv')
 endif
 
-" disable default plugins {{{1
+" disable default plugins
 let g:loaded_2html_plugin = 1
 let g:loaded_getscript = 1
 let g:loaded_getscriptPlugin = 1
@@ -44,7 +42,7 @@ let g:loaded_vimballPlugin = 1
 let g:loaded_zip = 1
 let g:loaded_zipPlugin = 1
 
-" dein.vim {{{1
+" dein.vim
 let s:deindir = g:vimfiles .. '/dein'
 let s:deinrepo = s:deindir .. '/repos/github.com/Shougo/dein.vim'
 
@@ -87,7 +85,7 @@ endif
 syntax enable
 filetype plugin indent on
 
-" options {{{1
+" options
 set hidden
 set mouse=a
 set ttimeout
@@ -187,14 +185,11 @@ set fileformats=unix,dos
 if executable('rg')
   set grepprg=rg\ --vimgrep
   set grepformat=%f:%l:%c:%m
-elseif executable('ag')
-  set grepprg=ag\ --nocolor\ --nogroup\ --column\ --follow
-  set grepformat=%f:%l:%c:%m
 else
   set grepprg=internal
 endif
 
-" key bindings {{{1
+" key bindings
 noremap s <Nop>
 noremap S <Nop>
 nnoremap ZZ <Nop>
@@ -275,13 +270,13 @@ tnoremap <C-W>gt <C-W>:tabnext<CR>
 tnoremap <silent> <C-W><C-h> <C-W>:call job_stop(term_getjob(bufnr('%')), 'hup')<CR>
 tnoremap <C-W><Esc> <C-W>N
 
-" commands {{{1
+" commands
 command! -nargs=* -bang Update call vimrc#update(<bang>0, <f-args>)
 command! Clean call vimrc#clean()
 command! SynStack call vimrc#synstack()
 command! Highlight call vimrc#highlight()
 
-" autocmd {{{1
+" autocmd
 augroup vimrc
   autocmd!
   autocmd VimLeave * call delete(g:tempdir, 'rf')

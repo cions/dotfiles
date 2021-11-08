@@ -16,8 +16,8 @@ endfunction
 function s:_onerror(err) abort
   if type(a:err) is# v:t_list
     echohl WarningMsg
-    for l:x in a:err
-      echomsg l:x
+    for x in a:err
+      echomsg x
     endfor
     echohl None
   elseif type(a:err) is# v:t_dict && has_key(a:err, 'exception')
@@ -42,16 +42,16 @@ function s:echow(msg) abort
 endfunction
 
 function s:readall(ch, part) abort
-  let l:result = []
+  let result = []
   while ch_status(a:ch, {'part': a:part}) =~# 'open\|buffered'
-    call add(l:result, ch_read(a:ch, {'part': a:part}))
+    call add(result, ch_read(a:ch, {'part': a:part}))
   endwhile
-  return l:result
+  return result
 endfunction
 
 function vimrc#exec(command, ...) abort
-  let l:options = a:0 ? copy(a:1) : {}
-  return s:Promise.new({resolve, reject -> job_start(a:command, extend(l:options, {
+  let options = a:0 ? copy(a:1) : {}
+  return s:Promise.new({resolve, reject -> job_start(a:command, extend(options, {
         \   'drop': 'never',
         \   'stoponexit': '',
         \   'in_io': 'null',
@@ -68,8 +68,8 @@ endfunction
 
 function vimrc#setup_dein(deinrepo) abort
   call s:echow('Downloading dein...')
-  let l:repourl = 'https://github.com/Shougo/dein.vim'
-  return vimrc#exec(['git', 'clone', '--depth=1', l:repourl, a:deinrepo], {})
+  let repourl = 'https://github.com/Shougo/dein.vim'
+  return vimrc#exec(['git', 'clone', '--depth=1', repourl, a:deinrepo], {})
         \.then({-> s:echow('Downloading dein... Done')}, s:onerror)
 endfunction
 
@@ -87,9 +87,9 @@ function vimrc#setup_goenv(goenv) abort
   endif
 
   call s:echow('Setup go environment...')
-  let l:pkgs = readfile(g:goenv .. '/tools.txt')
-  let l:opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
-  return s:Promise.all(map(l:pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], l:opts)}))
+  let pkgs = readfile(g:goenv .. '/tools.txt')
+  let opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
+  return s:Promise.all(map(pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], opts)}))
         \.then({-> s:echow('Setup go environment... Done')}, s:onerror)
         \.catch({-> rmdir(g:goenv .. '/bin', 'r')})
 endfunction
@@ -124,15 +124,15 @@ function vimrc#setup_pyenv(pyenv) abort
   endif
 
   call s:echow('Setup python environment...')
-  let l:p = vimrc#exec(['python3', '-mvenv', '--system-site-packages', g:pyenv], {})
-  let l:opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
-  let l:p = l:p.then({-> vimrc#exec(['pip', 'install', '-U', 'pip'], l:opts)})
+  let p = vimrc#exec(['python3', '-mvenv', '--system-site-packages', g:pyenv], {})
+  let opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
+  let p = p.then({-> vimrc#exec(['pip', 'install', '-U', 'pip'], opts)})
   if filereadable(g:pyenv .. '/requirements.txt')
-    let l:p = l:p.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], l:opts)})
+    let p = p.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], opts)})
   else
-    let l:p = l:p.then({-> vimrc#exec(['pip', 'install', 'pynvim'], l:opts)})
+    let p = p.then({-> vimrc#exec(['pip', 'install', 'pynvim'], opts)})
   endif
-  return l:p.then({-> s:echow('Setup python environment... Done')}, s:onerror)
+  return p.then({-> s:echow('Setup python environment... Done')}, s:onerror)
 endfunction
 
 function vimrc#setup_rbenv(rbenv) abort
@@ -149,11 +149,11 @@ function vimrc#setup_rbenv(rbenv) abort
   endif
 
   call s:echow('Setup ruby environment...')
-  let l:opts = { 'cwd': g:rbenv }
-  return vimrc#exec(['bundle', 'config', 'set', '--local', 'deployment', 'true'], l:opts)
-        \.then({-> vimrc#exec(['bundle', 'config', 'set', '--local', 'path', 'vendor/bundle'], l:opts)})
-        \.then({-> vimrc#exec(['bundle', 'config', 'set', '--local', 'bin', 'bin'], l:opts)})
-        \.then({-> vimrc#exec(['bundle', 'install'], l:opts)})
+  let opts = { 'cwd': g:rbenv }
+  return vimrc#exec(['bundle', 'config', 'set', '--local', 'deployment', 'true'], opts)
+        \.then({-> vimrc#exec(['bundle', 'config', 'set', '--local', 'path', 'vendor/bundle'], opts)})
+        \.then({-> vimrc#exec(['bundle', 'config', 'set', '--local', 'bin', 'bin'], opts)})
+        \.then({-> vimrc#exec(['bundle', 'install'], opts)})
         \.then({-> s:echow('Setup ruby environment... Done')}, s:onerror)
         \.catch({-> rmdir(g:rbenv .. '/bin', 'r')})
 endfunction
@@ -172,104 +172,104 @@ function vimrc#setup_rsenv(rsenv) abort
   endif
 
   call s:echow('Setup rust environment...')
-  let l:pkgs = readfile(g:rsenv .. '/tools.txt')
-  let l:opts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
-  return vimrc#exec(['cargo', 'install', '--force'] + l:pkgs, l:opts)
+  let pkgs = readfile(g:rsenv .. '/tools.txt')
+  let opts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
+  return vimrc#exec(['cargo', 'install', '--force'] + pkgs, opts)
         \.then({-> s:echow('Setup rust environment... Done')}, s:onerror)
         \.catch({-> rmdir(g:rsenv .. '/bin', 'r')})
 endfunction
 
 function vimrc#update(thawed, ...) abort
-  let l:targets = a:000
-  if len(l:targets) == 0
-    let l:targets = ['dein', 'go', 'node', 'python', 'ruby', 'rust']
+  let targets = a:000
+  if len(targets) == 0
+    let targets = ['dein', 'go', 'node', 'python', 'ruby', 'rust']
   endif
 
-  if count(l:targets, 'dein') > 0
+  if count(targets, 'dein') > 0
     call dein#update()
   endif
 
-  if exists('g:goenv') && count(l:targets, 'go') > 0
-    let l:pkgs = readfile(g:goenv .. '/tools.txt')
-    let l:opts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
-    call s:Promise.all(map(l:pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], l:opts)}))
+  if exists('g:goenv') && count(targets, 'go') > 0
+    let pkgs = readfile(g:goenv .. '/tools.txt')
+    let goopts = { 'cwd': g:goenv, 'env': { 'GOBIN': g:goenv .. '/bin' } }
+    call s:Promise.all(map(pkgs, {_,pkg -> vimrc#exec(['go', 'install', pkg], goopts)}))
         \.then({-> s:echow('go environment updated')}, s:onerror)
   endif
 
-  if exists('g:ndenv') && count(l:targets, 'node') > 0
-    let l:opts = { 'cwd': g:ndenv }
+  if exists('g:ndenv') && count(targets, 'node') > 0
+    let ndopts = { 'cwd': g:ndenv }
     if a:thawed
-      let l:p = vimrc#exec(['npm', 'exec', '--yes', '--', 'npm-check-updates', '--upgrade'], l:opts)
-               \.then({-> vimrc#exec(['npm', 'audit', 'fix'], l:opts)})
-               \.then({-> vimrc#exec(['npm', 'install'], l:opts)})
+      let p = vimrc#exec(['npm', 'exec', '--yes', '--', 'npm-check-updates', '--upgrade'], ndopts)
+             \.then({-> vimrc#exec(['npm', 'audit', 'fix'], ndopts)})
+             \.then({-> vimrc#exec(['npm', 'install'], ndopts)})
     else
-      let l:p = vimrc#exec(['npm', 'ci'], l:opts)
+      let p = vimrc#exec(['npm', 'ci'], ndopts)
     endif
-    call l:p.then({-> s:echow('node environment updated')}, s:onerror)
+    call p.then({-> s:echow('node environment updated')}, s:onerror)
   endif
 
-  if exists('g:pyenv') && count(l:targets, 'python') > 0
-    let l:opts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
+  if exists('g:pyenv') && count(targets, 'python') > 0
+    let pyopts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
     if a:thawed && filereadable(g:pyenv .. '/requirements.txt')
-      let l:p = vimrc#exec(['pip', 'install', '-U', 'pip'], l:opts)
-               \.then({-> vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], l:opts)})
-               \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
-               \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, l:opts)})
-               \.then({-> vimrc#exec(['pip', 'freeze', '--local'], l:opts)})
-               \.then({out -> writefile(out, g:pyenv .. '/requirements.txt')})
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip'], pyopts)
+             \.then({-> vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], pyopts)})
+             \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
+             \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, pyopts)})
+             \.then({-> vimrc#exec(['pip', 'freeze', '--local'], pyopts)})
+             \.then({out -> writefile(out, g:pyenv .. '/requirements.txt')})
     elseif filereadable(g:pyenv .. '/requirements.txt')
-      let l:p = vimrc#exec(['pip', 'install', '-U', 'pip'], l:opts)
-               \.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], l:opts)})
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip'], pyopts)
+             \.then({-> vimrc#exec(['pip', 'install', '-r', g:pyenv .. '/requirements.txt'], pyopts)})
     else
-      let l:p = vimrc#exec(['pip', 'install', '-U', 'pip', 'pynvim'], l:opts)
+      let p = vimrc#exec(['pip', 'install', '-U', 'pip', 'pynvim'], pyopts)
     endif
-    call l:p.then({-> s:echow('python environment updated')}, s:onerror)
+    call p.then({-> s:echow('python environment updated')}, s:onerror)
   endif
 
-  if exists('g:rbenv') && count(l:targets, 'ruby') > 0
-    let l:opts = {
+  if exists('g:rbenv') && count(targets, 'ruby') > 0
+    let rbopts = {
           \   'cwd': g:rbenv,
           \   'env': {
           \     'PATH': s:removepath(g:rbenv .. '/bin'),
           \   }
           \ }
     if a:thawed
-      let l:p = vimrc#exec(['bundle', 'config', 'unset', '--local', 'deployment'], l:opts)
-               \.then({-> vimrc#exec(['bundle', 'update', '--all'], l:opts)})
+      let p = vimrc#exec(['bundle', 'config', 'unset', '--local', 'deployment'], rbopts)
+             \.then({-> vimrc#exec(['bundle', 'update', '--all'], rbopts)})
     else
-      let l:p = vimrc#exec(['bundle', 'install'], l:opts)
+      let p = vimrc#exec(['bundle', 'install'], rbopts)
     endif
-    call l:p.then({-> s:echow('ruby environment updated')}, s:onerror)
+    call p.then({-> s:echow('ruby environment updated')}, s:onerror)
   endif
 
-  if exists('g:rsenv') && count(l:targets, 'rust') > 0
-    let l:pkgs = readfile(g:rsenv .. '/tools.txt')
-    let l:opts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
-    call vimrc#exec(['cargo', 'install', '--force'] + l:pkgs, l:opts)
+  if exists('g:rsenv') && count(targets, 'rust') > 0
+    let pkgs = readfile(g:rsenv .. '/tools.txt')
+    let rsopts = { 'cwd': g:rsenv, 'env': { 'CARGO_HOME': g:cachedir .. '/rust', 'CARGO_INSTALL_ROOT': g:rsenv } }
+    call vimrc#exec(['cargo', 'install', '--force'] + pkgs, rsopts)
         \.then({-> s:echow('rust environment updated')}, s:onerror)
   endif
 endfunction
 
 function vimrc#clean() abort
-  for l:plugin in dein#check_clean()
-    call delete(l:plugin, 'rf')
-    call delete(fnamemodify(l:plugin, ':h'), 'd')
+  for plugin in dein#check_clean()
+    call delete(plugin, 'rf')
+    call delete(fnamemodify(plugin, ':h'), 'd')
   endfor
-  call dein#each('git reflog expire --all')
+  call dein#each('git reflog expire --expire=all --all')
   call dein#each('git gc --aggressive --prune=now')
   call dein#recache_runtimepath()
   call s:echow('Cleaning done')
 endfunction
 
 function vimrc#synstack() abort
-  let l:stack = synstack(line('.'), col('.'))
-  let l:names = map(l:stack, {_,x -> synIDattr(x, 'name')})
-  echomsg join(l:names, ' / ')
+  let stack = synstack(line('.'), col('.'))
+  let names = map(stack, {_,x -> synIDattr(x, 'name')})
+  echomsg join(names, ' / ')
 endfunction
 
 function vimrc#highlight() abort
-  let l:synid = synIDtrans(synID(line('.'), col('.'), 1))
-  echomsg synIDattr(l:synid, 'name')
+  let synid = synIDtrans(synID(line('.'), col('.'), 1))
+  echomsg synIDattr(synid, 'name')
 endfunction
 
 function vimrc#lcd_to_project_dir(file) abort
@@ -277,20 +277,20 @@ function vimrc#lcd_to_project_dir(file) abort
   if a:file ==# '' | return | endif
   if isdirectory(a:file) | return | endif
   if a:file =~# '^gina://' | return | endif
-  let l:file = substitute(a:file, '^sudo:', '', '')
-  let l:filedir = fnamemodify(l:file, ':h')
-  let l:targetdir = escape(l:filedir, '*[]?{};, ')
+  let file = substitute(a:file, '^sudo:', '', '')
+  let filedir = fnamemodify(file, ':h')
+  let targetdir = escape(filedir, '*[]?{};, ')
 
-  let l:anchordirs = ['.git', '.hg', '.bzr', '.svn']
-  for l:x in l:anchordirs
-    let l:newdir = finddir(l:x, l:targetdir..';')
-    if l:newdir !=# ''
-      execute 'lcd' fnameescape(fnamemodify(l:newdir, ':p:h:h'))
+  let anchordirs = ['.git', '.hg', '.bzr', '.svn']
+  for x in anchordirs
+    let newdir = finddir(x, targetdir..';')
+    if newdir !=# ''
+      execute 'lcd' fnameescape(fnamemodify(newdir, ':p:h:h'))
       return
     endif
   endfor
 
-  let l:anchorfiles = [
+  let anchorfiles = [
         \   'pyproject.toml',
         \   'pyvenv.cfg',
         \   'setup.py',
@@ -310,10 +310,10 @@ function vimrc#lcd_to_project_dir(file) abort
         \   'build.gradle',
         \   'pom.xml',
         \ ]
-  for l:x in l:anchorfiles
-    let l:newdir = findfile(l:x, l:targetdir..';')
-    if l:newdir !=# ''
-      execute 'lcd' fnameescape(fnamemodify(l:newdir, ':p:h'))
+  for x in anchorfiles
+    let newdir = findfile(x, targetdir..';')
+    if newdir !=# ''
+      execute 'lcd' fnameescape(fnamemodify(newdir, ':p:h'))
       return
     endif
   endfor
@@ -323,8 +323,8 @@ function vimrc#auto_mkdir(dir, force) abort
   if isdirectory(a:dir)
     return
   endif
-  let l:prompt = '"%s" does not exists. Create? [y/N] '
-  if a:force || input(l:prompt, a:dir) =~? '^y\%[es]$'
+  let prompt = '"%s" does not exists. Create? [y/N] '
+  if a:force || input(prompt, a:dir) =~? '^y\%[es]$'
     call mkdir(iconv(a:dir, &encoding, &termencoding), 'p')
   endif
 endfunction

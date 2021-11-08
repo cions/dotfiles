@@ -1,14 +1,13 @@
 #!/bin/bash
-# vim: set foldmethod=marker:
 
-# preamble {{{1
+# preamble
 DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
 
 exists() {
     command -v -- "$1" >/dev/null 2>&1
 }
 
-# options {{{1
+# options
 shopt -s checkwinsize
 shopt -s dotglob
 shopt -s no_empty_cmd_completion
@@ -20,7 +19,7 @@ HISTCONTROL=ignoreboth
 HISTSIZE=10000
 unset HISTFILE
 
-# commands {{{1
+# commands
 args() {
     printf '%s\n' "${@@Q}"
 }
@@ -35,7 +34,7 @@ rr() {
     if [[ -w "/var/trash" ]]; then
         trashdir="/var/trash"
     else
-        mkdir -p -- "${trashdir}"
+        mkdir -p -- "${trashdir}" || return 1
     fi
     local target timestamp
     timestamp="$(date '+%s')"
@@ -63,11 +62,12 @@ bak() {
 unbak() {
     local target
     for target in "$@"; do
-        [[ "${target}" == *.bak ]] && mv -i -- "${target}" "${target%.bak}"
+        [[ "${target}" == *.bak ]] || continue
+        mv -i -- "${target}" "${target%.bak}"
     done
 }
 
-# aliases {{{1
+# aliases
 if exists exa; then
     alias ls='exa --classify --sort=Name'
     alias la='exa --classify --sort=Name --all'
@@ -93,11 +93,11 @@ alias reload='exec bash'
 alias dot='git -C "${DOTFILES}"'
 alias gdiff='git diff --no-index'
 
-# key bindings {{{1
+# key bindings
 bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
-# PROMPT_COMMAND {{{1
+# PROMPT_COMMAND
 _PROMPT_COMMANDS=()
 _prompt_command() {
     local status=$? func
@@ -107,7 +107,7 @@ _prompt_command() {
 }
 PROMPT_COMMAND=_prompt_command
 
-# prompt {{{1
+# prompt
 _prompt_width() {
     echo -n "${PS1@P}" | sed $'s/\x01[^\x02]*\x02//g' | wc -L
 }
@@ -198,7 +198,7 @@ if (( ENABLE_ICONS )); then
     prompt default
 fi
 
-# gpg-agent {{{1
+# gpg-agent
 if exists gpgconf; then
     unset SSH_AGENT_PID
     SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
@@ -211,7 +211,7 @@ if exists gpgconf; then
     _PROMPT_COMMANDS+=( _gpg_agent_updatestartuptty )
 fi
 
-# dircolors {{{1
+# dircolors
 if exists dircolors; then
     if [[ -f ~/.dircolors ]]; then
         eval "$(dircolors -b ~/.dircolors)"
@@ -222,7 +222,7 @@ if exists dircolors; then
     fi
 fi
 
-# environment variables {{{1
+# environment variables
 export LANG="ja_JP.UTF-8"
 export LC_TIME="en_US.UTF-8"
 export LC_MESSAGES="en_US.UTF-8"
@@ -238,4 +238,4 @@ export LESSHISTFILE="-"
 export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"
 
 export GOPATH="${HOME}/.cache/go"
-export GOBIN="${HOME}/.bin"
+export GOBIN="${HOME}/.go/bin"

@@ -39,8 +39,8 @@ endfunction
 
 function vimrc#lightline#filename() abort
   if &buftype ==# 'terminal'
-    let l:cmd = substitute(expand('%'), '^!', '', '')
-    return fnamemodify(l:cmd, ':t')
+    let cmd = substitute(expand('%'), '^!', '', '')
+    return fnamemodify(cmd, ':t')
   else
     return expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
   endif

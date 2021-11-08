@@ -11,8 +11,8 @@ _prompt_function() {
     (( ${(%):-%j} != 0 )) && segments+=( "orange:%j" )
 
     case ${KEYMAP} in
-        (viins|main) segments+=( "cyan:INSERT" ) ;;
-        (vicmd)      segments+=( "red:NORMAL" ) ;;
+        viins|main) segments+=( "cyan:INSERT" ) ;;
+        vicmd)      segments+=( "red:NORMAL" ) ;;
     esac
 
     if (( EUID == 0 )); then
@@ -27,8 +27,8 @@ _prompt_function() {
     local width=${(%)#PROMPT}
     segments=()
     case ${KEYMAP} in
-        (viins|main) segments+=( "cyan:INSERT" ) ;;
-        (vicmd)      segments+=( "red:NORMAL" ) ;;
+        viins|main) segments+=( "cyan:INSERT" ) ;;
+        vicmd)      segments+=( "red:NORMAL" ) ;;
     esac
     segments+=( "gray3:%$((width-13))<<${(l:width-13:)}%1_%<<" )
     PROMPT2="$(powerprompt -f zsh -L -- "${segments[@]}") "
@@ -40,7 +40,11 @@ _rprompt() {
     local workdir=${PWD}
     [[ ${workdir} == ${HOME} ]] && workdir=${DOTFILES}
     RPROMPT=""
-    async_job rprompt_worker _rprompt_async ${workdir}
+    async_job rprompt_worker _rprompt_async ${workdir} 2>/dev/null || {
+        async_start_worker rprompt_worker -u
+        async_register_callback rprompt_worker _rprompt_callback
+        async_job rprompt_worker _rprompt_async ${workdir}
+    }
 }
 
 _rprompt_async() {

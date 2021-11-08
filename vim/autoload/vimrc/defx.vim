@@ -8,9 +8,9 @@ endfunction
 
 function s:on_BufEnter(afile) abort
   if isdirectory(a:afile)
-    let l:curbufnr = bufnr('%')
+    let curbufnr = bufnr('%')
     call defx#start([a:afile], { 'new': v:true })
-    execute 'silent!' printf('%dbwipeout', l:curbufnr)
+    execute 'silent!' printf('%dbwipeout', curbufnr)
   endif
 endfunction
 
@@ -121,8 +121,8 @@ function vimrc#defx#on_defx_buffer() abort
 endfunction
 
 function vimrc#defx#under_opened_tree() abort
-  let l:candidate = defx#get_candidate()
-  return get(l:candidate, 'is_opened_tree', 0) || get(l:candidate, 'level', 0)
+  let candidate = defx#get_candidate()
+  return get(candidate, 'is_opened_tree', 0) || get(candidate, 'level', 0)
 endfunction
 
 function vimrc#defx#smart_open(context) abort
@@ -130,17 +130,17 @@ function vimrc#defx#smart_open(context) abort
     call defx#call_action('open', a:context.args[1:])
     call defx#call_action('quit')
   else
-    let l:command = get(a:context.args, 1, 'edit')
-    let l:winnr = win_id2win(a:context.prev_winid)
-    if l:winnr == 0
-      let l:winnr = winnr('#')
+    let command = get(a:context.args, 1, 'edit')
+    let winnr = win_id2win(a:context.prev_winid)
+    if winnr == 0
+      let winnr = winnr('#')
     endif
     call win_gotoid(win_getid(winnr))
-    for l:target in a:context.targets
-      if isdirectory(l:target)
+    for target in a:context.targets
+      if isdirectory(target)
         continue
       endif
-      call defx#util#execute_path(l:command, l:target)
+      call defx#util#execute_path(command, target)
     endfor
   endif
 endfunction

@@ -8,9 +8,9 @@ for i in /etc/profile.env /etc/profile.d/*.sh; do
 done
 unset ROOTPATH i
 
-PATH="${HOME}/.bin:${PATH}"
+PATH="${HOME}/.bin:${HOME}/.go/bin:${HOME}/.cargo/bin:${HOME}/.deno/bin:${PATH}"
 if [ "$(id -u)" -ne 0 ]; then
-    PATH="$(echo -n "${PATH}" | awk 'BEGIN { RS=":"; ORS=":" } !/\/sbin$/')"
+    PATH="$(printf '%s' "${PATH}" | awk 'BEGIN { RS=":"; ORS=":" } !/\/sbin$/')"
     PATH="${PATH%:}"
 fi
 export PATH

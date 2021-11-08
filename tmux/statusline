@@ -90,11 +90,11 @@ loadavg() {
 position=${argv[1]}
 segments=()
 case ${position} in
-    (left)
+    left)
         segments+=( "cyan:#S" "cyan:#H" )
         ${=POWERPROMPT} -L -- "${segments[@]}"
         ;;
-    (right)
+    right)
         width="$(tmux display -p "#{client_width}")"
         (( maxwidth = width - $(tmux display -p " #S   #H  #{W:#{?#{<=:#I,3},  #I:#W#F  ,}}" | wc -c) ))
         (( maxwidth = (maxwidth > 0.6 * width) ? 0.6 * width : maxwidth ))
@@ -132,10 +132,10 @@ case ${position} in
         fi
         ${=POWERPROMPT} -R -- "${segments[@]}"
         ;;
-    (window)
+    window)
         ${=POWERPROMPT} -n -L -- "gray1:" "gray2: #I:#W#F "
         ;;
-    (cwindow)
+    cwindow)
         ${=POWERPROMPT} -n -L -- "gray1:" "green: #I:#W#F "
         ;;
 esac

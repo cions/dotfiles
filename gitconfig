@@ -17,6 +17,8 @@
 	defaultToUpstream = true
 	ff = false
 	tool = vimdiff
+[push]
+	followTags = true
 [pull]
 	ff = only
 [rebase]

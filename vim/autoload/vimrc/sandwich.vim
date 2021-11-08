@@ -19,16 +19,16 @@ function vimrc#sandwich#on_post_source() abort
 endfunction
 
 function vimrc#sandwich#on_ft_python() abort
-  let l:prefixes = [
+  let prefixes = [
         \   'r', 'u', 'R', 'U', 'f', 'F', 'fr', 'Fr',
         \   'fR', 'FR', 'rf', 'rF', 'Rf', 'RF', 'b', 'B',
         \   'br', 'Br', 'bR', 'BR', 'rb', 'rB', 'Rb', 'RB',
         \ ]
-  for l:prefix in l:prefixes
+  for prefix in prefixes
     call sandwich#util#addlocal([
-          \   {'buns': [l:prefix..'"', '"'], 'nesting': 0, 'input': [l:prefix..'"']},
-          \   {'buns': [l:prefix.."'", "'"], 'nesting': 0, 'input': [l:prefix.."'"]},
-          \   {'buns': [l:prefix..'"""', '"""'], 'nesting': 0, 'input': [l:prefix.."'"]},
+          \   {'buns': [prefix..'"', '"'], 'nesting': 0, 'input': [prefix..'"']},
+          \   {'buns': [prefix.."'", "'"], 'nesting': 0, 'input': [prefix.."'"]},
+          \   {'buns': [prefix..'"""', '"""'], 'nesting': 0, 'input': [prefix.."'"]},
           \ ])
   endfor
 endfunction

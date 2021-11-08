@@ -7,7 +7,13 @@ for i in /etc/profile.env(N-.) /etc/profile.d/*.sh(N-.); do
 done
 unset ROOTPATH i
 
-path=( ${HOME}/.bin(N-/) ${^path}(N-/) )
+path=(
+    ${HOME}/.bin(N-/)
+    ${HOME}/.go/bin(N-/)
+    ${HOME}/.cargo/bin(N-/)
+    ${HOME}/.deno/bin(N-/)
+    ${^path}(N-/)
+)
 (( EUID != 0 )) && path=( ${path:#*/sbin} )
 
 [[ ${PREFIX} == */com.termux/* ]] && export TERMUX=1

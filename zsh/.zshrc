@@ -1,7 +1,6 @@
 #!/bin/zsh
-# vim: set foldmethod=marker:
 
-# preamble {{{1
+# preamble
 autoload -Uz add-zsh-hook
 zmodload zsh/complist
 zmodload zsh/mapfile
@@ -9,7 +8,7 @@ zmodload zsh/terminfo
 
 DOTFILES=${${(%):-%x}:A:h:h}
 
-# options {{{1
+# options
 setopt no_beep
 setopt combining_chars
 setopt extended_glob
@@ -20,7 +19,7 @@ setopt rc_quotes
 setopt re_match_pcre
 setopt rm_star_silent
 
-# plugins {{{1
+# plugins
 loadplugin() {
     if [[ ! -d ${ZDOTDIR}/.plugins/${argv[1]:t} ]]; then
         mkdir -p ${ZDOTDIR}/.plugins || return 1
@@ -37,14 +36,14 @@ zupdate() {
 }
 
 loadplugin mafredri/zsh-async
-loadplugin zdharma/fast-syntax-highlighting && fast-theme -q ${ZDOTDIR}/theme.ini
+loadplugin zdharma-continuum/fast-syntax-highlighting && fast-theme -q ${ZDOTDIR}/theme.ini
 if [[ -O ${DOTFILES} ]]; then
     source ${DOTFILES}/zsh/init.zsh
 else
     loadplugin cions/dotfiles zsh/init.zsh
 fi
 
-# commands {{{1
+# commands
 autoload -Uz zargs
 autoload -Uz zmv
 
@@ -61,7 +60,7 @@ rr() {
     if [[ -w /var/trash ]]; then
         trashdir=/var/trash
     else
-        mkdir -p -- ${trashdir}
+        mkdir -p -- ${trashdir} || return 1
     fi
     local timestamp="$(date '+%s')"
     local target
@@ -88,12 +87,12 @@ bak() {
 
 unbak() {
     local target
-    for target in ${argv}; do
-        [[ ${target} == *.bak ]] && mv -i -- ${target} ${target%.bak}
+    for target in ${(M)argv:#*.bak}; do
+        mv -i -- ${target} ${target%.bak}
     done
 }
 
-# aliases {{{1
+# aliases
 if (( ${+commands[exa]} )); then
     alias ls='exa --classify --sort=Name'
     alias la='exa --classify --sort=Name --all'
@@ -135,7 +134,7 @@ alias -g NE='2>/dev/null'
 alias -g NUL='&>/dev/null'
 alias -g EO='2>&1'
 
-# completion {{{1
+# completion
 setopt always_to_end
 setopt magic_equal_subst
 
@@ -169,8 +168,8 @@ zstyle ':completion:complete-file:*' completer _complete_file
 
 autoload -Uz compinit && compinit -u
 
-# zle {{{1
-# autoload {{{2
+# zle
+# autoload
 autoload -Uz edit-command-line
 zle -N edit-command-line
 
@@ -178,22 +177,11 @@ autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
 
-autoload -Uz select-bracketed
-zle -N select-bracketed
-
-autoload -Uz select-quoted
-zle -N select-quoted
-
-autoload -Uz surround
-zle -N add-surround surround
-zle -N change-surround surround
-zle -N delete-surround surround
-
-# zstyles {{{2
+# zstyles
 zstyle ':zle:*' word-chars '!#$%&()*+-.<>?@[\]^_{}~'
 zstyle ':zle:*' word-style standard
 
-# key bindings {{{2
+# key bindings
 bindkey -v
 
 if (( ${+functions[zle-repeating-dot]} )); then
@@ -250,23 +238,6 @@ bindkey -M vicmd '^X^U' undo
 bindkey -M vicmd '^X^X' _complete_help
 bindkey -M vicmd '^^' zle-cd-parents
 
-bindkey -M vicmd 'sa' add-surround
-bindkey -M vicmd 'sr' change-surround
-bindkey -M vicmd 'sd' delete-surround
-bindkey -M visual 'sa' add-surround
-
-() {
-    local m c
-    for m in visual viopp; do
-        for c in {a,i}${(s::)^:-'()[]{}<>bB'}; do
-            bindkey -M $m $c select-bracketed
-        done
-        for c in {a,i}{\',\",\`}; do
-            bindkey -M $m $c select-quoted
-        done
-    done
-}
-
 bindkey -M menuselect '^B' vi-backward-char
 bindkey -M menuselect '^F' vi-forward-char
 bindkey -M menuselect '^H' accept-and-hold
@@ -280,7 +251,7 @@ bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 
-# zle hooks {{{2
+# zle hooks
 zle-line-init() {
     local _status=${status}
 
@@ -308,7 +279,7 @@ zle-keymap-select() {
 }
 zle -N zle-keymap-select
 
-# chdir {{{1
+# chdir
 autoload -Uz chpwd_recent_dirs
 add-zsh-hook -Uz chpwd chpwd_recent_dirs
 
@@ -321,7 +292,7 @@ zstyle ':chpwd:*' recent-dirs-default yes
 zstyle ':chpwd:*' recent-dirs-file ${ZDOTDIR}/.recent-dirs
 zstyle ':chpwd:*' recent-dirs-pushd yes
 
-# history {{{1
+# history
 add-zsh-hook -Uz zshaddhistory ignore-history
 
 HISTFILE=${ZDOTDIR}/.zsh_history
@@ -336,10 +307,10 @@ setopt no_hist_reduce_blanks
 setopt hist_verify
 setopt share_history
 
-# prompt {{{1
+# prompt
 (( ENABLE_ICONS )) && prompt default || prompt simple
 
-# zrecompile {{{1
+# zrecompile
 () {
     local targets file
 
@@ -355,7 +326,7 @@ setopt share_history
     done
 }
 
-# gpg-agent {{{1
+# gpg-agent
 if (( ${+commands[gpgconf]} )); then
     unset SSH_AGENT_PID
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
@@ -367,7 +338,7 @@ if (( ${+commands[gpgconf]} )); then
     add-zsh-hook -Uz preexec _gpg-agent-updatestartuptty
 fi
 
-# dircolors {{{1
+# dircolors
 if (( ${+commands[dircolors]} )); then
     if [[ -f ~/.dircolors ]]; then
         eval "$(dircolors -b ~/.dircolors)"
@@ -378,7 +349,7 @@ if (( ${+commands[dircolors]} )); then
     fi
 fi
 
-# environment variables {{{1
+# environment variables
 export LANG=ja_JP.UTF-8
 export LC_TIME=en_US.UTF-8
 export LC_MESSAGES=en_US.UTF-8
@@ -394,4 +365,4 @@ export LESSHISTFILE="-"
 export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"
 
 export GOPATH=${HOME}/.cache/go
-export GOBIN=${HOME}/.bin
+export GOBIN=${HOME}/.go/bin

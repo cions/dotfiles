@@ -138,10 +138,10 @@ function vimrc#denite#on_denite_filter() abort
 endfunction
 
 function vimrc#denite#move_cursor(direction) abort
-  let l:winid = bufwinid(g:denite#_filter_parent)
+  let winid = bufwinid(g:denite#_filter_parent)
   if a:direction ==# 'up'
-    call win_execute(l:winid, 'normal! k')
+    call win_execute(winid, 'normal! k')
   else
-    call win_execute(l:winid, 'normal! j')
+    call win_execute(winid, 'normal! j')
   endif
 endfunction

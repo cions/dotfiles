@@ -42,18 +42,18 @@ fi
 
 usage() {
     cat >&2 <<'EOF'
-usage: powerprompt [-f FORMAT] [-nPLR] color:text...
+Usage: powerprompt [-f FORMAT] [-nPLR] color:text...
        powerprompt [-C] -l
 
-options:
- -f FORMAT              character sequence format for styling
-                        (available: ansi, zsh, bash tmux)
- -l                     list available colors and exit
- -n                     do not add spaces at both ends of the field
- -C                     do not colorize for -l
- -P                     do not use Powerline symbols as separators
- -L                     generate left-side prompt
- -R                     generate right-side prompt
+Options:
+  -f FORMAT     character sequence format for styling
+                (available: ansi, zsh, bash tmux)
+  -l            list available colors and exit
+  -n            do not add spaces at both ends of the field
+  -C            do not colorize for -l
+  -P            do not use Powerline symbols as separators
+  -L            generate left-side prompt
+  -R            generate right-side prompt
 EOF
     exit 1
 }
@@ -88,27 +88,27 @@ else
 fi
 
 case ${format} in
-    (ansi)
+    ansi)
         setaf() { print -nrP "%F{$1}" }
         setab() { print -nrP "%K{$1}" }
         reset() { print -nrP "%f%k" }
         ;;
-    (zsh)
+    zsh)
         setaf() { print -nrP "%%F{$1}" }
         setab() { print -nrP "%%K{$1}" }
         reset() { print -nrP "%%f%%k" }
         ;;
-    (bash)
+    bash)
         setaf() { print -nrP "\[%F{$1}\]" }
         setab() { print -nrP "\[%K{$1}\]" }
         reset() { print -nrP "\[%f%k\]" }
         ;;
-    (tmux)
+    tmux)
         setaf() { print -nrP "#[fg=colour$1]" }
         setab() { print -nrP "#[bg=colour$1]" }
         reset() { print -nrP "#[default]" }
         ;;
-    (*)
+    *)
         print -u2 "powerprompt: invalid -f: ${format}"
         exit 1
         ;;

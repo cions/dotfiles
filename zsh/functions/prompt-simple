@@ -6,8 +6,8 @@ _prompt_function() {
     PROMPT="${${_status:#0}:+"%F{red}(${_status}) "}%F{green}%n${SSH_CONNECTION+"%F{yellow}@%m"}%F{blue} %1~ %(!.#.$)%f "
 
     case ${KEYMAP} in
-        (viins|main) RPROMPT='%F{green}--INSERT--%f' ;;
-        (vicmd)      RPROMPT='%F{red}--NORMAL--%f' ;;
+        viins|main) RPROMPT='%F{green}--INSERT--%f' ;;
+        vicmd)      RPROMPT='%F{red}--NORMAL--%f' ;;
     esac
     RPROMPT2=${RPROMPT}
 

@@ -7,20 +7,20 @@ emulate -L zsh
 local tokens=( ${(z)argv[1]%$'\n'} )
 
 case ${tokens[1]} in
-    (bat|cat)
+    bat|cat)
         (( ${#tokens} == 2 )) && return 2
         ;;
-    (cd|l[Aatls]|llt|less|r[mr])
+    cd|l[Aatls]|llt|less|r[mr])
         return 1
         ;;
-    (man|run-help|vi|vim)
+    man|run-help|vi|vim)
         return 2
         ;;
 esac
 
-[[ ${tokens[-1]} == --help(|[-=]*) ]] && return 2
-[[ ${tokens[-1]} == "--version" ]] && return 2
-[[ ${tokens[2]} == "help" ]] && return 2
+(( ${(M)#tokens:#--help(|[-=]*)} )) && return 2
+(( ${(M)#tokens:#help} )) && return 2
+(( ${(M)#tokens:#--version} )) && return 2
 
 (( ${(M)#reswords:#${tokens[1]}} )) && return 0
 (( ${+aliases[${tokens[1]}]} )) && return 0

@@ -1,16 +1,16 @@
 #!/bin/zsh
 
 case ${compstate[context]} in
-    (brace_parameter)
+    brace_parameter)
         compset -P '*[-+=?]'
         ;;
-    (subscript)
+    subscript)
         compset -P '\(*\)'
         ;;
-    (command)
+    command)
         compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
         ;;
-    (value)
+    value)
         if compset -P '*[[:space:]]' || [[ ${PREFIX} == -* ]]; then
             compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
         else
