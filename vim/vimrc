@@ -157,9 +157,9 @@ if has('gui_running')
   set iminsert=0
   set imsearch=0
   if has('gui_gtk3')
-    set guifont=Monospace\ 12
+    set guifont=Monospace\ 18
   elseif has('gui_win32')
-    set guifont=MiG_Mono:h12:cSHIFTJIS:qDRAFT
+    set guifont=MiG_Mono:h18:cSHIFTJIS:qDRAFT
   endif
   if has('directx')
     set renderoptions=type:directx

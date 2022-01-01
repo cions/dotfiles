@@ -4,15 +4,15 @@
   "description": "Virtual environment for Vim",
   "dependencies": {
     "bash-language-server": "^2.0.0",
-    "dockerfile-language-server-nodejs": "0.7.2",
-    "eslint": "^8.2.0",
-    "prettier": "^2.4.1",
-    "stylelint": "^14.0.1",
-    "typescript-language-server": "^0.6.5",
+    "dockerfile-language-server-nodejs": "0.7.3",
+    "eslint": "^8.5.0",
+    "prettier": "^2.5.1",
+    "stylelint": "^14.2.0",
+    "typescript-language-server": "^0.8.1",
     "vim-language-server": "^2.2.5",
     "vscode-css-languageserver-bin": "^1.4.0",
     "vscode-html-languageserver-bin": "^1.4.0",
     "vscode-json-languageserver-bin": "^1.0.1",
-    "yaml-language-server": "^1.1.1"
+    "yaml-language-server": "^1.2.2"
   }
 }
