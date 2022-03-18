@@ -235,7 +235,8 @@ export PAGER="less"
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
 
-export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"
-
+export GOAMD64=v3
 export GOPATH="${HOME}/.cache/go"
 export GOBIN="${HOME}/.go/bin"
+
+export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"

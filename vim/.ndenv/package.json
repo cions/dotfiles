@@ -5,14 +5,14 @@
   "dependencies": {
     "bash-language-server": "^2.0.0",
     "dockerfile-language-server-nodejs": "0.8.0",
-    "eslint": "^8.9.0",
-    "prettier": "^2.5.1",
-    "stylelint": "^14.5.1",
-    "typescript-language-server": "^0.9.6",
-    "vim-language-server": "^2.2.5",
+    "eslint": "^8.11.0",
+    "prettier": "^2.6.0",
+    "stylelint": "^14.6.0",
+    "typescript-language-server": "^0.9.7",
+    "vim-language-server": "^2.2.6",
     "vscode-css-languageserver-bin": "^1.4.0",
     "vscode-html-languageserver-bin": "^1.4.0",
     "vscode-json-languageserver-bin": "^1.0.1",
-    "yaml-language-server": "^1.4.0"
+    "yaml-language-server": "^1.5.1"
   }
 }
