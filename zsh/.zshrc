@@ -65,8 +65,10 @@ rr() {
     local timestamp="$(date '+%s')"
     local target
     for target in ${argv}; do
-        [[ -e ${target} ]] || continue
-        if [[ "$(stat --file-system --format='%T' ${target})" == "tmpfs" ]]; then
+        if [[ ! -e ${target} && ! -L ${target} ]]; then
+            continue
+        fi
+        if [[ "$(stat --file-system --format='%T' ${target} 2>/dev/null)" == "tmpfs" ]]; then
             command rm -r -- ${target}
             continue
         fi

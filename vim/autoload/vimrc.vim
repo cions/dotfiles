@@ -212,7 +212,7 @@ function vimrc#update(thawed, ...) abort
     let pyopts = { 'cwd': g:pyenv, 'env': { 'VIRTUAL_ENV': g:pyenv } }
     if a:thawed && filereadable(g:pyenv .. '/requirements.txt')
       let p = vimrc#exec(['pip', 'install', '-U', 'pip'], pyopts)
-             \.then({-> vimrc#exec(['pip', 'list', '--local', '--not-required', '--format=json'], pyopts)})
+             \.then({-> vimrc#exec(['pip', 'list', '--local', '--format=json'], pyopts)})
              \.then({out -> map(json_decode(join(out, "\n")), {_,x -> x.name})})
              \.then({pkgs -> vimrc#exec(['pip', 'install', '-U'] + pkgs, pyopts)})
              \.then({-> vimrc#exec(['pip', 'freeze', '--local'], pyopts)})
