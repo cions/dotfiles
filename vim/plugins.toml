@@ -2,6 +2,13 @@
 repo = 'Shougo/dein.vim'
 
 [[plugins]]
+repo = 'tpope/vim-repeat'
+
+[[plugins]]
+repo = 'vim-denops/denops.vim'
+if = 'executable("deno")'
+
+[[plugins]]
 repo = 'altercation/vim-colors-solarized'
 hook_source = '''
 let g:solarized_termcolors = &t_Co
@@ -16,11 +23,13 @@ repo = 'itchyny/lightline.vim'
 hook_source = 'call vimrc#lightline#on_source()'
 
 [[plugins]]
-repo = 'tpope/vim-repeat'
-
-[[plugins]]
 repo = 'cohama/lexima.vim'
 hook_post_source = 'call vimrc#lexima#on_post_source()'
+
+[[plugins]]
+repo = 'machakann/vim-sandwich'
+hook_source = 'call vimrc#sandwich#on_source()'
+hook_post_source = 'call vimrc#sandwich#on_post_source()'
 
 [[plugins]]
 repo = 'kana/vim-textobj-user'
@@ -48,11 +57,6 @@ repo = 'kana/vim-operator-replace'
 
 [[plugins]]
 repo = 'tyru/operator-reverse.vim'
-
-[[plugins]]
-repo = 'machakann/vim-sandwich'
-hook_source = 'call vimrc#sandwich#on_source()'
-hook_post_source = 'call vimrc#sandwich#on_post_source()'
 
 [[plugins]]
 repo = 'machakann/vim-swap'
@@ -85,10 +89,24 @@ map gA <Plug>(EasyAlign)
 '''
 
 [[plugins]]
-repo = 'tpope/vim-sleuth'
+repo = 'tyru/open-browser.vim'
+hook_source = '''
+let g:openbrowser_default_search = 'duckduckgo'
+
+map gx <Plug>(openbrowser-smart-search)
+'''
 
 [[plugins]]
-repo = 'Shougo/context_filetype.vim'
+repo = 'lambdalisue/suda.vim'
+hook_source = '''
+let g:suda#prefix = 'sudo:'
+'''
+
+# [[plugins]]
+# repo = 'tpope/vim-sleuth'
+
+# [[plugins]]
+# repo = 'Shougo/context_filetype.vim'
 
 [[plugins]]
 repo = 'roxma/nvim-yarp'
@@ -98,8 +116,8 @@ if = '!has("nvim")'
 repo = 'roxma/vim-hug-neovim-rpc'
 if = '!has("nvim")'
 
-[[plugins]]
-repo = 'prabirshrestha/async.vim'
+# [[plugins]]
+# repo = 'prabirshrestha/async.vim'
 
 # [[plugins]]
 # repo = 'Shougo/deoplete.nvim'
@@ -109,36 +127,38 @@ repo = 'prabirshrestha/async.vim'
 # [[plugins]]
 # repo = 'Shougo/neco-syntax'
 
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete.vim'
-hook_source = '''
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+# [[plugins]]
+# repo = 'prabirshrestha/asyncomplete.vim'
+# hook_source = '''
+# inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+# inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+# inoremap <expr> <C-e> asyncomplete#cancel_popup()
+# inoremap <expr> <C-y> asyncomplete#close_popup()
+# 
+# let g:asyncomplete_preprocessor = [function('asyncomplete#preprocessor#preprocess')]
+# '''
 
-let g:asyncomplete_preprocessor = [function('asyncomplete#preprocessor#preprocess')]
-'''
+# [[plugins]]
+# repo = 'prabirshrestha/asyncomplete-file.vim'
+# hook_source = '''
+# autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
+#   \   'name': 'file',
+#   \   'whitelist': ['*'],
+#   \   'priority': 5,
+#   \   'completor': function('asyncomplete#sources#file#completor')
+#   \ }))
+# '''
 
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-file.vim'
-hook_source = '''
-autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
-  \   'name': 'file',
-  \   'whitelist': ['*'],
-  \   'priority': 5,
-  \   'completor': function('asyncomplete#sources#file#completor')
-  \ }))
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-neosnippet.vim'
-hook_source = '''
-autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#neosnippet#get_source_options({
-  \   'name': 'neosnippet',
-  \   'whitelist': ['*'],
-  \   'priority': 8,
-  \   'completor': function('asyncomplete#sources#neosnippet#completor')
-  \ }))
-'''
+# [[plugins]]
+# repo = 'prabirshrestha/asyncomplete-neosnippet.vim'
+# hook_source = '''
+# autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#neosnippet#get_source_options({
+#   \   'name': 'neosnippet',
+#   \   'whitelist': ['*'],
+#   \   'priority': 8,
+#   \   'completor': function('asyncomplete#sources#neosnippet#completor')
+#   \ }))
+# '''
 
 # [[plugins]]
 # repo = 'machakann/asyncomplete-ezfilter.vim'
@@ -150,17 +170,17 @@ autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#s
 #   \ {ctx, items -> ctx.osa_filter(items, 1)}
 # '''
 
-[[plugins]]
-repo = 'Shougo/neosnippet.vim'
-hook_source = '''
-let g:neosnippet#snippets_directory = g:vimfiles .. '/snippets'
-let g:neosnippet#data_directory = g:cachedir .. '/neosnippet'
-let g:neosnippet#disable_runtime_snippets = { '_': 1 }
-
-imap <C-k> <Plug>(neosnippet_expand_or_jump)
-smap <C-k> <Plug>(neosnippet_expand_or_jump)
-xmap <C-k> <Plug>(neosnippet_expand_target)
-'''
+# [[plugins]]
+# repo = 'Shougo/neosnippet.vim'
+# hook_source = '''
+# let g:neosnippet#snippets_directory = g:vimfiles .. '/snippets'
+# let g:neosnippet#data_directory = g:cachedir .. '/neosnippet'
+# let g:neosnippet#disable_runtime_snippets = { '_': 1 }
+# 
+# imap <C-k> <Plug>(neosnippet_expand_or_jump)
+# smap <C-k> <Plug>(neosnippet_expand_or_jump)
+# xmap <C-k> <Plug>(neosnippet_expand_target)
+# '''
 
 [[plugins]]
 repo = 'Shougo/denite.nvim'

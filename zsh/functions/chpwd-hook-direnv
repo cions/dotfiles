@@ -3,33 +3,31 @@
 emulate -L zsh
 setopt extended_glob
 
-typeset -ag _direnv _direnv_path
-local env
+typeset -ag direnv_variables direnv_paths
 
-# initialize {{{1
-for env in ${_direnv}; do
-    unset ${env}
+local var
+for var in ${direnv_variables}; do
+    unset ${var}
 done
-path=( ${path:|_direnv_path} )
+path=( ${path:|direnv_paths} )
 
-_direnv=()
-_direnv_path=()
+direnv_variables=()
+direnv_paths=()
 
-# npm {{{1
+# npm
 set -- (../)#node_modules/.bin(N-/od:a)
 if (( $# > 0 )); then
-    _direnv_path+=( $1 )
+    direnv_paths+=( $1 )
 fi
 
-# python {{{1
+# python
 set -- (../)#pyvenv.cfg(N-.od:a:h)
 if (( $# > 0 )); then
     export VIRTUAL_ENV=$1
-    _direnv+=( VIRTUAL_ENV )
-    _direnv_path+=( $1/bin(N-/) )
+    direnv_variables+=( VIRTUAL_ENV )
+    direnv_paths+=( $1/bin(N-/) )
 fi
 
-# finalize {{{1
-path=( ${_direnv_path} ${path} )
+path=( ${direnv_paths} ${path} )
 hash -r
 return 0

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # preamble
-DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-$0}")")"
+DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-"$0"}")")"
 
 exists() {
     command -v -- "$1" >/dev/null 2>&1
@@ -15,13 +15,13 @@ shopt -s globstar
 shopt -s lithist
 shopt -s nullglob
 
-HISTCONTROL=ignoreboth
+HISTCONTROL="ignoreboth"
 HISTSIZE=10000
 unset HISTFILE
 
 # commands
 args() {
-    printf '%s\n' "${@@Q}"
+    printf "%s\n" "${@@Q}"
 }
 
 mkcd() {
@@ -30,25 +30,24 @@ mkcd() {
 }
 
 rr() {
-    local trashdir="${HOME}/.trash"
-    if [[ -w "/var/trash" ]]; then
+    local trashdir target
+    if [[ -w /var/trash ]]; then
         trashdir="/var/trash"
     else
+        trashdir="${HOME}/.trash"
         mkdir -p -- "${trashdir}" || return 1
     fi
-    local target timestamp
-    timestamp="$(date '+%s')"
     for target in "$@"; do
-        [[ -e "${target}" ]] || continue
-        if [[ "$(stat --file-system --format='%T' "${target}")" == "tmpfs" ]]; then
+        [[ -e "${target}" || -L "${target}" ]] || continue
+        if [[ "$(stat -f -c "%T" -- "${target}")" == "tmpfs" ]]; then
             command rm -r -- "${target}"
             continue
         fi
-        if [[ "$(stat --format='%D' "${target}")" != "$(stat --format='%D' "${trashdir}")" ]]; then
+        if [[ "$(stat -c "%D" -- "${target}")" != "$(stat -c "%D" -- "${trashdir}")" ]]; then
             echo "bash: error: ${target} is not on the same filesystem as ${trashdir}. skipped." >&2
             continue
         fi
-        mv -n -- "${target}" "${trashdir}/${timestamp}-$(stat --format='%i' "${target}")-$(basename "${target}")"
+        mv -n -- "${target}" "${trashdir}/$(date "+%s")-$(stat -c "%i" -- "${target}")-$(basename -- "${target}")"
     done
 }
 
@@ -86,8 +85,15 @@ else
     alias lA='ls -AF'
     alias ll='ls -AlF'
 fi
-alias rm='echo "bash: error: rm command is disabled. use rr or \\\\rm instead." >&2; false'
-alias grep='grep -E --color=auto'
+if exists dircolors; then
+    alias grep='grep -E --color=auto'
+else
+    alias grep='grep -E'
+fi
+if exists bat; then
+    alias cat='bat'
+fi
+alias rm='echo "bash: error: rm command is disabled. use \`rr\` or \`command rm\` instead." >&2; false'
 alias rga="rg --hidden --glob='!.git/'"
 alias reload='exec bash'
 alias dot='git -C "${DOTFILES}"'
@@ -98,104 +104,67 @@ bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
 # PROMPT_COMMAND
-_PROMPT_COMMANDS=()
-_prompt_command() {
-    local status=$? func
-    for func in "${_PROMPT_COMMANDS[@]}"; do
-        ${func} ${status}
+PROMPT_COMMAND_HOOKS=()
+prompt_command() {
+    local status=$? hook
+    for hook in "${PROMPT_COMMAND_HOOKS[@]}"; do
+        ${hook} ${status}
     done
 }
-PROMPT_COMMAND=_prompt_command
+PROMPT_COMMAND=prompt_command
 
 # prompt
-_prompt_width() {
-    echo -n "${PS1@P}" | sed $'s/\x01[^\x02]*\x02//g' | wc -L
-}
+if [[ -v SSH_CONNECTION ]]; then
+    PS1='\[\e[0m\e[32m\]\u\[\e[33m\]@\H \[\e[34m\]\W \$\[\e[0m\]'$'\u00A0'
+else
+    PS1='\[\e[0m\e[32m\]\u \[\e[34m\]\W \$\[\e[0m\]'$'\u00A0'
+fi
 
-_prompt_default() {
-    local segments=()
-    local status=$1
-    local jobnum
-
-    if (( status != 0 )); then
-        segments+=( "red:${status}" )
-    fi
-    jobnum="$(jobs -p | wc -l)"
-    if (( jobnum != 0 )); then
-        segments+=( "orange:${jobnum}" )
-    fi
-    segments+=( "magenta:\\s" )
-    if (( EUID == 0 )); then
-        segments+=( "magenta:\\u" )
-    else
-        segments+=( "green:\\u" )
-    fi
-    if [[ -v SSH_CONNECTION ]]; then
-        segments+=( "yellow:\\H" )
-    fi
-    segments+=( "gray3:\\W" )
-    PS1="$(powerprompt -f bash -L -- "${segments[@]}") "
-
-    local width padded
-    width="$(_prompt_width)"
-    printf -v padded "%*s" $((width-4)) "..."
-    PS2="$(powerprompt -f bash -L -- "gray3:${padded}") "
-}
-
-_prompt_simple() {
-    local RESET
-    local -A FG
-    local status=$1
-
-    RESET="\e[0m"
-    FG=(
-        [black]="\e[30m"
-        [red]="\e[31m"
-        [green]="\e[32m"
-        [yellow]="\e[33m"
-        [blue]="\e[34m"
-        [magenta]="\e[35m"
-        [cyan]="\e[36m"
-        [white]="\e[37m"
+update-prompt() {
+    local status=$1 njobs width
+    local -A colors=(
+        [default]='\[\e[0m\]'
+        [red]='\[\e[38;5;235;48;5;203m\]'
+        [orange]='\[\e[38;5;235;48;5;216m\]'
+        [yellow]='\[\e[38;5;235;48;5;227m\]'
+        [green]='\[\e[38;5;235;48;5;156m\]'
+        [cyan]='\[\e[38;5;235;48;5;117m\]'
+        [blue]='\[\e[38;5;235;48;5;111m\]'
+        [purple]='\[\e[38;5;235;48;5;170m\]'
+        [magenta]='\[\e[38;5;235;48;5;207m\]'
+        [gray]='\[\e[38;5;255;48;5;245m\]'
     )
 
-    PS1="\\[${RESET}\\]"
+    PS1="${colors[default]}"
+
     if (( status != 0 )); then
-        PS1+="\\[${FG[red]}\\](${status}) "
+        PS1+="${colors[red]} ${status} "
     fi
-    PS1+="\\[${FG[green]}\\]\\u"
+
+    njobs="$(jobs -p | wc -l)"
+    if (( njobs != 0 )); then
+        PS1+="${colors[orange]} ${njobs} "
+    fi
+
+    PS1+="${colors[magenta]}"' \s '
+
+    if (( EUID == 0 )); then
+        PS1+=$'\u2502 \u '
+    else
+        PS1+="${colors[green]}"' \u '
+    fi
+
     if [[ -v SSH_CONNECTION ]]; then
-        PS1+="\\[${FG[yellow]}\\]@\\H"
-    fi
-    PS1+="\\[${FG[blue]}\\] \\W \\$\\[${RESET}\\] "
-
-    local width padded
-    width="$(_prompt_width)"
-    printf -v padded "%*s" $((width-2)) "..."
-    PS2="\\[${RESET}${FG[blue]}\\]${padded}>\\[${RESET}\\] "
-}
-
-prompt() {
-    local style="${1:-default}"
-
-    if [[ "${style}" == default ]]; then
-        exists powerprompt || style=simple
-        exists /bin/zsh || style=simple
+        PS1+="${colors[yellow]}"' \H '
     fi
 
-    case "${style}" in
-        default)
-            _PROMPT_COMMANDS=( "${_PROMPT_COMMANDS[@]/_prompt_*/_prompt_default}" )
-            ;;
-        *)
-            _PROMPT_COMMANDS=( "${_PROMPT_COMMANDS[@]/_prompt_*/_prompt_simple}" )
-            ;;
-    esac
-}
+    PS1+="${colors[gray]}"' \W '"${colors[default]}"$'\u00A0'
 
-_PROMPT_COMMANDS+=( _prompt_simple )
-if (( ENABLE_ICONS )); then
-    prompt default
+    width="$(echo -n "${PS1@P}" | sed $'s/\x01[^\x02]*\x02//g' | wc -L)"
+    printf -v PS2 "${colors[default]}${colors[gray]} %*s ${colors[default]} " $((width-3)) "..."
+}
+if [[ "$(tput colors 2>/dev/null)" -ge 256 ]]; then
+    PROMPT_COMMAND_HOOKS+=( update-prompt )
 fi
 
 # gpg-agent
@@ -205,10 +174,10 @@ if exists gpgconf; then
     GPG_TTY="$(tty)"
     export SSH_AUTH_SOCK GPG_TTY
 
-    _gpg_agent_updatestartuptty() {
+    gpg-agent-updatestartuptty() {
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
-    _PROMPT_COMMANDS+=( _gpg_agent_updatestartuptty )
+    PROMPT_COMMAND_HOOKS+=( gpg-agent-updatestartuptty )
 fi
 
 # dircolors
@@ -223,20 +192,11 @@ if exists dircolors; then
 fi
 
 # environment variables
-export LANG="ja_JP.UTF-8"
-export LC_TIME="en_US.UTF-8"
-export LC_MESSAGES="en_US.UTF-8"
-export LANGUAGE="en_US"
-
+export LANG="en_US.UTF-8"
 export EDITOR="vim"
 export VISUAL="vim"
 export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
-
-export GOAMD64=v3
-export GOPATH="${HOME}/.cache/go"
-export GOBIN="${HOME}/.go/bin"
-
 export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"

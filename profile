@@ -2,32 +2,39 @@
 
 umask 022
 
-for i in /etc/profile.env /etc/profile.d/*.sh; do
-    # shellcheck disable=SC1090
-    [ -f "$i" ] && . "$i"
+for file in /etc/profile.env /etc/profile.d/*.sh; do
+    [ -f "${file}" ] && . "${file}"
 done
-unset ROOTPATH i
 
 PATH="${HOME}/.bin:${HOME}/.go/bin:${HOME}/.cargo/bin:${HOME}/.deno/bin:${PATH}"
-if [ "$(id -u)" -ne 0 ]; then
-    PATH="$(printf '%s' "${PATH}" | awk 'BEGIN { RS=":"; ORS=":" } !/\/sbin$/')"
-    PATH="${PATH%:}"
-fi
-export PATH
+OLDIFS="${IFS}"
+IFS=":"
+NEWPATH=""
+for path in ${PATH}; do
+    if [ ! -d "${path}" ]; then
+        continue
+    fi
+    case "${path}" in
+        */sbin)
+            if [ "$(id -u)" != 0 ]; then
+                continue
+            fi
+            ;;
+    esac
+    case ":${NEWPATH}:" in
+        *":${path}:"*)
+            continue
+            ;;
+    esac
+    NEWPATH="${NEWPATH}${NEWPATH:+:}${path}"
+done
+export PATH="${NEWPATH}"
+IFS="${OLDIFS}"
 
-case "${PREFIX}" in
-    */com.termux/*) export TERMUX=1 ;;
-esac
+unset GCC_SPECS ROOTPATH NEWPATH OLDIFS file path
 
-if [ -z "${ENABLE_ICONS+set}" ]; then
-    ENABLE_ICONS=1
-    [ "${TERM}" = "linux" ] && ENABLE_ICONS=0
-    [ -n "${TERMUX+set}" ] && ENABLE_ICONS=0
-    locale -m 2>/dev/null | grep -qxF UTF-8-MIG || ENABLE_ICONS=0
-    export ENABLE_ICONS
-fi
-
-# shellcheck disable=SC1090
-case "${BASH+set}:$-" in
+case "${BASH_VERSION+set}:$-" in
     set:*i*) [ -f ~/.bashrc ] && . ~/.bashrc ;;
 esac
+
+#shellcheck disable=SC1090

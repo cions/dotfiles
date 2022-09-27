@@ -10,10 +10,10 @@ case ${tokens[1]} in
     bat|cat)
         (( ${#tokens} == 2 )) && return 2
         ;;
-    cd|l[Aatls]|llt|less|r[mr])
+    cd|l[Aatls]|llt|less|r[mr]|reload)
         return 1
         ;;
-    man|run-help|vi|vim)
+    man|run-help|vi|vim|jless)
         return 2
         ;;
 esac

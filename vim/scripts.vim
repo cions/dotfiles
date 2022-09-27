@@ -1,4 +1,4 @@
-" scripts.vim
+scriptversion 4
 
 if did_filetype()
   finish

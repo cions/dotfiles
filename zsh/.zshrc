@@ -3,7 +3,9 @@
 # preamble
 autoload -Uz add-zsh-hook
 zmodload zsh/complist
+zmodload zsh/datetime
 zmodload zsh/mapfile
+zmodload zsh/parameter
 zmodload zsh/terminfo
 
 DOTFILES=${${(%):-%x}:A:h:h}
@@ -16,7 +18,7 @@ setopt no_flow_control
 setopt hist_subst_pattern
 setopt ignore_eof
 setopt rc_quotes
-setopt re_match_pcre
+setopt rematch_pcre
 setopt rm_star_silent
 
 # plugins
@@ -56,27 +58,24 @@ mkcd() {
 }
 
 rr() {
-    local trashdir=${HOME}/.trash
+    local trashdir target
     if [[ -w /var/trash ]]; then
         trashdir=/var/trash
     else
+        trashdir=${HOME}/.trash
         mkdir -p -- ${trashdir} || return 1
     fi
-    local timestamp="$(date '+%s')"
-    local target
     for target in ${argv}; do
-        if [[ ! -e ${target} && ! -L ${target} ]]; then
-            continue
-        fi
-        if [[ "$(stat --file-system --format='%T' ${target} 2>/dev/null)" == "tmpfs" ]]; then
+        [[ -e ${target} || -L ${target} ]] || continue
+        if [[ "$(stat -f -c "%T" ${target} 2>/dev/null)" == "tmpfs" ]]; then
             command rm -r -- ${target}
             continue
         fi
-        if [[ "$(stat --format='%D' ${target})" != "$(stat --format='%D' ${trashdir})" ]]; then
+        if [[ "$(stat -c "%D" ${target})" != "$(stat -c "%D" ${trashdir})" ]]; then
             print -u2 "zsh: error: ${target} is not on the same filesystem as ${trashdir}. skipped."
             continue
         fi
-        mv -n -- ${target} "${trashdir}/${timestamp}-$(stat --format='%i' ${target})-${target:t}"
+        mv -n -- ${target} "${trashdir}/${EPOCHSECONDS}-$(stat -c "%i" ${target})-${target:t}"
     done
 }
 
@@ -113,9 +112,15 @@ else
     alias lA='ls -AF'
     alias ll='ls -AlF'
 fi
-(( ${+commands[bat]} )) && alias cat='bat'
-alias rm='print -u2 "zsh: error: rm command is disabled. use rr or \\\\rm instead."; false'
-alias grep='grep -E --color=auto'
+if (( ${+commands[dircolors]} )); then
+    alias grep='grep -E --color=auto'
+else
+    alias grep='grep -E'
+fi
+if (( ${+commands[bat]} )); then
+    alias cat='bat'
+fi
+alias rm='print -u2 "zsh: error: rm command is disabled. use \`rr\` or \`command rm \` instead."; false'
 alias rga="rg --hidden --glob='!.git/'"
 alias p='print -rC1 --'
 alias reload='exec zsh'
@@ -125,7 +130,6 @@ alias dot='git -C ${DOTFILES}'
 alias gdiff='git diff --no-index'
 
 alias -g G='| grep -E'
-alias -g GV='| grep -E -v'
 alias -g L='| less'
 alias -g H='| head -n $((LINES-2))'
 alias -g T='| tail -n $((LINES-2))'
@@ -146,7 +150,6 @@ else
     zstyle ':completion:*' completer _expand _complete
 fi
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' list-prompt '%F{black}%K{white}%l %p%f%k'
 zstyle ':completion:*' matcher-list '' '+m:{a-z}={A-Z}' '+m:{A-Z}={a-z}'
 zstyle ':completion:*' menu select
@@ -171,7 +174,6 @@ zstyle ':completion:complete-file:*' completer _complete_file
 autoload -Uz compinit && compinit -u
 
 # zle
-# autoload
 autoload -Uz edit-command-line
 zle -N edit-command-line
 
@@ -179,85 +181,79 @@ autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
 
-# zstyles
 zstyle ':zle:*' word-chars '!#$%&()*+-.<>?@[\]^_{}~'
 zstyle ':zle:*' word-style standard
 
-# key bindings
-bindkey -v
-
+bindkey -N main
+bindkey -R -M main "^@"-"\M-^?" self-insert
+bindkey -M main "^@" zle-toggle-leading-space
+bindkey -M main "^A" beginning-of-line
+bindkey -M main "^B" backward-char
+bindkey -M main "^D" list-choices
+bindkey -M main "^E" end-of-line
+bindkey -M main "^F" forward-char
+bindkey -M main "^G" zle-cd-repository
+bindkey -M main "^H" backward-delete-char
+bindkey -M main "^I" menu-complete
+bindkey -M main "^J" accept-line
+bindkey -M main "^K" kill-line
+bindkey -M main "^L" clear-screen
+bindkey -M main "^M" accept-line
+bindkey -M main "^N" history-beginning-search-forward-end
+bindkey -M main "^O" zle-cd-recent-dirs
+bindkey -M main "^P" history-beginning-search-backward-end
+bindkey -M main "^Q" push-line-or-edit
+bindkey -M main "^R" zle-insert-history
+bindkey -M main "^U" kill-whole-line
+bindkey -M main "^V" quoted-insert
+bindkey -M main "^W" zle-backward-kill-word
+bindkey -M main "^X^B" vi-match-bracket
+bindkey -M main "^X^E" edit-command-line
+bindkey -M main "^X^F" complete-file
+bindkey -M main "^X^H" run-help
+bindkey -M main "^X^R" redo
+bindkey -M main "^X^U" undo
+bindkey -M main "^X^W" expand
+bindkey -M main "^X^X" _complete_help
+bindkey -M main "^[." insert-last-word
+bindkey -M main "^[[200~" bracketed-paste
+bindkey -M main "^[[A" up-line-or-history
+bindkey -M main "^[[B" down-line-or-history
+bindkey -M main "^[[C" forward-char
+bindkey -M main "^[[D" backward-char
+bindkey -M main "^[b" backward-word
+bindkey -M main "^[d" kill-word
+bindkey -M main "^[f" forward-word
+bindkey -M main '^^' zle-cd-parents
+bindkey -M main "^?" backward-delete-char
 if (( ${+functions[zle-repeating-dot]} )); then
-    bindkey -M viins '.' zle-repeating-dot
+    bindkey -M main "." zle-repeating-dot
 fi
-bindkey -M viins '^A' beginning-of-line
-bindkey -M viins '^B' backward-char
-bindkey -M viins '^D' list-choices
-bindkey -M viins '^E' end-of-line
-bindkey -M viins '^F' forward-char
-bindkey -M viins '^G' zle-cd-repository
-bindkey -M viins '^H' vi-backward-delete-char
-bindkey -M viins '^I' menu-complete
-bindkey -M viins '^J' accept-line
-bindkey -M viins '^K' kill-line
-bindkey -M viins '^L' clear-screen
-bindkey -M viins '^M' accept-line
-bindkey -M viins '^N' history-beginning-search-forward-end
-bindkey -M viins '^O' zle-cd-recent-dirs
-bindkey -M viins '^P' history-beginning-search-backward-end
-bindkey -M viins '^Q' push-line-or-edit
-bindkey -M viins '^R' zle-insert-history
-bindkey -M viins '^S' send-break
-# bindkey -M viins '^T' self-insert
-bindkey -M viins '^U' kill-whole-line
-bindkey -M viins '^V' vi-quoted-insert
-bindkey -M viins '^W' zle-backward-kill-word
-bindkey -M viins '^X^E' edit-command-line
-bindkey -M viins '^X^F' complete-file
-bindkey -M viins '^X^H' run-help
-bindkey -M viins '^X^R' redo
-bindkey -M viins '^X^U' undo
-bindkey -M viins '^X^W' expand
-bindkey -M viins '^X^X' _complete_help
-# bindkey -M viins '^Y' self-insert
-bindkey -M viins '^[.' insert-last-word
-bindkey -M viins '^^' zle-cd-parents
 
-bindkey -M vicmd '^A' beginning-of-line
-bindkey -M vicmd '^D' list-choices
-bindkey -M vicmd '^E' end-of-line
-bindkey -M vicmd '^G' zle-cd-repository
-bindkey -M vicmd '^J' accept-line
-bindkey -M vicmd '^L' clear-screen
-bindkey -M vicmd '^M' accept-line
-bindkey -M vicmd '^N' history-beginning-search-forward-end
-bindkey -M vicmd '^O' zle-cd-recent-dirs
-bindkey -M vicmd '^P' history-beginning-search-backward-end
-bindkey -M vicmd '^Q' push-line-or-edit
-bindkey -M vicmd '^X^E' edit-command-line
-bindkey -M vicmd '^X^H' run-help
-bindkey -M vicmd '^X^R' redo
-bindkey -M vicmd '^X^U' undo
-bindkey -M vicmd '^X^X' _complete_help
-bindkey -M vicmd '^^' zle-cd-parents
+bindkey -M menuselect "^B" backward-char
+bindkey -M menuselect "^F" forward-char
+bindkey -M menuselect "^H" accept-and-hold
+bindkey -M menuselect "^I" complete-word
+bindkey -M menuselect "^J" accept-line
+bindkey -M menuselect "^K" accept-and-infer-next-history
+bindkey -M menuselect "^M" accept-line
+bindkey -M menuselect "^N" menu-complete
+bindkey -M menuselect "^P" reverse-menu-complete
+bindkey -M menuselect "^R" history-incremental-search-forward
+bindkey -M menuselect "^[[A" up-line-or-history
+bindkey -M menuselect "^[[B" down-line-or-history
+bindkey -M menuselect "^[[C" forward-char
+bindkey -M menuselect "^[[D" backward-char
+bindkey -M menuselect "^[[Z" reverse-menu-complete
+bindkey -M menuselect "h" backward-char
+bindkey -M menuselect "j" down-line-or-history
+bindkey -M menuselect "k" up-line-or-history
+bindkey -M menuselect "l" forward-char
 
-bindkey -M menuselect '^B' vi-backward-char
-bindkey -M menuselect '^F' vi-forward-char
-bindkey -M menuselect '^H' accept-and-hold
-bindkey -M menuselect '^K' accept-and-infer-next-history
-bindkey -M menuselect '^N' menu-complete
-bindkey -M menuselect '^P' reverse-menu-complete
-bindkey -M menuselect '^R' history-incremental-search-forward
-bindkey -M menuselect '^[[Z' reverse-menu-complete
-bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'j' vi-down-line-or-history
-bindkey -M menuselect 'k' vi-up-line-or-history
-bindkey -M menuselect 'l' vi-forward-char
-
-# zle hooks
 zle-line-init() {
-    local _status=${status}
-
-    if [[ ${CONTEXT} == start && -z ${BUFFER} && -n ${ZLE_LINE_ABORTED}
+    if [[ ${CONTEXT} == start
+            && -z ${BUFFER}
+            && -n ${ZLE_LINE_ABORTED}
             && ${ZLE_LINE_ABORTED} != ${history[$((HISTCMD-1))]} ]]; then
         BUFFER=${ZLE_LINE_ABORTED}
         CURSOR=${#BUFFER}
@@ -266,8 +262,6 @@ zle-line-init() {
         CURSOR=0
         unset ZLE_LINE_ABORTED
     fi
-
-    ${_PROMPT_FUNCTION:-:} ${_status}
 }
 zle -N zle-line-init
 
@@ -275,11 +269,6 @@ zle-line-finish() {
     ZLE_LINE_ABORTED="${PREBUFFER}${BUFFER}"
 }
 zle -N zle-line-finish
-
-zle-keymap-select() {
-    ${_PROMPT_FUNCTION:-:} ${status}
-}
-zle -N zle-keymap-select
 
 # chdir
 autoload -Uz chpwd_recent_dirs
@@ -310,7 +299,87 @@ setopt hist_verify
 setopt share_history
 
 # prompt
-(( ENABLE_ICONS )) && prompt default || prompt simple
+if [[ -v SSH_CONNECTION ]]; then
+    psvar[1]="${(%):-%m}"
+fi
+if (( terminfo[colors] >= 256 )); then
+    PROMPT="%b%F{235}%(?::%K{203} %? )%1(j:%K{216} %j :)%(!:%K{207}:%K{156}) %n %1(V:%K{227} %1v :)%F{255}%K{245} %1~ %f%k%b"$'\u00A0'
+    PLAINPROMPT="%(?:: %? )%1(j: %j :) %n %1(V: %1v :) %1~  "
+    PROMPT2="%b%F{255}%K{245} %1_ %f%k%b "
+
+    update-prompt2() {
+        local expanded="${(%)PLAINPROMPT}"
+        local width="${#expanded}"
+        PROMPT2="%F{255}%K{245} %$((width-3))<<${(l:width:)}%1_%<< %f%k "
+    }
+    add-zsh-hook -Uz precmd update-prompt2
+else
+    PROMPT="%b%(?::%F{red}(%?%) )%(!:%F{magenta}:%F{green})%n%1(V:%F{yellow}@%1v:)%F{blue} %1~ %(!:#:$)%f%k%b"$'\u00A0'
+    PROMPT2="%b%F{blue}%1_>%f%k%b "
+fi
+
+update-rprompt() {
+    local workdir=${PWD}
+    [[ ${workdir} == ${HOME} ]] && workdir=${DOTFILES}
+    RPROMPT=""
+    async_job rprompt_worker rprompt-async ${workdir} 2>/dev/null || {
+        async_start_worker rprompt_worker -u
+        async_register_callback rprompt_worker rprompt-callback
+        async_job rprompt_worker rprompt-async ${workdir}
+    }
+}
+
+rprompt-async() {
+    local workdir=${argv[1]}
+
+    cd -q ${workdir} 2>/dev/null || return 1
+    git-info || return 1
+
+    if (( gitstate[head_detached] )); then
+        print -n "%F{235}%K{227} ${gitstate[head_name]} "
+    else
+        print -n "%F{235}%K{156} ${gitstate[head_name]} "
+    fi
+
+    if [[ -n ${gitstate[state]} ]]; then
+        print -n "%K{216} ${gitstate[state]}"
+        if (( gitstate[total] > 1 )); then
+            print -n " (${gitstate[step]}/${gitstate[total]})"
+        fi
+        if [[ -n ${gitstate[target_name]} ]]; then
+            print -n " \u2502 ${gitstate[target_name]}"
+        fi
+    fi
+
+    local gitstatus=()
+    (( gitstate[ahead]       )) && gitstatus+=( "⬆${gitstate[ahead]}" )
+    (( gitstate[behind]      )) && gitstatus+=( "⬇${gitstate[behind]}" )
+    (( gitstate[unmerged]    )) && gitstatus+=( "⚠${gitstate[unmerged]}" )
+    (( gitstate[staged]      )) && gitstatus+=( "●${gitstate[staged]}" )
+    (( gitstate[wt_modified] )) && gitstatus+=( "⊕${gitstate[wt_modified]}" )
+    (( gitstate[wt_deleted]  )) && gitstatus+=( "⊖${gitstate[wt_deleted]}" )
+    (( gitstate[untracked]   )) && gitstatus+=( "＋${gitstate[untracked]}" )
+    (( gitstate[stash]       )) && gitstatus+=( "➡${gitstate[stash]}" )
+    if (( ${#gitstatus} > 0 )); then
+        print -n "%K{227} ${(j: :)gitstatus} "
+    fi
+
+    return 0
+}
+
+rprompt-callback() {
+    local returncode=${argv[2]}
+    local stdout=${argv[3]}
+    (( returncode != 0 )) && return ${returncode}
+    RPROMPT=${stdout}
+    zle reset-prompt
+}
+
+if (( terminfo[colors] >= 256 && ${+functions[async_start_worker]} )); then
+    async_start_worker rprompt_worker -u
+    async_register_callback rprompt_worker rprompt-callback
+    add-zsh-hook -Uz precmd update-rprompt
+fi
 
 # zrecompile
 () {
@@ -334,10 +403,10 @@ if (( ${+commands[gpgconf]} )); then
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
     export GPG_TTY=${TTY}
 
-    _gpg-agent-updatestartuptty() {
+    gpg-agent-updatestartuptty() {
         ( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
     }
-    add-zsh-hook -Uz preexec _gpg-agent-updatestartuptty
+    add-zsh-hook -Uz preexec gpg-agent-updatestartuptty
 fi
 
 # dircolors
@@ -349,23 +418,15 @@ if (( ${+commands[dircolors]} )); then
     else
         eval "$(dircolors -b)"
     fi
+    zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 fi
 
 # environment variables
-export LANG=ja_JP.UTF-8
-export LC_TIME=en_US.UTF-8
-export LC_MESSAGES=en_US.UTF-8
-export LANGUAGE=en_US
-
-export EDITOR=vim
-export VISUAL=vim
-export PAGER=less
+export LANG="en_US.UTF-8"
+export EDITOR="vim"
+export VISUAL="vim"
+export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
-
-export GOAMD64=v3
-export GOPATH=${HOME}/.cache/go
-export GOBIN=${HOME}/.go/bin
-
 export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"

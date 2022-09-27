@@ -21,12 +21,12 @@ MAKE_DIRECTORY=(
 
 usage() {
     cat >&2 <<'EOF'
-usage: install.sh [-af] [-d DESTDIR] [-t {all | dev,tmux,x11}]
+Usage: install.sh [-af] [-d DESTDIR] [-t {all|dev,tmux,x11}]
 
 Options:
     -a         prompt before install
+    -d         destination directory (default: $HOME)
     -f         force to overwrite an existing destination files
-    -d         destination directory (defaults to $HOME)
     -t         install targets
 EOF
     exit 1
@@ -51,15 +51,13 @@ list_targets() {
     readarray -t makedirs < <(printf '%s\n' "${MAKE_DIRECTORY[@]}" \
         | sed -n -e 'p;:a' -e '/\//{s:/[^/]*$::;p;ta;}' | sort -ur)
     git -C "${DOTFILES}" ls-files -co | while IFS= read -r target; do
-        if [[ ! -f "${DOTFILES}/${target}" ]]; then
-            continue
-        fi
+        [[ -f "${DOTFILES}/${target}" ]] || continue
         for pattern in "${IGNORED_TARGETS[@]}"; do
             [[ "${target}/" == "${pattern}"/* ]] && continue 2
         done
         for dir in "${makedirs[@]}"; do
             [[ "${target}/" == "${dir}"/* ]] || continue
-            target="${target#${dir}/}"
+            target="${target#"${dir}"/}"
             echo "${dir}/${target%%/*}"
             continue 2
         done

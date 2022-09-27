@@ -1,45 +1,44 @@
+scriptversion 4
 set encoding=utf-8
-scriptencoding utf-8
-scriptversion 3
 
 " prelude
 let g:vimfiles = expand('<sfile>:p:h')
 
 let g:cachedir = g:vimfiles .. '/.cache'
-call mkdir(g:cachedir, 'p', 0700)
+call mkdir(g:cachedir, 'p', 0o700)
 
-if exists('$TEMP')
-  let g:tempdir = printf('%s/vim-%d', $TEMP, getpid())
-elseif exists('$TMPDIR')
+if exists('$TMPDIR')
   let g:tempdir = printf('%s/vim-%d', $TMPDIR, getpid())
 else
   let g:tempdir = printf('/tmp/vim-%d', getpid())
 endif
-call mkdir(g:tempdir, 'p', 0700)
+call mkdir(g:tempdir, 'p', 0o700)
 
 if has('vim_starting')
-  call vimrc#setup_goenv(g:vimfiles .. '/.goenv')
-  call vimrc#setup_ndenv(g:vimfiles .. '/.ndenv')
-  call vimrc#setup_pyenv(g:vimfiles .. '/.pyenv')
-  call vimrc#setup_rbenv(g:vimfiles .. '/.rbenv')
-  call vimrc#setup_rsenv(g:vimfiles .. '/.rsenv')
+  call vimrc#setup_goenv()
+  call vimrc#setup_ndenv()
+  call vimrc#setup_pyenv()
+  call vimrc#setup_rbenv()
+  call vimrc#setup_rsenv()
 endif
 
 " disable default plugins
 let g:loaded_2html_plugin = 1
-let g:loaded_getscript = 1
+let g:loaded_fzf = 1
+let g:loaded_gentoo_common = 1
 let g:loaded_getscriptPlugin = 1
 let g:loaded_gzip = 1
-let g:loaded_netrw = 1
-let g:loaded_netrwFileHandlers = 1
+let g:loaded_logiPat = 1
+let g:loaded_matchparen = 1
 let g:loaded_netrwPlugin = 1
-let g:loaded_netrwSettings = 1
+let g:loaded_newebuild = 1
+let g:loaded_newglep = 1
+let g:loaded_newinitd = 1
+let g:loaded_newmetadata = 1
 let g:loaded_rrhelper = 1
-let g:loaded_tar = 1
+let g:loaded_spellfile_plugin = 1
 let g:loaded_tarPlugin = 1
-let g:loaded_vimball = 1
 let g:loaded_vimballPlugin = 1
-let g:loaded_zip = 1
 let g:loaded_zipPlugin = 1
 
 " dein.vim
@@ -54,9 +53,9 @@ if has('vim_starting')
 endif
 
 let g:dein#types#git#clone_depth = 1
-let g:dein#types#git#pull_command = 'fetch --depth=1 && git reset --merge "@{upstream}"'
+let g:dein#types#git#pull_command = 'fetch --depth=1 && git reset --merge @{upstream}'
 
-if dein#load_state(s:deindir)
+if dein#min#load_state(s:deindir)
   let s:tomls = glob(g:vimfiles .. '/*.toml', 0, 1)
   let s:vimrcs = [$MYVIMRC] + s:tomls
 
@@ -69,10 +68,6 @@ if dein#load_state(s:deindir)
   endfor
   call dein#end()
   call dein#save_state()
-endif
-
-if dein#check_install()
-  call dein#install()
 endif
 
 call dein#call_hook('source')
@@ -88,6 +83,7 @@ filetype plugin indent on
 " options
 set hidden
 set mouse=a
+set ttymouse=sgr
 set ttimeout
 set ttimeoutlen=100
 set shelltemp
@@ -171,7 +167,6 @@ if dein#is_sourced('vim-colors-solarized')
   colorscheme solarized
 endif
 
-language messages en_US.UTF-8
 set helplang=en,ja
 
 if &term ==# 'win32'
@@ -206,32 +201,19 @@ nnoremap g0 0
 nnoremap g^ ^
 xnoremap < <gv
 xnoremap > >gv
-
-inoremap <C-a> <C-o>^
-inoremap <C-f> <C-o>w
-inoremap <C-b> <C-o>b
-inoremap <expr> <C-e> pumvisible() ? asyncomplete#cancel_popup() : "\<C-o>$"
-inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
-
-map <MiddleMouse> <Nop>
-map <2-MiddleMouse> <Nop>
-map <3-MiddleMouse> <Nop>
-map <4-MiddleMouse> <Nop>
-imap <MiddleMouse> <Nop>
-imap <2-MiddleMouse> <Nop>
-imap <3-MiddleMouse> <Nop>
-imap <4-MiddleMouse> <Nop>
-
-nnoremap <S-Left> <C-w><LT><CR>
-nnoremap <S-Right> <C-w>><CR>
-nnoremap <S-Up> <C-w>+<CR>
-nnoremap <S-Down> <C-w>-<CR>
+noremap <MiddleMouse> <Nop>
+noremap <2-MiddleMouse> <Nop>
+noremap <3-MiddleMouse> <Nop>
+noremap <4-MiddleMouse> <Nop>
+inoremap <MiddleMouse> <Nop>
+inoremap <2-MiddleMouse> <Nop>
+inoremap <3-MiddleMouse> <Nop>
+inoremap <4-MiddleMouse> <Nop>
 
 nnoremap <silent> gh :<C-u>nohlsearch<CR>
 nnoremap <silent> <Leader>n :<C-u>set number!<CR>
 nnoremap <silent> <Leader>N :<C-u>set relativenumber!<CR>
 nnoremap <silent> <Leader>w :<C-u>set wrap! wrap?<CR>
-nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
 
 map _ <Plug>(operator-replace)
 map sl <Plug>(operator-reverse-lines)
@@ -279,12 +261,7 @@ command! Highlight call vimrc#highlight()
 " autocmd
 augroup vimrc
   autocmd!
-  autocmd VimLeave * call delete(g:tempdir, 'rf')
-  autocmd BufEnter ?* call vimrc#lcd_to_project_dir(expand('<afile>:p'))
-  autocmd BufWritePre * call vimrc#auto_mkdir(expand('<afile>:p:h'), v:cmdbang)
   autocmd BufWritePost,BufFilePost * ++nested filetype detect
-  autocmd BufWritePost vimrc,.vimrc,*.vim,*.toml ++nested source $MYVIMRC
-  autocmd BufNewFile,BufRead $DOTFILES/* execute 'doautocmd filetypedetect BufRead'
-        \ fnameescape(substitute(expand('<afile>:p'), '\V'..escape($DOTFILES, '\')..'/', $HOME..'/.', ''))
+  autocmd VimLeave * call delete(g:tempdir, 'rf')
 augroup END
 

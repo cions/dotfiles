@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+emulate -L zsh
+setopt extended_glob
+
+case "${LBUFFER}" in
+    " "*)
+        LBUFFER="${LBUFFER# }"
+        ;;
+    *)
+        LBUFFER=" ${LBUFFER}"
+esac

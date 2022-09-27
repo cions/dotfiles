@@ -1,12 +1,15 @@
 function vimrc#lightline#on_source()
+  nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
+
   let g:lightline = {
-        \   'colorscheme': 'powerprompt',
-        \   'separator': { 'left': "\uE0B0", 'right': "\uE0B2" },
-        \   'subseparator': { 'left': "\uE0B1", 'right': "\uE0B3" },
+        \   'colorscheme': 'custom',
+        \   'separator': { 'left': "", 'right': "" },
+        \   'subseparator': { 'left': "\u2502", 'right': "\u2502" },
         \   'active': {
         \     'left': [ [ 'mode', 'paste', 'gitbranch' ],
         \               [ 'readonly', 'filename', 'modified' ] ],
         \     'right': [ [ 'lineinfo' ],
+        \                [ 'percent' ],
         \                [ 'fileformat', 'fileencoding', 'filetype' ] ]
         \   },
         \   'inactive': {

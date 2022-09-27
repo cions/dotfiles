@@ -1,4 +1,4 @@
-" powerprompt colorscheme for lightline
+" custom colorscheme for lightline
 
 let s:red     = ['#262626', '#ff8787', 235, 210]
 let s:magenta = ['#262626', '#ff87ff', 235, 213]
@@ -38,4 +38,4 @@ let s:palette = {
       \   }
       \ }
 
-let g:lightline#colorscheme#powerprompt#palette = s:palette
+let g:lightline#colorscheme#custom#palette = s:palette
