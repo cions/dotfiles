@@ -10,7 +10,6 @@ IGNORED_TARGETS=(
 )
 MAKE_DIRECTORY=(
     'bin'
-    'config'
     'vim/.goenv'
     'vim/.ndenv'
     'vim/.pyenv'

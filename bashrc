@@ -66,6 +66,16 @@ unbak() {
     done
 }
 
+deno() {
+    local -x DENO_DIR="${HOME}/.deno/cache"
+    command deno "$@"
+}
+
+jq() {
+    local -x JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"
+    command jq "$@"
+}
+
 # aliases
 if exists exa; then
     alias ls='exa --classify --sort=Name'
@@ -199,4 +209,3 @@ export PAGER="less"
 
 export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
-export JQ_COLORS="2;39:0;31:0;31:0;36:0;32:1;39:1;39"

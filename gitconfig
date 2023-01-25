@@ -19,6 +19,7 @@
 	tool = vimdiff
 [push]
 	followTags = true
+	useForceIfIncludes = true
 [pull]
 	ff = only
 [rebase]
