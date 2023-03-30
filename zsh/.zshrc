@@ -352,12 +352,12 @@ rprompt-async() {
     fi
 
     if [[ -n ${gitstate[state]} ]]; then
-        print -n "%K{216} ${gitstate[state]}"
+        print -n "%K{216} ${gitstate[state]} "
         if (( gitstate[total] > 1 )); then
-            print -n " (${gitstate[step]}/${gitstate[total]})"
+            print -n "(${gitstate[step]}/${gitstate[total]}) "
         fi
         if [[ -n ${gitstate[target_name]} ]]; then
-            print -n " \u2502 ${gitstate[target_name]}"
+            print -n "\u2502 ${gitstate[target_name]} "
         fi
     fi
 

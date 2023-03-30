@@ -1,5 +1,6 @@
 function vimrc#lsp#on_source() abort
   let g:lsp_diagnostics_echo_cursor = 1
+  let g:lsp_diagnostics_virtual_text_enabled = 0
 
   augroup vimrc-lsp
     autocmd!

@@ -42,6 +42,7 @@ TERM terminator
 TERM tmux*
 TERM vt100
 TERM xterm*
+TERM wezterm
 
 # Below are the color init strings for the basic file types.
 # One can use codes for 256 or more colors supported by modern terminals.
@@ -95,24 +96,36 @@ EXEC                    1;38;5;64               # executable files
 
 # Script and executable files (green)
 *BUILD                  38;5;64
+*CMakeLists.txt         38;5;64
 *Dockerfile             38;5;64
+*Gemfile                38;5;64
 *Makefile               38;5;64
+*Makefile.am            38;5;64
+*Pipfile                38;5;64
 *Rakefile               38;5;64
+*SConscript             38;5;64
+*SConstruct             38;5;64
+*configure              38;5;64
+*configure.ac           38;5;64
+*gradlew                38;5;64
 *.bat                   38;5;64
 *.build                 38;5;64
+*.cmake                 38;5;64
 *.cmd                   38;5;64
 *.exe                   38;5;64
 *.gradle                38;5;64
+*.make                  38;5;64
 *.ps1                   38;5;64
 *.sh                    38;5;64
 
 # Document files (orange)
-*Gemfile                38;5;166
 *INSTALL                38;5;166
-*Pipfile                38;5;166
+*LICENSE                38;5;166
+*COPYING                38;5;166
 *README                 38;5;166
 *.cfg                   38;5;166
 *.conf                  38;5;166
+*.config                38;5;166
 *.csv                   38;5;166
 *.doc                   38;5;166
 *.docx                  38;5;166
@@ -157,6 +170,8 @@ EXEC                    1;38;5;64               # executable files
 *.gpg                   38;5;160
 *.gz                    38;5;160
 *.iso                   38;5;160
+*.bin                   38;5;160
+*.img                   38;5;160
 *.jar                   38;5;160
 *.lz4                   38;5;160
 *.lzma                  38;5;160
@@ -173,6 +188,7 @@ EXEC                    1;38;5;64               # executable files
 *.zst                   38;5;160
 
 # Temporary files (base01)
+*CMakeCache.txt         38;5;240
 *#                      38;5;240
 *~                      38;5;240
 *.aux                   38;5;240
@@ -190,7 +206,10 @@ EXEC                    1;38;5;64               # executable files
 *.out                   38;5;240
 *.part                  38;5;240
 *.pyc                   38;5;240
+*.pyd                   38;5;240
+*.pyo                   38;5;240
 *.rej                   38;5;240
+*.rlib                  38;5;240
 *.swp                   38;5;240
 *.temp                  38;5;240
 *.tmp                   38;5;240
