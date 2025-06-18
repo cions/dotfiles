@@ -3,4 +3,6 @@
 export GTK_IM_MODULE="fcitx"
 export QT_IM_MODULE="fcitx"
 export XMODIFIERS="@im=fcitx"
-export NO_AT_BRIDGE=1
+
+export LIBVA_DRIVER_NAME="iHD"
+export __EGL_VENDOR_LIBRARY_FILENAMES="/usr/share/glvnd/egl_vendor.d/50_mesa.json"

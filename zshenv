@@ -1,4 +1,4 @@
 #!/bin/zsh
 
 ZDOTDIR=${HOME}/.zsh
-[[ -f ${ZDOTDIR}/.zshenv ]] && source ${ZDOTDIR}/.zshenv
+typeset -U path cdpath fpath manpath

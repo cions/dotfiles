@@ -2,10 +2,10 @@
 
 (( ZSH_SUBSHELL )) && return 0
 
-if (( ${+commands[exa]} )); then
-    command exa --classify --sort=Name --all
+if (( ${+commands[eza]} )); then
+	eza --classify --no-quotes --sort=Name --all
 else
-    local -x QUOTING_STYLE=literal
-    command ls -ACF --color=auto
+	local -x QUOTING_STYLE="literal"
+	ls -ACF --color=auto
 fi
 return 0

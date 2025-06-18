@@ -1,0 +1,144 @@
+# vim: set ft=gitconfig:
+
+[core]
+editor = vim
+
+[protocol]
+version = 2
+
+[pager]
+diff = git-delta
+show = git-delta
+
+[user]
+name = cions
+email = cions@tuta.com
+
+[clone]
+filterSubmodules = true
+
+[submodule]
+fetchJobs = 0
+
+[diff]
+algorithm = histogram
+
+[init]
+defaultBranch = master
+
+[interactive]
+diffFilter = git-delta --color-only
+
+[merge]
+defaultToUpstream = true
+ff = false
+tool = vimdiff
+
+[pull]
+ff = only
+
+[push]
+followTags = true
+useForceIfIncludes = true
+
+[rebase]
+autoSquash = true
+
+[status]
+relativePaths = false
+
+[format]
+pretty = detail
+
+[pretty]
+simple = %C(yellow)%h%C(reset) %s %C(green)(%cr)%C(reset) %C(bold blue)[%an]%C(reset)%C(auto)%d%C(reset)
+detail = %C(yellow)commit %H%C(auto)%d%C(reset)%nauthor %an <%ae>%ndate   %ci %C(green)(%cr)%C(reset)%n%n%w(72,4,8)%B%w(0)
+
+[color "diff"]
+commit = bold yellow
+context = white
+frag = bold cyan
+func = cyan
+meta = bold white
+new = green
+old = red
+whitespace = red reverse
+
+[color "grep"]
+context = normal
+filename = green
+function = yellow
+linenumber = cyan
+match = bold red
+selected = bold normal
+separator = cyan
+
+[alias]
+b = switch
+nb = switch --create
+s = status
+ss = status --short
+d = diff
+ds = --paginate diff --stat
+dn = --paginate diff --name-only
+dc = diff --cached
+dcs = --paginate diff --cached --stat
+dcn = --paginate diff --cached --name-only
+d2 = -c pager.diff=\"git-delta -s\" diff
+dc2 = -c pager.diff=\"git-delta -s\" diff --cached
+l = log --pretty=simple --no-merges
+la = log --pretty=simple --no-merges --all
+lg = log --pretty=simple --graph
+lga = log --pretty=simple --graph --all
+ll = log --pretty=detail --graph
+lla = log --pretty=detail --graph --all
+ls = log --pretty=detail --graph --stat
+lsa = log --pretty=detail --graph --stat --all
+ld = -c core.pager=git-delta log --pretty=detail --patch
+lda = -c core.pager=git-delta log --pretty=detail --patch --all
+a = add
+aa = add --all
+au = add --update
+ae = add --edit
+ap = add --patch
+track = add --intent-to-add --
+untrack = rm --cached --
+c = commit
+cm = commit -m
+ca = !git add --all && git commit
+cam = !git add --all && git commit -m
+cu = !git add --update && git commit
+cum = !git add --update && git commit -m
+amend = commit --amend --reuse-message=HEAD --reset-author
+wip = stash save --include-untracked
+resolve = !git diff --diff-filter=U --name-only -z | xargs --null --open-tty --no-run-if-empty ${EDITOR:-vi} --
+
+[delta]
+commit-decoration-style = yellow box
+commit-style = raw
+file-decoration-style = blue ul ol
+file-modified-label = "​​" # U+200B U+200B
+file-style = blue
+hunk-header-decoration-style =
+hunk-header-style = raw
+line-numbers = true
+line-numbers-left-format = "{nm:^4}|"
+line-numbers-right-format = "{np:^4}|"
+merge-conflict-begin-symbol = ">"
+merge-conflict-end-symbol = "<"
+minus-emph-style = "#ffffff" "#cc0000"
+minus-empty-line-marker-style = syntax "#882222"
+minus-non-emph-style = syntax "#882222"
+minus-style = syntax "#882222"
+navigate = true
+plus-emph-style = "#000000" "#00cc00"
+plus-empty-line-marker-style = syntax "#004400"
+plus-non-emph-style = syntax "#004400"
+plus-style = syntax "#004400"
+syntax-theme = Nord
+tabs = 2
+whitespace-error-style = reverse red
+wrap-left-symbol = " "
+wrap-right-prefix-symbol = " "
+wrap-right-symbol = " "
+zero-style = syntax normal

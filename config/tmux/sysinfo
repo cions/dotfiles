@@ -1,0 +1,88 @@
+#!/bin/zsh
+
+separator() {
+	local NEWCOLOR=$1
+
+	if [[ ${CURCOLOR} == "" ]]; then
+		print -n "#[fg=default bg=${NEWCOLOR}]"
+	elif [[ ${CURCOLOR} == ${NEWCOLOR} ]]; then
+		print -n "\u2502"
+	else
+		print -n "#[fg=${CURCOLOR} bg=${NEWCOLOR}]\u258C#[fg=default bg=${NEWCOLOR}]"
+	fi
+	CURCOLOR=${NEWCOLOR}
+}
+
+RED="colour203"
+YELLOW="colour227"
+GREEN="colour156"
+GRAY="colour242"
+GRAYFG="colour253"
+CURCOLOR=""
+
+meminfo=( "${(@f)$(</proc/meminfo)}" )
+(( memtotal = ${meminfo[(r)MemTotal:*][(w)2]:-0} ))
+(( memused = memtotal - ${meminfo[(r)MemAvailable:*][(w)2]:-0} ))
+(( swaptotal = ${meminfo[(r)SwapTotal:*][(w)2]:-0} ))
+(( swapused = swaptotal - ${meminfo[(r)SwapFree:*][(w)2]:-0} ))
+loadavg="${(s: :)$(</proc/loadavg)[(w)1]}"
+nproc="$(nproc --all)"
+(( temp = "$(</sys/class/thermal/thermal_zone3/temp)" / 1000 ))
+
+if (( memtotal != 0 )); then
+	(( percentage = 100.0 * memused / memtotal ))
+	if (( percentage >= 80.0 )); then
+		separator ${RED}
+	elif (( percentage >= 60.0 )); then
+		separator ${YELLOW}
+	else
+		separator ${GREEN}
+	fi
+	print -n " $(numfmt --from-unit=Ki --to=iec --suffix=B ${memused}) "
+else
+	separator ${GRAY}
+	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
+fi
+
+if (( swaptotal != 0 )); then
+	(( percentage = 100.0 * swapused / swaptotal ))
+	if (( percentage >= 80.0 )); then
+		separator ${RED}
+	elif (( percentage >= 60.0 )); then
+		separator ${YELLOW}
+	else
+		separator ${GREEN}
+	fi
+	print -n " $(numfmt --from-unit=Ki --to=iec --suffix=B ${swapused}) "
+else
+	separator ${GRAY}
+	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
+fi
+
+if [[ -n ${loadavg} ]]; then
+	if (( loadavg / nproc >= 1.0 )); then
+		separator ${RED}
+	elif (( loadavg / nproc >= 0.5 )); then
+		separator ${YELLOW}
+	else
+		separator ${GREEN}
+	fi
+	print -n " ${loadavg} "
+else
+	separator ${GRAY}
+	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
+fi
+
+if (( temp != 0 )); then
+	if (( temp >= 80 )); then
+		separator ${RED}
+	elif (( temp >= 50 )); then
+		separator ${YELLOW}
+	else
+		separator ${GREEN}
+	fi
+	print -n " ${temp}℃ "
+else
+	separator ${GRAY}
+	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
+fi

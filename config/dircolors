@@ -1,10 +1,11 @@
 # Configuration file for dircolors, a utility to help you set the
 # LS_COLORS environment variable used by GNU ls with the --color option.
 
-# Copyright (C) 1996-2022 Free Software Foundation, Inc.
+# Copyright (C) 1996-2024 Free Software Foundation, Inc.
 # Copying and distribution of this file, with or without modification,
 # are permitted provided the copyright notice and this notice are preserved.
 
+#
 # The keywords COLOR, OPTIONS, and EIGHTBIT (honored by the
 # slackware version of dircolors) are recognized but ignored.
 
@@ -13,6 +14,9 @@
 
 # Global config options can be specified before TERM or COLORTERM entries
 
+# ===================================================================
+# Terminal filters
+# ===================================================================
 # Below are TERM or COLORTERM entries, which can be glob patterns, which
 # restrict following config to systems with matching environment variables.
 COLORTERM ?*
@@ -26,6 +30,7 @@ TERM console
 TERM cygwin
 TERM *direct*
 TERM dtterm
+TERM foot
 TERM gnome
 TERM hurd
 TERM jfbterm
@@ -44,6 +49,9 @@ TERM vt100
 TERM xterm*
 TERM wezterm
 
+# ===================================================================
+# Basic file attributes
+# ===================================================================
 # Below are the color init strings for the basic file types.
 # One can use codes for 256 or more colors supported by modern terminals.
 # The default color codes use the capabilities of an 8 color terminal
@@ -54,25 +62,6 @@ TERM wezterm
 # 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
 # Background color codes:
 # 40=black 41=red 42=green 43=yellow 44=blue 45=magenta 46=cyan 47=white
-#
-# color palette:
-# base03        234 (#002b36)
-# base02        235 (#073642)
-# base01        240 (#586e75)
-# base00        241 (#657b83)
-# base0         244 (#839496)
-# base1         245 (#93a1a1)
-# base2         254 (#eee8d5)
-# base3         230 (#fdf6e3)
-# yellow        136 (#b58900)
-# orange        166 (#cb4b16)
-# red           160 (#dc322f)
-# magenta       125 (#d33682)
-# violet         61 (#6c71c4)
-# blue           33 (#268bd2)
-# cyan           37 (#2aa198)
-# green          64 (#859900)
-
 NORMAL                  0                       # no color code at all
 FILE                    0                       # regular file
 RESET                   0                       # reset to "normal" color
@@ -92,19 +81,30 @@ CAPABILITY              0                       # file with capability (very exp
 STICKY_OTHER_WRITABLE   1;38;5;230;48;5;33      # dir that is sticky and other-writable (+t,o+w)
 OTHER_WRITABLE          1;38;5;33;48;5;235      # dir that is other-writable (o+w) and not sticky
 STICKY                  1;38;5;230;48;5;33      # dir with the sticky bit set (+t) and not other-writable
-EXEC                    1;38;5;64               # executable files
+EXEC                    1;38;5;64               # executable file
+
+# ===================================================================
+# File extension attributes
+# ===================================================================
+# List any file extensions like '.gz' or '.tar' that you would like ls
+# to color below. Put the suffix, a space, and the color init string.
+# (and any comments you want to add after a '#').
+# Suffixes are matched case insensitively, but if you define different
+# init strings for separate cases, those will be honored.
 
 # Script and executable files (green)
 *BUILD                  38;5;64
 *CMakeLists.txt         38;5;64
 *Dockerfile             38;5;64
 *Gemfile                38;5;64
+*Justfile               38;5;64
 *Makefile               38;5;64
 *Makefile.am            38;5;64
 *Pipfile                38;5;64
 *Rakefile               38;5;64
 *SConscript             38;5;64
 *SConstruct             38;5;64
+*Vagrantfile            38;5;64
 *configure              38;5;64
 *configure.ac           38;5;64
 *gradlew                38;5;64
@@ -115,20 +115,27 @@ EXEC                    1;38;5;64               # executable files
 *.exe                   38;5;64
 *.gradle                38;5;64
 *.make                  38;5;64
+*.msi                   38;5;64
+*.ninja                 38;5;64
 *.ps1                   38;5;64
 *.sh                    38;5;64
 
 # Document files (orange)
+*COPYING                38;5;166
 *INSTALL                38;5;166
 *LICENSE                38;5;166
-*COPYING                38;5;166
 *README                 38;5;166
 *.cfg                   38;5;166
+*.cnf                   38;5;166
 *.conf                  38;5;166
 *.config                38;5;166
 *.csv                   38;5;166
+*.diff                  38;5;166
 *.doc                   38;5;166
+*.docm                  38;5;166
 *.docx                  38;5;166
+*.dvi                   38;5;166
+*.epub                  38;5;166
 *.htm                   38;5;166
 *.html                  38;5;166
 *.ini                   38;5;166
@@ -151,30 +158,44 @@ EXEC                    1;38;5;64               # executable files
 *.tex                   38;5;166
 *.toml                  38;5;166
 *.txt                   38;5;166
+*.xht                   38;5;166
+*.xhtml                 38;5;166
 *.xls                   38;5;166
+*.xlsm                  38;5;166
 *.xlsx                  38;5;166
 *.xml                   38;5;166
 *.yaml                  38;5;166
 *.yml                   38;5;166
 
-# Archives files (red)
+# Archive and compressed files (red)
 *.7z                    38;5;160
 *.a                     38;5;160
+*.age                   38;5;160
 *.apk                   38;5;160
 *.asc                   38;5;160
+*.bin                   38;5;160
 *.bz2                   38;5;160
+*.cab                   38;5;160
 *.cpio                  38;5;160
 *.deb                   38;5;160
+*.dll                   38;5;160
+*.dmg                   38;5;160
+*.dylib                 38;5;160
 *.enc                   38;5;160
 *.gem                   38;5;160
 *.gpg                   38;5;160
 *.gz                    38;5;160
-*.iso                   38;5;160
-*.bin                   38;5;160
 *.img                   38;5;160
+*.iso                   38;5;160
 *.jar                   38;5;160
+*.lha                   38;5;160
+*.lib                   38;5;160
 *.lz4                   38;5;160
+*.lzh                   38;5;160
 *.lzma                  38;5;160
+*.lzo                   38;5;160
+*.pea                   38;5;160
+*.qcow2                 38;5;160
 *.rar                   38;5;160
 *.rpm                   38;5;160
 *.so                    38;5;160
@@ -183,8 +204,13 @@ EXEC                    1;38;5;64               # executable files
 *.tgz                   38;5;160
 *.txz                   38;5;160
 *.tzst                  38;5;160
+*.vdi                   38;5;160
+*.vhd                   38;5;160
+*.vhdx                  38;5;160
+*.vmdk                  38;5;160
 *.xz                    38;5;160
 *.zip                   38;5;160
+*.zipx                  38;5;160
 *.zst                   38;5;160
 
 # Temporary files (base01)
@@ -195,12 +221,23 @@ EXEC                    1;38;5;64               # executable files
 *.bak                   38;5;240
 *.cache                 38;5;240
 *.class                 38;5;240
+*.cma                   38;5;240
+*.cmi                   38;5;240
+*.cmo                   38;5;240
+*.cmx                   38;5;240
 *.crdownload            38;5;240
+*.download              38;5;240
+*.dpkg-dist             38;5;240
+*.dpkg-new              38;5;240
+*.dpkg-old              38;5;240
+*.dpkg-tmp              38;5;240
+*.elc                   38;5;240
 *.hi                    38;5;240
 *.incomplete            38;5;240
 *.ko                    38;5;240
 *.log                   38;5;240
 *.o                     38;5;240
+*.obj                   38;5;240
 *.old                   38;5;240
 *.orig                  38;5;240
 *.out                   38;5;240
@@ -210,6 +247,10 @@ EXEC                    1;38;5;64               # executable files
 *.pyo                   38;5;240
 *.rej                   38;5;240
 *.rlib                  38;5;240
+*.rpmnew                38;5;240
+*.rpmorig               38;5;240
+*.rpmsave               38;5;240
+*.swo                   38;5;240
 *.swp                   38;5;240
 *.temp                  38;5;240
 *.tmp                   38;5;240
@@ -223,6 +264,7 @@ EXEC                    1;38;5;64               # executable files
 *.avif                  38;5;136
 *.avifs                 38;5;136
 *.bmp                   38;5;136
+*.eps                   38;5;136
 *.gif                   38;5;136
 *.heic                  38;5;136
 *.heics                 38;5;136
@@ -233,18 +275,26 @@ EXEC                    1;38;5;64               # executable files
 *.jpg                   38;5;136
 *.jxl                   38;5;136
 *.png                   38;5;136
+*.psd                   38;5;136
 *.svg                   38;5;136
 *.svgz                  38;5;136
+*.tif                   38;5;136
+*.tiff                  38;5;136
 *.webp                  38;5;136
+*.xcf                   38;5;136
 
-# Audio/Video files (yellow)
+# Audio and video files (yellow)
 *.aac                   38;5;136
+*.alac                  38;5;136
+*.ape                   38;5;136
 *.avi                   38;5;136
 *.flac                  38;5;136
+*.flv                   38;5;136
 *.m4a                   38;5;136
 *.m4v                   38;5;136
 *.mka                   38;5;136
 *.mkv                   38;5;136
+*.mov                   38;5;136
 *.mp3                   38;5;136
 *.mp4                   38;5;136
 *.mpeg                  38;5;136
@@ -255,6 +305,12 @@ EXEC                    1;38;5;64               # executable files
 *.ogx                   38;5;136
 *.opus                  38;5;136
 *.spx                   38;5;136
+*.tak                   38;5;136
+*.ttk                   38;5;136
 *.wav                   38;5;136
 *.webm                  38;5;136
+*.wma                   38;5;136
 *.wmv                   38;5;136
+*.wv                    38;5;136
+
+# vim: set ft=dircolors:

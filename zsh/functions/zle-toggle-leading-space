@@ -3,10 +3,9 @@
 emulate -L zsh
 setopt extended_glob
 
-case "${LBUFFER}" in
-    " "*)
-        LBUFFER="${LBUFFER# }"
-        ;;
-    *)
-        LBUFFER=" ${LBUFFER}"
-esac
+if [[ ${BUFFER} == " "* ]]; then
+	(( CURSOR-- ))
+	BUFFER="${BUFFER# }"
+else
+	LBUFFER=" ${LBUFFER}"
+fi

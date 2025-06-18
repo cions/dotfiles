@@ -1,0 +1,26 @@
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = 3
+strip = "symbols"
+
+[profile.release.build-override]
+opt-level = 3
+
+[target."x86_64-unknown-linux-gnu"]
+linker = "clang"
+rustflags = [
+	"-C", "linker-plugin-lto",
+	"-C", "target-cpu=native",
+	"-C", "link-args=-O3 -march=native -flto=thin -Wl,-O2",
+]
+
+[env]
+AR = "llvm-ar"
+CC = "clang"
+CXX = "clang++"
+NM = "llvm-nm"
+CFLAGS = "-O3 -march=native -flto=thin"
+CXXFLAGS = "-O3 -march=native -flto=thin"
+LDFLAGS = "-O3 -march=native -flto=thin -Wl,-O2 -Wl,--as-needed -Wl,--gc-sections"
+CXXSTDLIB = "c++"

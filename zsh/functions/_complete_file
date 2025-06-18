@@ -1,22 +1,22 @@
 #!/bin/zsh
 
 case ${compstate[context]} in
-    brace_parameter)
-        compset -P '*[-+=?]'
-        ;;
-    subscript)
-        compset -P '\(*\)'
-        ;;
-    command)
-        compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
-        ;;
-    value)
-        if compset -P '*[[:space:]]' || [[ ${PREFIX} == -* ]]; then
-            compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
-        else
-            compset -P '*:'
-        fi
-        ;;
+	brace_parameter)
+		compset -P '*[-+=?]'
+		;;
+	subscript)
+		compset -P '\(*\)'
+		;;
+	command)
+		compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
+		;;
+	value)
+		if compset -P '*[[:space:]]' || [[ ${PREFIX} == -* ]]; then
+			compset -P '*:' || compset -P 1 '*\=' || compset -P '\-[[:alpha:]]'
+		else
+			compset -P '*:'
+		fi
+		;;
 esac
 
 _files

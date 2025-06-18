@@ -1,0 +1,19 @@
+#!/bin/zsh
+
+local cmdline=${argv[1]%$'\n'}
+
+if [[ ${cmdline} == "addhist "* ]]; then
+	print -Sr -- ${cmdline#addhist }
+	return 2
+fi
+
+local tokens=( ${(z)cmdline} )
+case ${tokens[1]} in
+	cd)             return 1 ;;
+	l[Aatls])       return 1 ;;
+	llt)            return 1 ;;
+	eza)            return 1 ;;
+	reload)         return 1 ;;
+	rm)             return 1 ;;
+	*)              return 2 ;;
+esac

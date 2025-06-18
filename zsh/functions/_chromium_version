@@ -1,0 +1,11 @@
+#!/bin/zsh
+
+local cachefile="${XDG_CACHE_HOME:-"${HOME}/.cache"}/chromium-version"
+if [[ ! -f "${cachefile}" ]]; then
+	curl -fsSL "https://versionhistory.googleapis.com/v1/chrome/platforms/win64/channels/stable/versions/all/releases?filter=endtime=none" \
+	| jq -r '.releases[0].version' > "${cachefile}"
+fi
+
+local version
+version="$(<${cachefile})" || version="0"
+print -n "${version%%.*}"

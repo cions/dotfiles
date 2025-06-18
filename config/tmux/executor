@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -eu
+
+exists() {
+	command -v -- "$1" >/dev/null 2>&1
+}
+
+case "$1" in
+	copy)
+		if exists xsel; then
+			xsel -l /dev/null -ib
+		elif exists clip; then
+			clip
+		elif exists termux-clipboard-set; then
+			termux-clipboard-set
+		fi
+		;;
+	paste)
+		if exists xsel; then
+			xsel -ob | sed -z 's/^\s*//;s/\s*$//'
+		elif exists clip; then
+			paste | sed -z 's/^\s*//;s/\s*$//'
+		elif exists termux-clipboard-get; then
+			termux-clipboard-get | sed -z 's/^\s*//;s/\s*$//'
+		fi
+		;;
+	openbrowser)
+		if exists vivaldi; then
+			vivaldi "$(cat)"
+		elif exists chromium; then
+			chromium "$(cat)"
+		elif exists google-chrome-stable; then
+			google-chrome-stable "$(cat)"
+		elif exists termux-open-url; then
+			termux-open-url "$(cat)"
+		fi
+		;;
+	open)
+		cd -- "${2:-.}" || true
+		if exists xdg-open; then
+			xdg-open "$(cat)"
+		elif exists start; then
+			start "$(cat)"
+		elif exists termux-open; then
+			termux-open "$(cat)"
+		fi
+		;;
+esac

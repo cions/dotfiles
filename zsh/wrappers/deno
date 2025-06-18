@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+local -x DENO_DIR="${HOME}/.deno/cache"
+command deno "$@"

@@ -7,7 +7,7 @@ typeset -ag direnv_variables direnv_paths
 
 local var
 for var in ${direnv_variables}; do
-    unset ${var}
+	unset ${var}
 done
 path=( ${path:|direnv_paths} )
 
@@ -17,15 +17,15 @@ direnv_paths=()
 # npm
 set -- (../)#node_modules/.bin(N-/od:a)
 if (( $# > 0 )); then
-    direnv_paths+=( $1 )
+	direnv_paths+=( $1 )
 fi
 
 # python
 set -- (../)#pyvenv.cfg(N-.od:a:h)
 if (( $# > 0 )); then
-    export VIRTUAL_ENV=$1
-    direnv_variables+=( VIRTUAL_ENV )
-    direnv_paths+=( $1/bin(N-/) )
+	export VIRTUAL_ENV=$1
+	direnv_variables+=( VIRTUAL_ENV )
+	direnv_paths+=( $1/bin(N-/) )
 fi
 
 path=( ${direnv_paths} ${path} )

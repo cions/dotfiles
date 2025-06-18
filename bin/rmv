@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [[ -d /var/trash && -w /var/trash ]]; then
+	TRASHDIR="/var/trash"
+else
+	TRASHDIR="${HOME}/.trash"
+	mkdir -p -- "${TRASHDIR}" || exit 1
+fi
+
+for target in "$@"; do
+	[[ -e "${target}" || -L "${target}" ]] || continue
+
+	if [[ "$(stat -f -c "%T" -- "${target}")" == "tmpfs" ]]; then
+		command rm -rf -- "${target}"
+		continue
+	fi
+
+	trashdir="${TRASHDIR}"
+	if [[ "$(stat -c "%D" -- "${target}")" != "$(stat -c "%D" -- "${trashdir}")" ]]; then
+		mountpoint="$(stat -c "%m" -- "${target}")"
+		if mkdir -p -- "${mountpoint}/.trash" && [[ -w "${mountpoint}/.trash" ]]; then
+			trashdir="${mountpoint}/.trash"
+		else
+			echo "rmv: error: ${target} is not on the same filesystem as ${trashdir}" >&2
+			continue
+		fi
+	fi
+	trashname="$(date "+%s")-$(stat -c "%i" -- "${target}")-$(basename -- "${target}")"
+	mv -n -- "${target}" "${trashdir}/${trashname}" \
+		|| echo "rmv: error: could not move ${target} to ${trashdir}" >&2
+done

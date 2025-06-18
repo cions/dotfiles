@@ -1,0 +1,27 @@
+---
+Index:
+  StandardLibrary: true
+Hover:
+  ShowAKA: true
+---
+If:
+  PathMatch:
+  - '.*\.(c|h)'
+CompileFlags:
+  Add: ['-std=gnu23', '-xc']
+  Compiler: clang
+---
+If:
+  PathMatch:
+  - '.*\.(cc|cpp|cxx|hh|hpp|hxx)'
+  - '.*/include/c\+\+/v1/.*'
+CompileFlags:
+  Add: ['-std=gnu++23']
+  Compiler: clang++
+---
+If:
+  PathMatch:
+  - '.*/include/g\+\+-v[0-9]+/.*'
+CompileFlags:
+  Add: ['-std=gnu++23', '-stdlib=libstdc++']
+  Compiler: clang++

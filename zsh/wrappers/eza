@@ -1,0 +1,49 @@
+#!/bin/zsh
+
+local -a eza_colors=(
+	"oc=38;5;129"                   # the permissions displayed as octal
+	"ur=1;38;5;190"                 # the user-read permission bit
+	"uw=1;38;5;160"                 # the user-write permission bit
+	"ux=1;38;5;46"                  # the user-execute permission bit for regular files
+	"ue=1;38;5;40"                  # the user-execute for other file kinds
+	"gr=38;5;190"                   # the group-read permission bit
+	"gw=38;5;160"                   # the group-write permission bit
+	"gx=38;5;46"                    # the group-execute permission bit
+	"tr=38;5;190"                   # the others-read permission bit
+	"tw=38;5;160"                   # the others-write permission bit
+	"tx=38;5;46"                    # the others-execute permission bit
+	"su=1;38;5;93"                  # setuid, setgid, and sticky permission bits for files
+	"sf=38;5;93"                    # setuid, setgid, and sticky for other file kinds
+	"xa=1"                          # the extended attribute indicator
+	"sn=1;38;5;40"                  # the numbers of a file's size (sets nb, nk, nm, ng and nt)
+	"sb=38;5;40"                    # the units of a file's size (sets ub, uk, um, ug and ut)
+	"df=1;38;5;40"                  # a device's major ID
+	"ds=38;5;40"                    # a device's minor ID
+	"uu=38;5;184"                   # a user that's you
+	"uR=38;5;160"                   # a user that's root
+	"un=0"                          # a user that's someone else
+	"gu=38;5;184"                   # a group that you belong to
+	"gR=38;5;160"                   # a group related to root
+	"gn=0"                          # a group you aren't a member of
+	"lc=0"                          # a number of hard links
+	"lm=1;38;5;178;48;5;236"        # a number of hard links for a regular file with at least two
+	"xx=38;5;240"                   # "punctuation", including many background UI elements
+	"da=38;5;63"                    # a file's date
+	"in=38;5;129"                   # a file's inode number
+	"im=0"                          # a regular file that is an image
+	"vi=0"                          # a regular file that is a video
+	"mu=0"                          # a regular file that is lossy music
+	"lo=0"                          # a regular file that is lossless music
+	"cr=0"                          # a regular file that is related to cryptography (ex: key or certificate)
+	"do=0"                          # a regular file that is a document (ex: office suite document or PDF)
+	"co=0"                          # a regular file that is compressed
+	"tm=0"                          # a regular file that is temporary (ex: a text editor's backup file)
+	"cm=0"                          # a regular file that is a compilation artifact (ex: Java class file)
+	"bu=0"                          # a regular file that is used to build a project (ex: Makefile)
+	"sc=0"                          # a regular file that is source code
+	"Dockerfile.*=38;5;64"
+	"Makefile.*=38;5;64"
+)
+
+local -x EZA_COLORS="${(j.:.)eza_colors}"
+command eza "$@"

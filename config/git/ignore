@@ -1,0 +1,22 @@
+*~
+*.bak
+*.orig
+*.rej
+*.tmp
+
+# Windows
+$RECYCLE.BIN
+Desktop.ini
+Thumbs.db
+ehthumbs.db
+*.lnk
+
+# Vim
+[._]*.un~
+[._]*.sw[a-p]
+[._]sw[a-p]
+
+# Emacs
+.\#*
+\#*\#
+*.elc
