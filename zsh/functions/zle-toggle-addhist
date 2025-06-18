@@ -1,0 +1,11 @@
+#!/bin/zsh
+
+emulate -L zsh
+setopt extended_glob
+
+if [[ ${BUFFER} == "addhist "* ]]; then
+	(( CURSOR -= 8 ))
+	BUFFER="${BUFFER#addhist }"
+else
+	LBUFFER="addhist ${LBUFFER}"
+fi

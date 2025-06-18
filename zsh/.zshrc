@@ -212,7 +212,7 @@ zstyle ':zle:*' word-style standard
 
 bindkey -N main
 bindkey -R -M main "^@"-"\M-^?" self-insert
-bindkey -M main "^@" zle-toggle-leading-space
+bindkey -M main "^@" zle-toggle-addhist
 bindkey -M main "^A" beginning-of-line
 bindkey -M main "^B" backward-char
 bindkey -M main "^D" list-choices

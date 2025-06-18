@@ -4,7 +4,8 @@ local cmdline=${argv[1]%$'\n'}
 
 if [[ ${cmdline} == "addhist "* ]]; then
 	print -Sr -- ${cmdline#addhist }
-	return 2
+	print -zr -- ${cmdline#addhist }
+	return 1
 fi
 
 local tokens=( ${(z)cmdline} )

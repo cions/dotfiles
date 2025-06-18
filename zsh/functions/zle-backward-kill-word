@@ -6,7 +6,7 @@ setopt extended_glob
 autoload -Uz match-words-by-style
 
 local -a matched_words
-local word i
+local LPREFIX word i
 
 match-words-by-style -w shell
 
@@ -20,6 +20,15 @@ if [[ ${LBUFFER} == \ # && -n ${matched_words[5]} ]]; then
 	return 0
 fi
 
+if [[ ${matched_words[2]} == *[$\(\<=\>]\([^\)]## ]]; then
+	pat='[$(<=>]('
+	i=${matched_words[2][(I)[$\(<=>]\(]}
+	LPREFIX=${matched_words[1]}${matched_words[2][1,i+1]}
+	LBUFFER=${matched_words[2][i+2,-1]}
+	match-words-by-style -w shell
+	matched_words[1]=${LPREFIX}${matched_words[1]}
+fi
+
 case "${matched_words[2]}" in
 	\"*\"|\'*\'|$\'*\')
 		;;
@@ -27,15 +36,6 @@ case "${matched_words[2]}" in
 		i=${matched_words[2][(i)=]}
 		matched_words[1]+=${matched_words[2][1,i]}
 		matched_words[2]=${matched_words[2][i+1,-1]}
-		;;
-	*\(?*\))
-		i=${matched_words[2][(I)\(]}
-		matched_words[1]+=${matched_words[2][1,i-1]}
-		matched_words[2]=${matched_words[2][i,-1]}
-		;;
-	*\$\{*\})
-		matched_words[1]+=${(R)matched_words[2]%\$\{*\}}
-		matched_words[2]=${(M)matched_words[2]%\$\{*\}}
 		;;
 	*[,/:=]*)
 		i=${matched_words[2][(Ib:-2:)[,/:=]]}
