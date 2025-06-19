@@ -470,14 +470,8 @@ fi
 
 # zrecompile
 () {
-	local targets file
-
-	targets=(
-		${ZDOTDIR}/.zprofile
-		${ZDOTDIR}/.zshenv
-		${ZDOTDIR}/.zshrc
-	)
-	for file in ${targets}; do
+	local file
+	for file in ${ZDOTDIR}/.zprofile ${ZDOTDIR}/.zshrc; do
 		if [[ ! -f ${file}.zwc || ${file} -nt ${file}.zwc ]]; then
 			zcompile ${file}
 		fi
