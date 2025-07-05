@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/inline"
+
+Gem.use_paths(Gem.user_home + "/.vim/.gemcache", Gem.default_path)
+
+gemfile do
+  source "https://rubygems.org"
+  gem "solargraph"
+end
+
+load Gem.bin_path("solargraph", "solargraph")

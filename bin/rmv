@@ -8,7 +8,10 @@ else
 fi
 
 for target in "$@"; do
-	[[ -e "${target}" || -L "${target}" ]] || continue
+	if [[ ! -e "${target}" ]]; then
+		[[ -L "${target}" ]] && command rm -rf -- "${target}"
+		continue
+	fi
 
 	if [[ "$(stat -f -c "%T" -- "${target}")" == "tmpfs" ]]; then
 		command rm -rf -- "${target}"

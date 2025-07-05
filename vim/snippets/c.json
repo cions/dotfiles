@@ -1,0 +1,32 @@
+{
+	"header": {
+		"prefix": ["header"],
+		"body": [
+			"#ifndef ${1:${VIM:toupper(expand('%:t:gs/\\W\\+/_/'))}}",
+			"#define $1",
+			"",
+			"#ifdef __cplusplus",
+			"extern \"C\" {",
+			"#endif",
+			"",
+			"${0}",
+			"",
+			"#ifdef __cplusplus",
+			"}",
+			"#endif",
+			"",
+			"#endif /* $1 */"
+		]
+	},
+	"incguard": {
+		"prefix": ["incguard", "#ifndef"],
+		"body": [
+			"#ifndef ${1:SYMBOL}",
+			"#define $1",
+			"",
+			"${0}",
+			"",
+			"#endif /* $1 */"
+		]
+	}
+}

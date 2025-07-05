@@ -135,9 +135,7 @@ else
 	alias ll='ls -AFl'
 fi
 if (( ${+commands[dircolors]} )); then
-	alias grep='grep -E --color=auto'
-else
-	alias grep='grep -E'
+	alias grep='grep --color=auto'
 fi
 if (( ${+commands[bat]} )); then
 	alias cat='bat'
@@ -156,6 +154,8 @@ alias p='print -rC1 --'
 alias addhist='return 0;'
 alias run-help='man'
 
+alias -g G='| grep -P -e '
+alias -g GV='| grep -v -P -e '
 alias -g L='| less'
 alias -g H='| head -n $((LINES-2))'
 alias -g T='| tail -n $((LINES-2))'

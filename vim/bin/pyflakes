@@ -1,0 +1,4 @@
+#!/bin/sh
+
+export PIPX_HOME=~/.vim/.pipx
+exec pipx run -- pyflakes "$@"

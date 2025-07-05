@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export NPM_CONFIG_YES=true
+export NPM_CONFIG_CACHE=~/.vim/.npmcache
+exec npm exec -- vim-language-server "$@"

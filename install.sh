@@ -13,11 +13,7 @@ MAKE_DIRECTORY=(
 	'cargo'
 	'config'
 	'gnupg'
-	'vim/.goenv'
-	'vim/.ndenv'
-	'vim/.pyenv'
-	'vim/.rbenv'
-	'vim/.rsenv'
+	'vim'
 	'zsh'
 )
 
@@ -29,7 +25,6 @@ Options:
     -a          prompt before install
     -d          destination directory (default: $HOME)
     -f          force to overwrite an existing destination files
-    -t          install targets
 EOF
 	exit 1
 }

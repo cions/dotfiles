@@ -1,0 +1,21 @@
+{
+	"cppheader": {
+		"prefix": ["cppheader"],
+		"body": [
+			"#ifndef ${1:${VIM:toupper(expand('%:t:gs/\\W\\+/_/'))}}",
+			"#define $1",
+			"",
+			"${0}",
+			"",
+			"#endif /* $1 */"
+		]
+	},
+	"namespace": {
+		"prefix": "namespace",
+		"body": [
+			"namespace $1 {",
+			"$0",
+			"} /* namespace $1 */"
+		]
+	}
+}

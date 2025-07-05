@@ -1,0 +1,32 @@
+{
+	"link": {
+		"prefix": "link",
+		"description": "[link][]",
+		"body": "[${1:id}][]"
+	},
+	"linkid": {
+		"prefix": "linkid",
+		"description": "[link][id]",
+		"body": "[${1:link}][${2:id}]"
+	},
+	"linkurl": {
+		"prefix": "linkurl",
+		"description": "[link](url)",
+		"body": "[${1:link}](${2:url})"
+	},
+	"linkurltitle": {
+		"prefix": "linkurltitle",
+		"description": "[link](url \"title\")",
+		"body": "[${1:link}](${2:url} \"${3:title}\")"
+	},
+	"image": {
+		"prefix": "image",
+		"description": "![text](url)",
+		"body": "![${1:text}](${2:url})"
+	},
+	"imagelink": {
+		"prefix": "imagelink",
+		"description": "[![text](imageurl)](linkurl)",
+		"body": "[![${1:text}](${2:imageurl})](${3:linkurl})"
+	}
+}

@@ -1,47 +1,53 @@
-function vimrc#lightline#on_source()
-  nnoremap <silent> <C-l> <C-l>:<C-u>call lightline#update()<CR>
+scriptversion 4
 
-  let g:lightline = {
-        \   'colorscheme': 'custom',
-        \   'separator': { 'left': "", 'right': "" },
-        \   'subseparator': { 'left': "\u2502", 'right': "\u2502" },
-        \   'active': {
-        \     'left': [ [ 'mode', 'paste', 'gitbranch' ],
-        \               [ 'readonly', 'filename', 'modified' ] ],
-        \     'right': [ [ 'lineinfo' ],
-        \                [ 'percent' ],
-        \                [ 'fileformat', 'fileencoding', 'filetype' ] ]
+function vimrc#lightline#setup() abort
+  nnoremap <silent> <C-L> <C-L>:<C-U>call lightline#update()<CR>
+
+  let g:lightline = #{
+        \   colorscheme: 'nordfox',
+        \   separator: #{ left: "", right: "" },
+        \   subseparator: #{ left: "\u2502", right: "\u2502" },
+        \   active: #{
+        \     left: [
+        \       ['mode', 'paste'],
+        \       ['readonly', 'filename', 'modified'],
+        \     ],
+        \     right: [
+        \       ['lineinfo'],
+        \       ['percent'],
+        \       ['indentstyle', 'fileformat', 'fileencoding', 'filetype'],
+        \     ],
         \   },
-        \   'inactive': {
-        \     'left': [ [ 'filename' ] ],
-        \     'right': [ [ 'lineinfo' ] ]
+        \   inactive: #{
+        \     left: [['filename']],
+        \     right: [['lineinfo']],
         \   },
-        \   'component_function': {
-        \     'fileencoding': 'vimrc#lightline#fileencoding',
-        \     'fileformat': 'vimrc#lightline#fileformat',
-        \     'filename': 'vimrc#lightline#filename',
-        \     'filetype': 'vimrc#lightline#filetype',
-        \     'gitbranch': 'vimrc#lightline#gitbranch',
-        \     'modified': 'vimrc#lightline#modified',
-        \     'readonly': 'vimrc#lightline#readonly',
+        \   component_function: #{
+        \     fileencoding: 'vimrc#lightline#fileencoding',
+        \     fileformat: 'vimrc#lightline#fileformat',
+        \     filename: 'vimrc#lightline#filename',
+        \     filetype: 'vimrc#lightline#filetype',
+        \     modified: 'vimrc#lightline#modified',
+        \     readonly: 'vimrc#lightline#readonly',
+        \     indentstyle: 'vimrc#lightline#indentstyle',
         \   }
         \ }
 endfunction
 
 function s:is_special_buffer() abort
-  return &buftype ==# 'help' || &buftype ==# 'terminal' || &buftype ==# 'nofile'
+  return &l:buftype ==# 'help' || &l:buftype ==# 'terminal' || &l:buftype ==# 'nofile'
 endfunction
 
 function vimrc#lightline#fileencoding() abort
-  return &fenc ==# 'utf-8' || s:is_special_buffer() ? '' : &fenc
+  return &l:fileencoding ==# 'utf-8' || s:is_special_buffer() ? '' : &l:fileencoding
 endfunction
 
 function vimrc#lightline#fileformat() abort
-  return &ff ==# 'unix' || s:is_special_buffer() ? '' : &ff
+  return &l:fileformat ==# 'unix' || s:is_special_buffer() ? '' : &l:fileformat
 endfunction
 
 function vimrc#lightline#filename() abort
-  if &buftype ==# 'terminal'
+  if &l:buftype ==# 'terminal'
     let cmd = substitute(expand('%'), '^!', '', '')
     return fnamemodify(cmd, ':t')
   else
@@ -50,27 +56,29 @@ function vimrc#lightline#filename() abort
 endfunction
 
 function vimrc#lightline#filetype() abort
-  if &buftype ==# 'help' || &buftype ==# 'terminal'
-    return &buftype
+  if &l:buftype ==# 'help' || &l:buftype ==# 'terminal'
+    return &l:buftype
   else
-    return &ft !=# '' ? &ft : 'no ft'
+    return &l:filetype !=# '' ? &l:filetype : 'no ft'
   endif
-endfunction
-
-function vimrc#lightline#gitbranch() abort
-  if !dein#is_sourced('gina.vim') || s:is_special_buffer()
-    return ''
-  endif
-  return gina#component#repo#branch()
 endfunction
 
 function vimrc#lightline#modified() abort
   if s:is_special_buffer()
     return ''
+  elseif &l:modified
+    return '+'
+  elseif &l:modifiable
+    return ''
+  else
+    return '-'
   endif
-  return &modified ? '+' : &modifiable ? '' : '-'
 endfunction
 
 function vimrc#lightline#readonly() abort
-  return &readonly && !s:is_special_buffer() ? 'RO' : ''
+  return &l:readonly && !s:is_special_buffer() ? 'RO' : ''
+endfunction
+
+function vimrc#lightline#indentstyle() abort
+  return (&l:expandtab ? 'space' : 'tab') .. &l:shiftwidth
 endfunction

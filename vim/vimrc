@@ -7,22 +7,15 @@ let g:vimfiles = expand('<sfile>:p:h')
 let g:cachedir = g:vimfiles .. '/.cache'
 call mkdir(g:cachedir, 'p', 0o700)
 
-if exists('$TMPDIR')
-  let g:tempdir = printf('%s/vim-%d', $TMPDIR, getpid())
+if has('win32')
+  let $PATH = g:vimfiles .. '\bin;' .. $PATH
 else
-  let g:tempdir = printf('/tmp/vim-%d', getpid())
-endif
-call mkdir(g:tempdir, 'p', 0o700)
-
-if has('vim_starting')
-  call vimrc#setup_goenv()
-  call vimrc#setup_ndenv()
-  call vimrc#setup_pyenv()
-  call vimrc#setup_rbenv()
-  call vimrc#setup_rsenv()
+  let $PATH = g:vimfiles .. '/bin:' .. $PATH
 endif
 
-" disable default plugins
+let g:denops#deno_dir = g:vimfiles .. '/.denocache'
+
+" disable builtin plugins
 let g:did_install_default_menus = 1
 let g:did_install_syntax_menu = 1
 let g:loaded_2html_plugin = 1
@@ -50,44 +43,53 @@ let g:loaded_vimballPlugin = 1
 let g:loaded_zip = 1
 let g:loaded_zipPlugin = 1
 
-" dein.vim
-let s:deindir = g:vimfiles .. '/dein'
-let s:deinrepo = s:deindir .. '/repos/github.com/Shougo/dein.vim'
+" vim-plug
+call vimrc#caw#setup()
+call vimrc#fern#setup()
+call vimrc#lightline#setup()
+call vimrc#lsp#setup()
+call vimrc#quickrun#setup()
+call vimrc#sandwich#setup()
+call vimrc#swap#setup()
+call vimrc#vsnip#setup()
 
-if has('vim_starting')
-  if !isdirectory(s:deinrepo)
-    call vimrc#await(vimrc#setup_dein(s:deinrepo))
-  endif
-  let &runtimepath = s:deinrepo .. ',' .. &runtimepath
-endif
+call plug#begin(g:vimfiles .. '/.plugins')
+Plug 'junegunn/vim-plug'
+Plug 'vim-denops/denops.vim'
+Plug 'EdenEast/nightfox.nvim'
+Plug 'itchyny/lightline.vim'
+Plug 'kana/vim-textobj-user'
+Plug 'kana/vim-textobj-entire'
+Plug 'kana/vim-textobj-line'
+Plug 'kana/vim-operator-user'
+Plug 'kana/vim-operator-replace'
+Plug 'haya14busa/vim-edgemotion'
+Plug 'tpope/vim-repeat'
+Plug 'machakann/vim-swap'
+Plug 'haya14busa/vim-asterisk'
+Plug 'tyru/caw.vim'
+Plug 'cohama/lexima.vim'
+Plug 'machakann/vim-sandwich'
+Plug 'deris/vim-rengbang'
+Plug 'junegunn/vim-easy-align'
+Plug 'thinca/vim-quickrun'
+Plug 'lambdalisue/vim-fern'
+Plug 'lambdalisue/vim-fern-hijack'
+Plug 'vim-fall/fall.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'darrikonn/vim-gofmt'
+call plug#end()
 
-let g:dein#types#git#clone_depth = 1
-let g:dein#types#git#pull_command = 'fetch --depth=1 && git reset --merge @{upstream}'
-
-if dein#min#load_state(s:deindir)
-  let s:tomls = glob(g:vimfiles .. '/*.toml', 0, 1)
-  let s:vimrcs = [$MYVIMRC] + s:tomls
-
-  call dein#begin(s:deindir, s:vimrcs)
-  for s:toml in s:tomls
-    call dein#load_toml(s:toml)
-  endfor
-  for s:dir in glob('~/src/*/cions', 0, 1)
-    call dein#local(s:dir, { 'frozen': 1, 'merged': 0 }, ['vim-*', '*.vim'])
-  endfor
-  call dein#end()
-  call dein#save_state()
-endif
-
-call dein#call_hook('source')
-if has('vim_starting')
-  autocmd VimEnter * ++once call dein#call_hook('post_source')
+if v:vim_did_enter
+  call vimrc#lexima#setup()
 else
-  call dein#call_hook('post_source')
+  augroup vimrc-plugins
+    autocmd!
+    autocmd VimEnter * call vimrc#lexima#setup()
+  augroup END
 endif
-
-syntax enable
-filetype plugin indent on
 
 " options
 set hidden
@@ -109,7 +111,6 @@ set noshowcmd
 set noshowmode
 set notitle
 
-set scrolloff=3
 set sidescroll=1
 set sidescrolloff=1
 set backspace=indent,eol,start
@@ -125,13 +126,12 @@ set shiftround
 set autoindent
 set smartindent
 
-set history=200
 set cedit=<C-Q>
 set wildmenu
 set wildmode=longest:full,full
 set suffixes& suffixes-=.h
 
-set wrap
+set nowrap
 set linebreak
 set breakindent
 set breakindentopt=min:35,sbr
@@ -141,6 +141,7 @@ set listchars=tab:>-,trail:-,extends:>,precedes:<
 set display=truncate,uhex
 set conceallevel=0
 set lazyredraw
+set nowrapscan
 set hlsearch
 set highlight& highlight+=@:SpecialKey
 
@@ -149,7 +150,7 @@ set noincsearch
 set ignorecase
 set smartcase
 
-let &backupdir = '.,' .. g:tempdir
+let &backupdir = g:cachedir
 let &directory = g:cachedir
 set writebackup
 set nobackup
@@ -157,26 +158,20 @@ set viminfo=
 set viminfofile=NONE
 
 if has('gui_running')
-  set background=light
+  set background=dark
   set guioptions=abefiMg
   set iminsert=0
   set imsearch=0
   if has('gui_gtk3')
     set guifont=Monospace\ 18
-  elseif has('gui_win32')
-    set guifont=MiG_Mono:h18:cSHIFTJIS:qDRAFT
-  endif
-  if has('directx')
-    set renderoptions=type:directx
   endif
 else
   set background=dark
+  set termguicolors
 endif
-if dein#is_sourced('vim-colors-solarized')
-  colorscheme solarized
-endif
+silent! colorscheme nordfox
 
-set helplang=en,ja
+set helplang=en
 
 if &term ==# 'win32'
   set termencoding=cp932
@@ -186,30 +181,11 @@ endif
 set fileencodings=ucs-bom,utf-8,euc-jisx0213,cp932
 set fileformats=unix,dos
 
-if executable('rg')
-  set grepprg=rg\ --vimgrep
-  set grepformat=%f:%l:%c:%m
-else
-  set grepprg=internal
-endif
-
 " key bindings
 noremap s <Nop>
 noremap S <Nop>
 nnoremap ZZ <Nop>
 nnoremap ZQ <Nop>
-nnoremap Y y$
-nnoremap x "_x
-nnoremap j gj
-nnoremap k gk
-nnoremap 0 g0
-nnoremap ^ g^
-nnoremap gj j
-nnoremap gk k
-nnoremap g0 0
-nnoremap g^ ^
-xnoremap < <gv
-xnoremap > >gv
 noremap <MiddleMouse> <Nop>
 noremap <2-MiddleMouse> <Nop>
 noremap <3-MiddleMouse> <Nop>
@@ -219,58 +195,68 @@ inoremap <2-MiddleMouse> <Nop>
 inoremap <3-MiddleMouse> <Nop>
 inoremap <4-MiddleMouse> <Nop>
 
-nnoremap <silent> gh :<C-u>nohlsearch<CR>
-nnoremap <silent> <Leader>n :<C-u>set number!<CR>
-nnoremap <silent> <Leader>N :<C-u>set relativenumber!<CR>
-nnoremap <silent> <Leader>w :<C-u>set wrap! wrap?<CR>
+nnoremap Y y$
+nnoremap x "_x
+xnoremap < <gv
+xnoremap > >gv
+noremap gy "+y
+nnoremap <Space>d yy']p
+xnoremap <Space>d y']p
+xnoremap H <gv
+xnoremap J dpV']
+xnoremap K d-PV']
+xnoremap L >gv
+
+call vimrc#digraph#Setup()
+noremap fj f<C-K>j
+noremap Fj F<C-K>j
+noremap tj t<C-K>j
+noremap Tj T<C-K>j
+
+inoremap <C-A> <C-O>^
+inoremap <C-B> <Left>
+inoremap <C-E> <C-O>$
+inoremap <C-F> <Right>
+
+cnoremap <C-A> <Home>
+cnoremap <C-B> <Left>
+cnoremap <C-E> <End>
+cnoremap <C-F> <Right>
+
+nnoremap <silent> gh :<C-U>nohlsearch<CR>
+nnoremap <silent> \n :<C-U>set number!<CR>
+nnoremap <silent> \N :<C-U>set relativenumber!<CR>
+nnoremap <silent> \w :<C-U>set wrap! wrap?<CR>
 
 map _ <Plug>(operator-replace)
-map sl <Plug>(operator-reverse-lines)
-map sw <Plug>(operator-reverse-text)
-map gc <Plug>(caw:prefix)
-map gci <Plug>(caw:hatpos:comment)
-nmap gcd <Plug>(textmanip-duplicate-up)<Plug>(caw:hatpos:comment)+
-xmap gcd <Plug>(textmanip-duplicate-up)gv<Plug>(caw:hatpos:comment)'>+
-map [e <Plug>(edgemotion-k)
-map ]e <Plug>(edgemotion-j)
 map * <Plug>(asterisk-z*)
 map # <Plug>(asterisk-z#)
 map g* <Plug>(asterisk-gz*)
 map g# <Plug>(asterisk-gz#)
-nmap <Space>d <Plug>(textmanip-duplicate-down)
-xmap <Space>d <Plug>(textmanip-duplicate-down)<Esc>
-nmap <Space>D <Plug>(textmanip-duplicate-up)
-xmap <Space>D <Plug>(textmanip-duplicate-up)<Esc>
-xmap <Space>h <Plug>(textmanip-duplicate-left)<Esc>
-xmap <Space>l <Plug>(textmanip-duplicate-right)<Esc>
-xmap H <Plug>(textmanip-move-left)
-xmap J <Plug>(textmanip-move-down)
-xmap K <Plug>(textmanip-move-up)
-xmap L <Plug>(textmanip-move-right)
-omap i, <Plug>(swap-textobject-i)
-xmap i, <Plug>(swap-textobject-i)
-omap a, <Plug>(swap-textobject-a)
-xmap a, <Plug>(swap-textobject-a)
-
-cnoremap <C-A> <Home>
-cnoremap <C-B> <Left>
-cnoremap <C-F> <Right>
-
-tnoremap <C-W>gT <C-W>:tabprev<CR>
-tnoremap <C-W>gt <C-W>:tabnext<CR>
-tnoremap <silent> <C-W><C-h> <C-W>:call job_stop(term_getjob(bufnr('%')), 'hup')<CR>
-tnoremap <C-W><Esc> <C-W>N
+map [e <Plug>(edgemotion-k)
+map ]e <Plug>(edgemotion-j)
 
 " commands
-command! -nargs=* -bang Update call vimrc#update(<bang>0, <f-args>)
-command! Clean call vimrc#clean()
+command! TabIndent setlocal noexpandtab tabstop=8 shiftwidth=8 softtabstop=8
+command! Tab4Indent setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
+command! Tab2Indent setlocal noexpandtab tabstop=2 shiftwidth=2 softtabstop=2
+command! Space8Indent setlocal expandtab tabstop=8 shiftwidth=8 softtabstop=8
+command! Space4Indent setlocal expandtab tabstop=4 shiftwidth=4 softtabstop=4
+command! Space2Indent setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2
+command! GuessIndent call vimrc#guess_indent()
+
 command! SynStack call vimrc#synstack()
 command! Highlight call vimrc#highlight()
+
+command! DenopsInterrupt call denops#interrupt()
+command! DenopsRestart call denops#server#restart()
+command! DenopsFlushCache call denops#cache#update({ 'reload': v:true })
 
 " autocmd
 augroup vimrc
   autocmd!
   autocmd BufWritePost,BufFilePost * ++nested filetype detect
-  autocmd VimLeave * call delete(g:tempdir, 'rf')
+  autocmd BufNewFile,BufReadPost * GuessIndent
+  autocmd BufWritePre *.go GoImports
+  autocmd BufWritePre *.go GoFmt
 augroup END
-
