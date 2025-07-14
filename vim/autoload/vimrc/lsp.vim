@@ -49,15 +49,12 @@ function vimrc#lsp#lsp_float_opened() abort
         \   padding: [0, 1, 1, 1],
         \   resize: 1,
         \ })
-  nmap <buffer> <C-C> <Plug>(lsp-preview-close)
-  nmap <buffer> <Esc> <Plug>(lsp-preview-close)
+
   nmap <buffer><expr> <C-F> lsp#scroll(+4)
   nmap <buffer><expr> <C-B> lsp#scroll(-4)
 endfunction
 
 function vimrc#lsp#lsp_float_closed() abort
-  nunmap <buffer> <C-C>
-  nunmap <buffer> <Esc>
-  nunmap <buffer> <C-F>
-  nunmap <buffer> <C-B>
+  silent! nunmap <buffer> <C-F>
+  silent! nunmap <buffer> <C-B>
 endfunction

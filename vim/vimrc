@@ -45,12 +45,12 @@ let g:loaded_zipPlugin = 1
 
 " vim-plug
 call vimrc#caw#setup()
+call vimrc#fall#setup()
 call vimrc#fern#setup()
 call vimrc#lightline#setup()
 call vimrc#lsp#setup()
 call vimrc#quickrun#setup()
 call vimrc#sandwich#setup()
-call vimrc#swap#setup()
 call vimrc#vsnip#setup()
 
 call plug#begin(g:vimfiles .. '/.plugins')
@@ -84,10 +84,12 @@ call plug#end()
 
 if v:vim_did_enter
   call vimrc#lexima#setup()
+  call vimrc#swap#setup()
 else
   augroup vimrc-plugins
     autocmd!
     autocmd VimEnter * call vimrc#lexima#setup()
+    autocmd VimEnter * call vimrc#swap#setup()
   augroup END
 endif
 

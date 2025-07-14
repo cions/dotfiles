@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PROMPT_COMMAND=()
+
 # shellcheck disable=SC2034
 DOTFILES="$(dirname -- "$(readlink -- "${BASH_SOURCE[0]:-"$0"}")")"
 
@@ -101,21 +103,10 @@ alias reload='exec -l "${BASH}"'
 bind C-F:menu-complete
 bind C-B:menu-complete-backward
 
-# PROMPT_COMMAND
-__PROMPT_COMMAND_FUNCS=()
-__prompt_command() {
-	local status=$?
-	local func
-	for func in "${__PROMPT_COMMAND_FUNCS[@]}"; do
-		${func} ${status}
-	done
-}
-PROMPT_COMMAND=__prompt_command
-
 # prompt
 simple-prompt() {
 	# shellcheck disable=SC2206
-	__PROMPT_COMMAND_FUNCS=( ${__PROMPT_COMMAND_FUNCS[*]/__default_prompt} )
+	PROMPT_COMMAND=( ${PROMPT_COMMAND[*]/__default_prompt} )
 
 	PS1='\[\e[0m\e[32m\]\u'
 	if [[ -v SSH_CONNECTION ]]; then
@@ -178,7 +169,7 @@ __default_prompt() {
 }
 
 if [[ "$(tput colors 2>/dev/null)" -ge 256 ]]; then
-	__PROMPT_COMMAND_FUNCS+=( __default_prompt )
+	PROMPT_COMMAND+=( __default_prompt )
 else
 	simple-prompt
 fi
@@ -193,7 +184,7 @@ if exists gpgconf; then
 	__gpg_agent_updatestartuptty() {
 		( gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 & )
 	}
-	__PROMPT_COMMAND_FUNCS+=( __gpg_agent_updatestartuptty )
+	PROMPT_COMMAND+=( __gpg_agent_updatestartuptty )
 fi
 
 # dircolors
