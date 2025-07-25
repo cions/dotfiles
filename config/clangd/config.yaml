@@ -3,6 +3,8 @@ Index:
   StandardLibrary: true
 Hover:
   ShowAKA: true
+SemanticTokens:
+  DisabledKinds: ['InactiveCode']
 ---
 If:
   PathMatch:
