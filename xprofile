@@ -1,8 +1,0 @@
-#!/bin/sh
-
-export GTK_IM_MODULE="fcitx"
-export QT_IM_MODULE="fcitx"
-export XMODIFIERS="@im=fcitx"
-
-export LIBVA_DRIVER_NAME="iHD"
-export __EGL_VENDOR_LIBRARY_FILENAMES="/usr/share/glvnd/egl_vendor.d/50_mesa.json"

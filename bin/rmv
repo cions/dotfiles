@@ -1,11 +1,7 @@
 #!/bin/bash
 
-if [[ -d /var/trash && -w /var/trash ]]; then
-	TRASHDIR="/var/trash"
-else
-	TRASHDIR="${HOME}/.trash"
-	mkdir -p -- "${TRASHDIR}" || exit 1
-fi
+TRASHDIR="${HOME}/.trash"
+mkdir -p -- "${TRASHDIR}" || exit 1
 
 for target in "$@"; do
 	if [[ ! -e "${target}" ]]; then

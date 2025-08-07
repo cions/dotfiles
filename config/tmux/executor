@@ -8,7 +8,9 @@ exists() {
 
 case "$1" in
 	copy)
-		if exists xsel; then
+		if exists wl-copy; then
+			wl-copy
+		elif exists xsel; then
 			xsel -l /dev/null -ib
 		elif exists clip; then
 			clip
@@ -17,7 +19,9 @@ case "$1" in
 		fi
 		;;
 	paste)
-		if exists xsel; then
+		if exists wl-paste; then
+			wl-paste | sed -z 's/^\s*//;s/\s*$//'
+		elif exists xsel; then
 			xsel -ob | sed -z 's/^\s*//;s/\s*$//'
 		elif exists clip; then
 			paste | sed -z 's/^\s*//;s/\s*$//'

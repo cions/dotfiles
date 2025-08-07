@@ -23,11 +23,9 @@ CURCOLOR=""
 meminfo=( "${(@f)$(</proc/meminfo)}" )
 (( memtotal = ${meminfo[(r)MemTotal:*][(w)2]:-0} ))
 (( memused = memtotal - ${meminfo[(r)MemAvailable:*][(w)2]:-0} ))
-(( swaptotal = ${meminfo[(r)SwapTotal:*][(w)2]:-0} ))
-(( swapused = swaptotal - ${meminfo[(r)SwapFree:*][(w)2]:-0} ))
 loadavg="${(s: :)$(</proc/loadavg)[(w)1]}"
 nproc="$(nproc --all)"
-(( temp = "$(</sys/class/thermal/thermal_zone3/temp)" / 1000 ))
+temp="$(sensors -j 'k10temp-*' 2>/dev/null | jq '.[].Tctl.temp1_input' 2>/dev/null)"
 
 if (( memtotal != 0 )); then
 	(( percentage = 100.0 * memused / memtotal ))
@@ -39,21 +37,6 @@ if (( memtotal != 0 )); then
 		separator ${GREEN}
 	fi
 	print -n " $(numfmt --from-unit=Ki --to=iec --suffix=B ${memused}) "
-else
-	separator ${GRAY}
-	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
-fi
-
-if (( swaptotal != 0 )); then
-	(( percentage = 100.0 * swapused / swaptotal ))
-	if (( percentage >= 80.0 )); then
-		separator ${RED}
-	elif (( percentage >= 60.0 )); then
-		separator ${YELLOW}
-	else
-		separator ${GREEN}
-	fi
-	print -n " $(numfmt --from-unit=Ki --to=iec --suffix=B ${swapused}) "
 else
 	separator ${GRAY}
 	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
@@ -81,7 +64,7 @@ if (( temp != 0 )); then
 	else
 		separator ${GREEN}
 	fi
-	print -n " ${temp}℃ "
+	printf " %.1f℃ " "${temp}"
 else
 	separator ${GRAY}
 	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "
