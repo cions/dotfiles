@@ -8,7 +8,7 @@ for file in /etc/profile.env /etc/profile.d/*.sh; do
 		source "${file}"
 	fi
 done
-unset ROOTPATH file
+unset file
 
 PATH="${HOME}/.bin:${HOME}/.cargo/bin:${HOME}/.deno/bin:${HOME}/.go/bin:${HOME}/.local/bin:${PATH}"
 

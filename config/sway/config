@@ -128,8 +128,8 @@ bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume "@DEFAULT_SINK@
 
 # Take a screenshot
 set $ssfile $(xdg-user-dir PICTURES)/screenshot_$(date +"%Y%m%d%H%M%S").png
-bindsym Print exec grim $ssfile
-bindsym Control+Print exec grim -g "$(slurp)" $ssfile
+bindsym Control+Print exec grim $ssfile
+bindsym Control+Shift+Print exec grim -g "$(slurp)" $ssfile
 
 ### Appearance
 
@@ -177,8 +177,6 @@ for_window [window_type="menu"] floating enable
 
 for_window [app_id="org.keepassxc.KeePassXC"] floating enable
 for_window [title="^Save File$"] floating enable
-for_window [title="^Developer Tools - "] floating enable, \
-    resize set width 1300px height 570px, move position 100ppt 100ppt, move left 1300px, move up 570px
 for_window [title="^Developer Tools - "] floating enable, \
     resize set width 1300px height 570px, move position 100ppt 100ppt, move left 1300px, move up 570px
 for_window [title="^Picture in picture$"] floating enable, sticky enable, \

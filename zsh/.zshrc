@@ -245,6 +245,9 @@ bindkey -M main "^X^X" _complete_help
 bindkey -M main "^[." insert-last-word
 bindkey -M main "^[[3~" delete-char
 bindkey -M main "^[[200~" bracketed-paste
+bindkey -M main "^[[27;2;13~" accept-line
+bindkey -M main "^[[27;5;13~" accept-line
+bindkey -M main "^[[27;6;13~" accept-line
 bindkey -M main "^[[A" up-line-or-history
 bindkey -M main "^[[B" down-line-or-history
 bindkey -M main "^[[C" forward-char

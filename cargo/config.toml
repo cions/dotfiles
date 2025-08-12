@@ -4,23 +4,20 @@ lto = "thin"
 opt-level = 3
 strip = "symbols"
 
-[profile.release.build-override]
-opt-level = 3
-
 [target."x86_64-unknown-linux-gnu"]
-linker = "clang"
+linker = "clang-20"
 rustflags = [
 	"-C", "linker-plugin-lto",
 	"-C", "target-cpu=native",
-	"-C", "link-args=-O3 -march=native -flto=thin -Wl,-O2",
+	"-C", "link-args=-O3 -march=native -flto=thin",
 ]
 
 [env]
 AR = "llvm-ar"
-CC = "clang"
-CXX = "clang++"
+CC = "clang-20"
+CXX = "clang++-20"
 NM = "llvm-nm"
 CFLAGS = "-O3 -march=native -flto=thin"
 CXXFLAGS = "-O3 -march=native -flto=thin"
-LDFLAGS = "-O3 -march=native -flto=thin -Wl,-O2 -Wl,--as-needed -Wl,--gc-sections"
+LDFLAGS = "-O3 -march=native -flto=thin -Wl,-O1 -Wl,--as-needed -Wl,--gc-sections"
 CXXSTDLIB = "c++"
