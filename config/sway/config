@@ -190,7 +190,7 @@ assign [app_id="firefox"] workspace number 4
 ### Autostart
 
 exec swayidle -w \
-    timeout 600 'pgrep -x swaylock || swaylock --ignore-empty-password --show-failed-attempts --color 1e1e1e' \
+    timeout 600 'pgrep -x swaylock || swaylock --daemonize --ignore-empty-password --show-failed-attempts --color 1e1e1e' \
     timeout 900 'swaymsg "output * power off"' \
     resume 'swaymsg "output * power on"'
 
