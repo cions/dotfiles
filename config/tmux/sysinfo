@@ -64,7 +64,7 @@ if (( temp != 0 )); then
 	else
 		separator ${GREEN}
 	fi
-	printf " %.1f℃ " "${temp}"
+	printf " %.1f°C " "${temp}"
 else
 	separator ${GRAY}
 	print -n " #[fg=${GRAYFG}]N/A#[fg=default] "

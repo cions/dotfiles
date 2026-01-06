@@ -380,7 +380,7 @@ disable-rprompt() {
 __update_prompt2() {
 	local expanded="${(%)PLAINPROMPT}"
 	local width="${#expanded}"
-	PROMPT2="%b%F{255}%K{245} %$((width-3))<<${(l:width:)}%1_%<< %b "
+	PROMPT2="%b%F{255}%K{245} %$((width-3))<<${(l:width:)}%1_%<< %f%k%b "
 }
 
 __update_rprompt() {
@@ -426,6 +426,8 @@ __rprompt_generator() {
 	(( gitstate[untracked]   )) && gitstatus+=( "?${gitstate[untracked]}" )
 	(( gitstate[stash]       )) && gitstatus+=( ">${gitstate[stash]}" )
 	(( ${#gitstatus} > 0 )) && print -n "%K{227} ${(j: :)gitstatus} "
+
+	print -n "%f%k%b"
 
 	return 0
 }

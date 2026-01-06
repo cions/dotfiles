@@ -7,13 +7,9 @@ let g:vimfiles = expand('<sfile>:p:h')
 let g:cachedir = g:vimfiles .. '/.cache'
 call mkdir(g:cachedir, 'p', 0o700)
 
-if has('win32')
-  let $PATH = g:vimfiles .. '\bin;' .. $PATH
-else
-  let $PATH = g:vimfiles .. '/bin:' .. $PATH
-endif
-
 let g:denops#deno_dir = g:vimfiles .. '/.denocache'
+
+let $PATH = g:vimfiles .. '/bin:' .. $PATH
 
 " disable builtin plugins
 let g:did_install_default_menus = 1
@@ -95,85 +91,42 @@ endif
 
 " options
 set hidden
-set mouse=a
-set ttymouse=sgr
-set ttimeout
-set ttimeoutlen=100
-set shelltemp
+set belloff=all
 set splitbelow
 set splitright
-
-set showtabline=2
-set laststatus=2
-set statusline=%F\ %y[%{&fenc?&fenc:&enc}:%{&ff}]%m%r%w%=(%l,%c)
-set shortmess+=cmrFI
-set belloff=all
-set noruler
-set noshowcmd
-set noshowmode
-set notitle
-
+set nostartofline
 set sidescroll=1
-set sidescrolloff=1
-set backspace=indent,eol,start
 set virtualedit=block
-set complete=.,i,d,t
-set completeopt=menu
-set pumheight=0
 set matchpairs& matchpairs+=<:>
-set nojoinspaces
-set nrformats=bin,hex
-set smarttab
+set diffopt=internal,algorithm:histogram,filler,closeoff,inline:char
 set shiftround
 set autoindent
 set smartindent
-
-set cedit=<C-Q>
-set wildmenu
-set wildmode=longest:full,full
-set suffixes& suffixes-=.h
-
-set nowrap
-set linebreak
-set breakindent
-set breakindentopt=min:35,sbr
-set showbreak=>\ 
-set list
-set listchars=tab:>-,trail:-,extends:>,precedes:<
-set display=truncate,uhex
-set conceallevel=0
-set lazyredraw
 set nowrapscan
-set hlsearch
-set highlight& highlight+=@:SpecialKey
-
-set path=.,,
 set noincsearch
 set ignorecase
 set smartcase
+set path=.,,
+set suffixes& suffixes-=.h
+set nojoinspaces
+set nrformats=bin,hex,blank
+set cedit=<C-Q>
+set wildmode=longest:full,full
 
-let &backupdir = g:cachedir
-let &directory = g:cachedir
-set writebackup
-set nobackup
-set viminfo=
-set viminfofile=NONE
-
-if has('gui_running')
-  set background=dark
-  set guioptions=abefiMg
-  set iminsert=0
-  set imsearch=0
-  if has('gui_gtk3')
-    set guifont=Monospace\ 18
-  endif
-else
-  set background=dark
-  set termguicolors
-endif
-silent! colorscheme nordfox
-
-set helplang=en
+set hlsearch
+set nowrap
+set showbreak=>\ 
+set list
+set listchars=tab:>-,trail:-,extends:>,precedes:<
+set shortmess+=cmrFI
+set noshowcmd
+set noshowmode
+set laststatus=2
+set statusline=%F\ %y[%{&fenc?&fenc:&enc}:%{&ff}]%m%r%w%=(%l,%c)
+set showtabline=2
+set display=truncate,uhex
+set lazyredraw
+set highlight& highlight+=@:SpecialKey
 
 if &term ==# 'win32'
   set termencoding=cp932
@@ -182,6 +135,25 @@ else
 endif
 set fileencodings=ucs-bom,utf-8,euc-jisx0213,cp932
 set fileformats=unix,dos
+
+set mouse=a
+set ttymouse=sgr
+
+let &backupdir = g:cachedir
+let &directory = g:cachedir
+set viminfo=
+set viminfofile=NONE
+
+if has('gui_running')
+  set guioptions& go-=m go-=r go-=L go-=t go-=T go+=M
+  if has('gui_gtk3')
+    set guifont=Monospace\ 18
+  endif
+else
+  set termguicolors
+endif
+
+silent! colorscheme nordfox
 
 " key bindings
 noremap s <Nop>
