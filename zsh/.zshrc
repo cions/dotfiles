@@ -489,5 +489,5 @@ export EDITOR="vim"
 export VISUAL="vim"
 export PAGER="less"
 
-export LESS="-FMRSgi -j.5"
+export LESS="-FMRSgi -j.5 -z-4"
 export LESSHISTFILE="-"
