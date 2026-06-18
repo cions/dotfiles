@@ -7,9 +7,15 @@ Gem.use_paths("#{Gem.user_home}/.vim/.gemcache", Gem.default_path)
 
 gemfile do
   source 'https://rubygems.org'
-  gem 'solargraph'
+  gem 'ruby-lsp'
+  gem 'rubocop', '>= 1.4.0', require: false
+end
+
+class Bundler::LockfileParser
+  def parse_bundled_with(line)
+  end
 end
 
 Bundler.with_unbundled_env do
-  Gem.activate_and_load_bin_path('solargraph', 'solargraph')
+  Gem.activate_and_load_bin_path('ruby-lsp', 'ruby-lsp')
 end

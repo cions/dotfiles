@@ -1,0 +1,4 @@
+#!/bin/sh
+
+export UV_CACHE_DIR=~/.vim/.uvcache
+exec uv tool run --from="basedpyright" --with="z3-solver" -- basedpyright-langserver "$@"

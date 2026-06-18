@@ -1,4 +1,4 @@
 #!/bin/sh
 
-export PIPX_HOME=~/.vim/.pipx
-exec pipx run --spec python-lsp-server -- pylsp "$@"
+export UV_CACHE_DIR=~/.vim/.uvcache
+exec uv tool run --from python-lsp-server -- pylsp "$@"

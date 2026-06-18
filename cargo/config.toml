@@ -5,7 +5,7 @@ opt-level = 3
 strip = "symbols"
 
 [target."x86_64-unknown-linux-gnu"]
-linker = "clang-21"
+linker = "clang-22"
 rustflags = [
 	"-C", "linker-plugin-lto",
 	"-C", "target-cpu=native",
@@ -14,8 +14,8 @@ rustflags = [
 
 [env]
 AR = "llvm-ar"
-CC = "clang-21"
-CXX = "clang++-21"
+CC = "clang-22"
+CXX = "clang++-22"
 NM = "llvm-nm"
 CFLAGS = "-O3 -march=native -flto=thin"
 CXXFLAGS = "-O3 -march=native -flto=thin"

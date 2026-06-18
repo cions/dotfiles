@@ -1359,6 +1359,8 @@ const g:vimrc#digraph#digraphs = [
   ['0s', "∅"],  # U+2205 EMPTY SET
   ['00', "∞"],  # U+221E INFINITY
   ['Al', "ℵ"],  # U+2135 ALEF SYMBOL
+  ['dd', "𝑑"],  # U+1D451 MATHEMATICAL ITALIC SMALL D
+  ['fx', "𝑓"],  # U+1D453 MATHEMATICAL ITALIC SMALL F
   ['pd', "∂"],  # U+2202 PARTIAL DIFFERENTIAL
   ['De', "∆"],  # U+2206 INCREMENT
   ['Nb', "∇"],  # U+2207 NABLA
@@ -1466,6 +1468,8 @@ const g:vimrc#digraph#digraphs = [
   ['Ci', "∮"],  # U+222E CONTOUR INTEGRAL
   ['Si', "∯"],  # U+222F SURFACE INTEGRAL
   ['Vi', "∰"],  # U+2230 VOLUME INTEGRAL
+
+  # Box Drawings
   ['hh', "─"],  # U+2500 BOX DRAWINGS LIGHT HORIZONTAL
   ['vv', "│"],  # U+2502 BOX DRAWINGS LIGHT VERTICAL
   ['h3', "┄"],  # U+2504 BOX DRAWINGS LIGHT TRIPLE DASH HORIZONTAL
