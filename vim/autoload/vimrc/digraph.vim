@@ -15,8 +15,6 @@ export def Setup()
 enddef
 
 const g:vimrc#digraph#digraphs = [
-  ['jj', "j"],  # U+006A LATIN SMALL LETTER J
-
   # CONTROL CHARACTERS
   ['NB', "\u0000"],  # U+0000 NULL
   ['\0', "\u0000"],  # U+0000 NULL
@@ -1316,9 +1314,56 @@ const g:vimrc#digraph#digraphs = [
   ['^=', "⁼"],  # U+207C SUPERSCRIPT EQUALS SIGN
   ['^(', "⁽"],  # U+207D SUPERSCRIPT LEFT PARENTHESIS
   ['^)', "⁾"],  # U+207E SUPERSCRIPT RIGHT PARENTHESIS
+  ['^A', "ᴬ"],  # U+1D2C MODIFIER LETTER CAPITAL A
+  ['^B', "ᴮ"],  # U+1D2E MODIFIER LETTER CAPITAL B
+  ['^C', "ꟲ"],  # U+A7F2 MODIFIER LETTER CAPITAL C
+  ['^D', "ᴰ"],  # U+1D30 MODIFIER LETTER CAPITAL D
+  ['^E', "ᴱ"],  # U+1D31 MODIFIER LETTER CAPITAL E
+  ['^F', "ꟳ"],  # U+A7F3 MODIFIER LETTER CAPITAL F
+  ['^G', "ᴳ"],  # U+1D33 MODIFIER LETTER CAPITAL G
+  ['^H', "ᴴ"],  # U+1D34 MODIFIER LETTER CAPITAL H
+  ['^I', "ᴵ"],  # U+1D35 MODIFIER LETTER CAPITAL I
+  ['^J', "ᴶ"],  # U+1D36 MODIFIER LETTER CAPITAL J
+  ['^K', "ᴷ"],  # U+1D37 MODIFIER LETTER CAPITAL K
+  # ['^L', "ᴸ"],  # U+1D38 MODIFIER LETTER CAPITAL L
+  ['^M', "ᴹ"],  # U+1D39 MODIFIER LETTER CAPITAL M
+  ['^N', "ᴺ"],  # U+1D3A MODIFIER LETTER CAPITAL N
+  ['^O', "ᴼ"],  # U+1D3C MODIFIER LETTER CAPITAL O
+  ['^P', "ᴾ"],  # U+1D3E MODIFIER LETTER CAPITAL P
+  ['^Q', "ꟴ"],  # U+A7F4 MODIFIER LETTER CAPITAL Q
+  ['^R', "ᴿ"],  # U+1D3F MODIFIER LETTER CAPITAL R
+  ['^S', "꟱"],  # U+A7F1 MODIFIER LETTER CAPITAL S
+  ['^T', "ᵀ"],  # U+1D40 MODIFIER LETTER CAPITAL T
+  ['^U', "ᵁ"],  # U+1D41 MODIFIER LETTER CAPITAL U
+  ['^V', "ⱽ"],  # U+2C7D MODIFIER LETTER CAPITAL V
+  ['^W', "ᵂ"],  # U+1D42 MODIFIER LETTER CAPITAL W
+  ['^a', "ᵃ"],  # U+1D43 MODIFIER LETTER SMALL A
+  ['^b', "ᵇ"],  # U+1D47 MODIFIER LETTER SMALL B
+  ['^c', "ᶜ"],  # U+1D9C MODIFIER LETTER SMALL C
+  ['^d', "ᵈ"],  # U+1D48 MODIFIER LETTER SMALL D
+  ['^e', "ᵉ"],  # U+1D49 MODIFIER LETTER SMALL E
+  ['^f', "ᶠ"],  # U+1DA0 MODIFIER LETTER SMALL F
+  ['^g', "ᵍ"],  # U+1D4D MODIFIER LETTER SMALL G
+  ['^h', "ʰ"],  # U+02B0 MODIFIER LETTER SMALL H
   ['^i', "ⁱ"],  # U+2071 SUPERSCRIPT LATIN SMALL LETTER I
+  ['^j', "ʲ"],  # U+02B2 MODIFIER LETTER SMALL J
+  ['^k', "ᵏ"],  # U+1D4F MODIFIER LETTER SMALL K
+  # ['^l', "ˡ"],  # U+02E1 MODIFIER LETTER SMALL L
+  ['^m', "ᵐ"],  # U+1D50 MODIFIER LETTER SMALL M
   ['^n', "ⁿ"],  # U+207F SUPERSCRIPT LATIN SMALL LETTER N
+  # ['^o', "ᵒ"],  # U+1D52 MODIFIER LETTER SMALL O
   ['^o', "°"],  # U+00B0 DEGREE SIGN
+  ['^p', "ᵖ"],  # U+1D56 MODIFIER LETTER SMALL P
+  ['^q', "𐞥"],  # U+107A5 MODIFIER LETTER SMALL Q
+  ['^r', "ʳ"],  # U+02B3 MODIFIER LETTER SMALL R
+  ['^s', "ˢ"],  # U+02E2 MODIFIER LETTER SMALL S
+  ['^t', "ᵗ"],  # U+1D57 MODIFIER LETTER SMALL T
+  ['^u', "ᵘ"],  # U+1D58 MODIFIER LETTER SMALL U
+  ['^v', "ᵛ"],  # U+1D5B MODIFIER LETTER SMALL V
+  ['^w', "ʷ"],  # U+02B7 MODIFIER LETTER SMALL W
+  ['^x', "ˣ"],  # U+02E3 MODIFIER LETTER SMALL X
+  ['^y', "ʸ"],  # U+02B8 MODIFIER LETTER SMALL Y
+  ['^z', "ᶻ"],  # U+1DBB MODIFIER LETTER SMALL Z
   ['_0', "₀"],  # U+2080 SUBSCRIPT ZERO
   ['_1', "₁"],  # U+2081 SUBSCRIPT ONE
   ['_2', "₂"],  # U+2082 SUBSCRIPT TWO

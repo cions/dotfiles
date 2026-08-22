@@ -107,7 +107,7 @@ function vimrc#sandwich#setup() abort
   augroup vimrc-sandwich
     autocmd!
     autocmd FileType plaintex,tex call vimrc#sandwich#setup_tex()
-    autocmd FileType python call vimrc#sandwich#setup_python()
+    " autocmd FileType python call vimrc#sandwich#setup_python()
     autocmd FileType vim call vimrc#sandwich#setup_vim()
   augroup END
 endfunction

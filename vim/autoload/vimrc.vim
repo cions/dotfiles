@@ -22,6 +22,7 @@ function vimrc#guess_indent() abort
   let lines = getline(1, maxlnum)
   let tabindent = v:false
   let minindent = 0
+  let hasspacerun = v:false
   for line in lines
     if line =~# '\t'
       let tabindent = v:true
@@ -38,12 +39,17 @@ function vimrc#guess_indent() abort
         let minindent = min([minindent, indent])
       endif
     endif
+    if line =~# '  '
+      let hasspacerun = v:true
+    endif
   endfor
   let style = v:null
   if tabindent ==# v:true
     let style = ['tab', &l:tabstop]
   elseif minindent !=# 0
     let style = ['space', minindent]
+  elseif hasspacerun ==# v:true
+    let style = ['space', 8]
   elseif has_key(g:vimrc#indent_style, &l:filetype)
     let style = g:vimrc#indent_style[&l:filetype]
   endif

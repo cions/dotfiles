@@ -182,10 +182,6 @@ xnoremap K d-PV']
 xnoremap L >gv
 
 call vimrc#digraph#Setup()
-noremap fj f<C-K>j
-noremap Fj F<C-K>j
-noremap tj t<C-K>j
-noremap Tj T<C-K>j
 
 inoremap <C-A> <C-O>^
 inoremap <C-B> <Left>

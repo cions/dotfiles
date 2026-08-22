@@ -11,6 +11,15 @@ function vimrc#lsp#setup() abort
   let g:lsp_semantic_enabled = 1
   let g:lsp_preview_doubletap = 0
 
+  let g:lsp_settings_filetype_javascript = ['typescript-language-server', 'vtsls', 'deno', 'biome', 'oxlint', 'oxfmt']
+  let g:lsp_settings_filetype_javascriptreact = ['typescript-language-server', 'vtsls', 'deno', 'biome', 'oxlint', 'oxfmt']
+  let g:lsp_settings_filetype_json = ['vscode-json-language-server', 'biome']
+  let g:lsp_settings_filetype_jsonc = ['vscode-json-language-server', 'biome']
+  let g:lsp_settings_filetype_python = ['pylsp', 'ruff', 'ty', 'basedpyright-langserver']
+  let g:lsp_settings_filetype_ruby = ['ruby-lsp', 'solargraph']
+  let g:lsp_settings_filetype_typescript = ['typescript-language-server', 'vtsls', 'deno', 'biome', 'oxlint', 'oxfmt']
+  let g:lsp_settings_filetype_typescriptreact = ['typescript-language-server', 'vtsls', 'deno', 'biome', 'oxlint', 'oxfmt']
+
   augroup vimrc-lsp
     autocmd!
     autocmd User lsp_buffer_enabled call vimrc#lsp#lsp_buffer_enabled()
