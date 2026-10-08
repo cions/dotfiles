@@ -112,6 +112,7 @@ set nojoinspaces
 set nrformats=bin,hex,blank
 set cedit=<C-Q>
 set wildmode=longest:full,full
+set clipboard=autoselect
 
 set hlsearch
 set nowrap

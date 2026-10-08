@@ -29,6 +29,7 @@ function vimrc#fern#setup_fern() abort
         \   '<Plug>(fern-action-collapse-or-up)'
         \ )
   nmap <buffer> * <Plug>(fern-action-mark:toggle)
+  nmap <buffer><nowait> <Space> <Plug>(fern-action-mark:toggle)j
   nmap <buffer> . <Plug>(fern-action-hidden:toggle)
   nmap <buffer> g. <Plug>(fern-action-repeat)
   nmap <buffer> > <Plug>(fern-action-expand-tree:stay)

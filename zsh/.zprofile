@@ -15,3 +15,10 @@ path=(
 	${HOME}/.local/bin(N-/)
 	${^path}(N-/)
 )
+
+if [[ -S /run/user/${SUDO_UID}/${WAYLAND_DISPLAY} ]]; then
+	export WAYLAND_DISPLAY=/run/user/${SUDO_UID}/${WAYLAND_DISPLAY}
+fi
+if (( ! ${+XDG_RUNTIME_DIR} )); then
+	export XDG_RUNTIME_DIR=/run
+fi
